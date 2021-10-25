@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  bbb1:
+    container_name: bbb1
+    image: sledunois/bbb-dev:2.4-develop
+    privileged: true
+    environment:
+      - INFLUX_TOKEN=Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg==
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:rw"
+    ports:
+      - "80:80"
+    links:
+      - influxdb
+  bbb2:
+    container_name: bbb2
+    image: sledunois/bbb-dev:2.4-develop
+    privileged: true
+    environment:
+      - INFLUX_TOKEN=Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg==
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:rw"
+    ports:
+      - "8080:80"
+    links:
+      - influxdb
+  influxdb:
+    container_name: influxdb
+    image: influxdb:2.0
+    environment:
+      - DOCKER_INFLUXDB_INIT_USERNAME=b3lb
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password
+      - DOCKER_INFLUXDB_INIT_ORG=b3lb
+      - DOCKER_INFLUXDB_INIT_BUCKET=bucket
+    ports:
+      - "8086:8086"
+
