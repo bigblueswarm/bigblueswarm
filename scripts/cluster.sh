@@ -7,7 +7,7 @@ start() {
 
 stop() {
     echo "Stopping cluster..."
-    docker rm -f bbb1 bbb2 influxdb
+    docker stop bbb1 bbb2 influxdb
 }
 
 usage() {
