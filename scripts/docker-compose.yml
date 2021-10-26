@@ -6,8 +6,6 @@ services:
     privileged: true
     environment:
       - INFLUX_TOKEN=Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg==
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:rw"
     ports:
       - "80:80"
     links:
@@ -18,8 +16,6 @@ services:
     privileged: true
     environment:
       - INFLUX_TOKEN=Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg==
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:rw"
     ports:
       - "8080:80"
     links:
