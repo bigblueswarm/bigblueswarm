@@ -8,14 +8,21 @@ stop() {
     docker rm -f bbb1 bbb2 influxdb
 }
 
+usage() {
+  echo "Help!"
+}
+
 for param in "$@"
 do
   case $param in
-    start)
+    -run | --start)
       start
       ;;
-    stop)
+    --stop)
       stop
+      ;;
+    -h | --help)
+      usage
       ;;
     *)
       echo "Invalid argument : $param"
