@@ -25,7 +25,12 @@ Once you download dependencies, build the docker image
 
 Then launch your local cluster with:
 ```shell
-./scripts/cluser.sh --start
+./scripts/cluster.sh --start
+```
+
+Connect on InfluxDB server and create an authentication token then configure your cluster to use it
+```shell
+./scripts/cluster.sh --set-token [token]
 ```
 
 ## POC
