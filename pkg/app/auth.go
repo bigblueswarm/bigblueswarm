@@ -2,40 +2,41 @@ package app
 
 import (
 	"b3lb/pkg/api"
-	"crypto/sha1"
-	"encoding/hex"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func string_to_sha1(value string) string {
-	hasher := sha1.New()
-	hasher.Write([]byte("getmeetings"))
-	return hex.EncodeToString(hasher.Sum(nil))
-}
-
-func (s *Server) checksumValidation(c *gin.Context) {
+func (s *Server) ChecksumValidation(c *gin.Context) {
 	error := &api.ChecksumError{
 		Return_code: "FAILED",
 		Message_key: "checksumError",
 		Message:     "You did not pass the checksum security check",
 	}
 
-	checksum, exists := c.GetQuery("checksum")
+	checksum_param, exists := c.GetQuery("checksum")
 	if !exists {
 		c.XML(http.StatusOK, error)
 		c.Abort()
 		return
 	}
 
-	sha := string_to_sha1("getmeetings")
+	params := c.Request.URL.Query()
+	params.Del("checksum")
 
-	fmt.Println(string(sha))
-	fmt.Println(checksum)
+	checksum := &Checksum{
+		Secret: s.config.BigBlueButton.Secret,
+		Action: strings.TrimPrefix(c.FullPath(), "/bigbluebutton/api/"),
+		Params: params,
+	}
 
-	if checksum != string(sha) {
+	fmt.Println("checksum to process", checksum.Value())
+	sha := StringToSHA1(checksum.Value())
+	fmt.Println("Checksum processed", string(sha))
+
+	if checksum_param != string(sha) {
 		c.XML(http.StatusOK, error)
 		c.Abort()
 		return

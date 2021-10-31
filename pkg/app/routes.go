@@ -1,16 +1,16 @@
 package app
 
-func (s *Server) Init_routes() {
+func (s *Server) InitRoutes() {
 	router := s.router
 
 	base := router.Group("/bigbluebutton")
 	{
-		base.GET("", s.healthCheck)
+		base.GET("", s.HealthCheck)
 		api := base.Group("/api")
 		{
-			api.GET("", s.healthCheck)
-			api.Use(s.checksumValidation)
-			api.GET("/getMeetings", s.getMeetings)
+			api.GET("", s.HealthCheck)
+			api.Use(s.ChecksumValidation)
+			api.GET("/getMeetings", s.GetMeetings)
 		}
 	}
 }
