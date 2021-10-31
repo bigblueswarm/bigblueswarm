@@ -9,7 +9,7 @@ import (
 
 type Config struct {
 	BigBlueButton struct {
-		Secret string `mapstructure: "secret"`
+		Secret string `mapstructure:"secret"`
 	} `mapstructure:"bigbluebutton"`
 }
 
@@ -27,7 +27,10 @@ func Init() (*Config, error) {
 	}
 
 	var conf = &Config{}
-	config.BindStruct("", &conf)
+
+	if err := config.BindStruct("", &conf); err != nil {
+		return nil, err
+	}
 
 	return conf, nil
 }
