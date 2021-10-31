@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	conf, err := config.Init()
+	conf, err := config.Load()
 
 	if err != nil {
 		panic(fmt.Sprintf("Unable to load configuration: %s \n", err))

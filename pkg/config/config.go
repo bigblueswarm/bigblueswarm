@@ -15,7 +15,7 @@ type Config struct {
 
 var config_path string
 
-func Init() (*Config, error) {
+func Load() (*Config, error) {
 	flag.StringVar(&config_path, "config", "config.yml", "Config file path")
 	flag.Parse()
 
