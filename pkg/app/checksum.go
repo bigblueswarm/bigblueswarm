@@ -20,10 +20,14 @@ type Checksum struct {
 // 	},
 // }
 
-func StringToSHA1(value string) string {
+func StringToSHA1(value string) (string, error) {
 	hasher := sha1.New()
-	hasher.Write([]byte("getmeetings"))
-	return hex.EncodeToString(hasher.Sum(nil))
+
+	if _, err := hasher.Write([]byte("getmeetings")); err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
 func (c *Checksum) Value() string {

@@ -2,7 +2,6 @@ package app
 
 import (
 	"b3lb/pkg/api"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -32,9 +31,11 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 		Params: params,
 	}
 
-	fmt.Println("checksum to process", checksum.Value())
-	sha := StringToSHA1(checksum.Value())
-	fmt.Println("Checksum processed", string(sha))
+	sha, err := StringToSHA1(checksum.Value())
+
+	if err != nil {
+		panic(err)
+	}
 
 	if checksum_param != string(sha) {
 		c.XML(http.StatusOK, error)
