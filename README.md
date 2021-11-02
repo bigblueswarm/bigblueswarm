@@ -1,4 +1,5 @@
 # b3lb
+[![codecov](https://codecov.io/gh/SLedunois/b3lb/branch/main/graph/badge.svg?token=PUP086DAUJ)](https://codecov.io/gh/SLedunois/b3lb)
 
 `scripts` folder contains every script you need to build and develop.
 1. `init.sh`: Download and install go dependencies

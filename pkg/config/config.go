@@ -1,32 +1,27 @@
 package config
 
 import (
-	"flag"
-
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yaml"
 )
 
-type Config struct {
-	BigBlueButton struct {
-		Secret string `mapstructure:"secret"`
-	} `mapstructure:"bigbluebutton"`
+type BigBlueButton struct {
+	Secret string `mapstructure:"secret"`
 }
 
-var config_path string
+type Config struct {
+	BigBlueButton BigBlueButton `mapstructure:"bigbluebutton"`
+}
 
-func Load() (*Config, error) {
-	flag.StringVar(&config_path, "config", "config.yml", "Config file path")
-	flag.Parse()
-
+func Load(path string) (*Config, error) {
 	config.AddDriver(yaml.Driver)
-	err := config.LoadFiles(config_path)
+	err := config.LoadFiles(path)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var conf = &Config{}
+	conf := &Config{}
 
 	if err := config.BindStruct("", &conf); err != nil {
 		return nil, err

@@ -9,11 +9,7 @@ import (
 )
 
 func (s *Server) ChecksumValidation(c *gin.Context) {
-	error := &api.ChecksumError{
-		Return_code: "FAILED",
-		Message_key: "checksumError",
-		Message:     "You did not pass the checksum security check",
-	}
+	error := api.DefaultChecksumError()
 
 	checksum_param, exists := c.GetQuery("checksum")
 	if !exists {
@@ -26,7 +22,7 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 	params.Del("checksum")
 
 	checksum := &Checksum{
-		Secret: s.config.BigBlueButton.Secret,
+		Secret: s.Config.BigBlueButton.Secret,
 		Action: strings.TrimPrefix(c.FullPath(), "/bigbluebutton/api/"),
 		Params: params,
 	}
