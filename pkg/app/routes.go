@@ -1,7 +1,7 @@
 package app
 
 func (s *Server) InitRoutes() {
-	router := s.router
+	router := s.Router
 
 	base := router.Group("/bigbluebutton")
 	{

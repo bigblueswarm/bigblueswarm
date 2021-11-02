@@ -13,17 +13,10 @@ type Checksum struct {
 	Params url.Values
 }
 
-// params := []gin.Param {
-// 	{
-// 		Key: "azeae",
-// 		Value: "zaeea",
-// 	},
-// }
-
 func StringToSHA1(value string) (string, error) {
 	hasher := sha1.New()
 
-	if _, err := hasher.Write([]byte("getmeetings")); err != nil {
+	if _, err := hasher.Write([]byte(value)); err != nil {
 		return "", err
 	}
 
@@ -32,7 +25,7 @@ func StringToSHA1(value string) (string, error) {
 
 func (c *Checksum) Value() string {
 	result := c.Action
-	fmt.Println(c.Params)
+
 	for key, element := range c.Params {
 		for _, value := range element {
 			result += fmt.Sprintf("%s=%s", key, value)

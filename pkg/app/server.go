@@ -7,21 +7,21 @@ import (
 )
 
 type Server struct {
-	router *gin.Engine
-	config *config.Config
+	Router *gin.Engine
+	Config *config.Config
 }
 
 func NewServer(config *config.Config) *Server {
 	return &Server{
-		router: gin.Default(),
-		config: config,
+		Router: gin.Default(),
+		Config: config,
 	}
 }
 
 func (s *Server) Run() error {
 
 	s.InitRoutes()
-	err := s.router.Run(":8090")
+	err := s.Router.Run(":8090")
 
 	if err != nil {
 		return err

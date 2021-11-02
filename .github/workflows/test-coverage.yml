@@ -1,0 +1,14 @@
+name: codacy-coverage-reporter
+
+on: ["push"]
+
+jobs:
+  test-and-coverage:
+    runs-on: ubuntu-latest
+    name: test-and-coverage
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run test and coverage
+        run: ./scripts/test.sh
+      - name: Send coverage
+        run: CODACY_PROJECT_TOKEN=${{ secrets.CODACY_PROJECT_TOKEN }} bash <(curl -Ls https://coverage.codacy.com/get.sh) report --force-coverage-parser go -r coverage.out
