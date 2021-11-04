@@ -1,4 +1,5 @@
 # b3lb
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6765806e19e34318966fb49b58d1848b)](https://app.codacy.com/gh/SLedunois/b3lb?utm_source=github.com&utm_medium=referral&utm_content=SLedunois/b3lb&utm_campaign=Badge_Grade_Settings)
 [![codecov](https://codecov.io/gh/SLedunois/b3lb/branch/main/graph/badge.svg?token=PUP086DAUJ)](https://codecov.io/gh/SLedunois/b3lb)
 
 `scripts` folder contains every script you need to build and develop.
