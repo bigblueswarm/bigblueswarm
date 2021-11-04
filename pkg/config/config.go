@@ -5,14 +5,17 @@ import (
 	"github.com/gookit/config/v2/yaml"
 )
 
+// BigBlueButton configuration mapping
 type BigBlueButton struct {
 	Secret string `mapstructure:"secret"`
 }
 
+// Configuration mapping
 type Config struct {
 	BigBlueButton BigBlueButton `mapstructure:"bigbluebutton"`
 }
 
+// Load the configuration from the given path
 func Load(path string) (*Config, error) {
 	config.AddDriver(yaml.Driver)
 	err := config.LoadFiles(path)

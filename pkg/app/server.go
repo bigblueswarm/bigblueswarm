@@ -6,11 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Server struct represents an object containings the server router and its configuration
 type Server struct {
 	Router *gin.Engine
 	Config *config.Config
 }
 
+// Create a new server based on given configuration
 func NewServer(config *config.Config) *Server {
 	return &Server{
 		Router: gin.Default(),
@@ -18,6 +20,7 @@ func NewServer(config *config.Config) *Server {
 	}
 }
 
+// Launch the server
 func (s *Server) Run() error {
 
 	s.InitRoutes()
