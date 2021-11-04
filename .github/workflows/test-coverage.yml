@@ -1,8 +1,17 @@
-name: codacy-coverage-reporter
+name: Codacy Analysis CLI and coverage report
 
 on: ["push"]
 
 jobs:
+  codacy-analysis-cli:
+    name: Codacy Analysis CLI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@main
+
+      - name: Run Codacy Analysis CLI
+        uses: codacy/codacy-analysis-cli-action@master
   test-and-coverage:
     runs-on: ubuntu-latest
     name: test-and-coverage
