@@ -7,18 +7,14 @@ import (
 	"net/url"
 )
 
-/*
-	Checksum object.
-	In BigBlueButton authentication system, Checksum represents an action name, all parameters
-	and a secret concatenated in a single string that is hashed by SHA1.
-*/
+// Checksum in BigBlueButton authentication system represents an action name, all parameters and a secret concatenated in a single string that is hashed by SHA1.
 type Checksum struct {
 	Secret string
 	Action string
 	Params url.Values
 }
 
-// Returns the string value hashed with SHA1 algorithm
+// StringToSHA1 returns the string value hashed with SHA1 algorithm
 func StringToSHA1(value string) (string, error) {
 	hasher := sha1.New()
 
@@ -29,7 +25,7 @@ func StringToSHA1(value string) (string, error) {
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
-// Compute the checksum string. It does not hash the value into SHA1 string
+// Value compute the checksum string. It does not hash the value into SHA1 string
 func (c *Checksum) Value() string {
 	result := c.Action
 

@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Handler returning an health check response
+// HealthCheck handler returns an health check response
 func (s *Server) HealthCheck(c *gin.Context) {
 	status := &api.HealtCheck{
 		ReturnCode: "SUCCESS",
@@ -17,7 +17,7 @@ func (s *Server) HealthCheck(c *gin.Context) {
 	c.XML(http.StatusOK, status)
 }
 
-// Handler returning the getMeetings API. See https://docs.bigbluebutton.org/dev/api.html#getmeetings.
+// GetMeetings handler returns the getMeetings API. See https://docs.bigbluebutton.org/dev/api.html#getmeetings.
 func (s *Server) GetMeetings(c *gin.Context) {
 	c.String(http.StatusOK, c.FullPath())
 }

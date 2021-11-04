@@ -12,7 +12,7 @@ type Server struct {
 	Config *config.Config
 }
 
-// Create a new server based on given configuration
+// NewServer creates a new server based on given configuration
 func NewServer(config *config.Config) *Server {
 	return &Server{
 		Router: gin.Default(),
@@ -20,7 +20,7 @@ func NewServer(config *config.Config) *Server {
 	}
 }
 
-// Launch the server
+// Run launches the server
 func (s *Server) Run() error {
 
 	s.InitRoutes()

@@ -1,6 +1,6 @@
 package app
 
-// Init server routes
+// InitRoutes init server routes
 func (s *Server) InitRoutes() {
 	router := s.Router
 

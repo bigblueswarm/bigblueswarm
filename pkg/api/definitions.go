@@ -2,14 +2,14 @@ package api
 
 import "encoding/xml"
 
-// Represents the healthcheck response
+// HealtCheck represents the healthcheck response
 type HealtCheck struct {
 	XMLName    xml.Name `xml:"response"`
 	ReturnCode string   `xml:"returncode"`
 	Version    string   `xml:"version"`
 }
 
-// Represents the checksum error response
+// ChecksumError represents the checksum error response
 type ChecksumError struct {
 	XMLName    xml.Name `xml:"response"`
 	ReturnCode string   `xml:"returncode"`
@@ -17,7 +17,7 @@ type ChecksumError struct {
 	Message    string   `xml:"message"`
 }
 
-// Returns a default checksum error
+// DefaultChecksumError returns a default checksum error
 func DefaultChecksumError() *ChecksumError {
 	return &ChecksumError{
 		ReturnCode: "FAILED",

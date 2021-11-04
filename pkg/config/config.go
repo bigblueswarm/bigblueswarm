@@ -10,7 +10,7 @@ type BigBlueButton struct {
 	Secret string `mapstructure:"secret"`
 }
 
-// Configuration mapping
+// Config represents main configuration mapping
 type Config struct {
 	BigBlueButton BigBlueButton `mapstructure:"bigbluebutton"`
 }

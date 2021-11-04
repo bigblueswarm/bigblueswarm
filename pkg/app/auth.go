@@ -8,10 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/*
-	ChecksumValidation handler validate all requests checksum and returns an error if
-	the checksum is not int the request or if the checksum is invalid
-*/
+// ChecksumValidation handler validate all requests checksum and returns an error if the checksum is not int the request or if the checksum is invalid
 func (s *Server) ChecksumValidation(c *gin.Context) {
 	error := api.DefaultChecksumError()
 
