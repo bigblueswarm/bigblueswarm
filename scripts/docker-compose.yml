@@ -30,4 +30,11 @@ services:
       - DOCKER_INFLUXDB_INIT_BUCKET=bucket
     ports:
       - "8086:8086"
-
+  redis:
+    container_name: redis
+    image: redis:6.2-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=password
