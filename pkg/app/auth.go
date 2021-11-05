@@ -42,3 +42,21 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 
 	c.Next()
 }
+
+// APIKeyValidation check that the request contains an api key provided by Authorization header
+func (s *Server) APIKeyValidation(c *gin.Context) {
+
+	auth := c.Request.Header.Get("Authorization")
+	auth = strings.TrimSpace(auth)
+	if auth == "" {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	if auth != s.Config.APIKey {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	c.Next()
+}

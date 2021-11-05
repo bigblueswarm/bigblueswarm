@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sudo apt install httpie
+
 go get -u github.com/gin-gonic/gin
 
 # pre-commit installation

@@ -5,9 +5,12 @@ import (
 	"b3lb/pkg/config"
 	"flag"
 	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
+	initLog()
 	conf, err := config.Load(configPath())
 
 	if err != nil {
@@ -17,6 +20,13 @@ func main() {
 	if err := run(*conf); err != nil {
 		panic(fmt.Sprintf("Server can't start: %s\n", err))
 	}
+}
+
+func initLog() {
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
+	log.SetReportCaller(true)
 }
 
 func configPath() string {

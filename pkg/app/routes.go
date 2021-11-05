@@ -1,7 +1,6 @@
 package app
 
-// InitRoutes init server routes
-func (s *Server) InitRoutes() {
+func (s *Server) initRoutes() {
 	router := s.Router
 
 	base := router.Group("/bigbluebutton")
@@ -13,5 +12,13 @@ func (s *Server) InitRoutes() {
 			api.Use(s.ChecksumValidation)
 			api.GET("/getMeetings", s.GetMeetings)
 		}
+	}
+	admin := router.Group("/admin")
+	{
+		admin.Use(s.APIKeyValidation)
+		servers := admin.Group("/servers")
+		servers.Handle("GET", "", s.ListInstances)
+		servers.Handle("POST", "", s.AddInstance)
+		servers.Handle("DELETE", "", s.DeleteInstance)
 	}
 }

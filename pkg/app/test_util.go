@@ -11,15 +11,31 @@ import (
 
 func launchRouter(config *config.Config) *gin.Engine {
 	server := NewServer(config)
-	server.InitRoutes()
-
+	server.initRoutes()
 	return server.Router
 }
 
 func executeRequest(router *gin.Engine, method string, path string, body io.Reader) *httptest.ResponseRecorder {
+	return executeRequestWithHeaders(router, method, path, body, nil)
+}
+
+func executeRequestWithHeaders(router *gin.Engine, method string, path string, body io.Reader, headers map[string]string) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(method, path, body)
+
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+
 	router.ServeHTTP(w, req)
 
 	return w
 }
+
+func defaultAPIKey() string {
+	return "supersecret"
+}
+
+/*func defaultSecret() string {
+	return "supersecret"
+}*/
