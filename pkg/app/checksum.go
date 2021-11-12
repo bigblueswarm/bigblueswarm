@@ -31,9 +31,14 @@ func (c *Checksum) Value() string {
 
 	for key, element := range c.Params {
 		for _, value := range element {
-			result += fmt.Sprintf("%s=%s", key, value)
+			result += fmt.Sprintf("%s=%s&", key, value)
 		}
 	}
+
+	if len(c.Params) > 0 {
+		result = result[:len(result)-1]
+	}
+
 	result += c.Secret
 
 	return result
