@@ -10,7 +10,7 @@ type HealtCheck struct {
 }
 
 // ChecksumError represents the checksum error response
-type ChecksumError struct {
+type APIError struct {
 	XMLName    xml.Name `xml:"response"`
 	ReturnCode string   `xml:"returncode"`
 	MessageKey string   `xml:"messageKey"`
@@ -18,10 +18,18 @@ type ChecksumError struct {
 }
 
 // DefaultChecksumError returns a default checksum error
-func DefaultChecksumError() *ChecksumError {
-	return &ChecksumError{
+func DefaultChecksumError() *APIError {
+	return &APIError{
 		ReturnCode: "FAILED",
 		MessageKey: "checksumError",
 		Message:    "You did not pass the checksum security check",
+	}
+}
+
+func Error(key string, message string) *APIError {
+	return &APIError{
+		ReturnCode: "FAILED",
+		MessageKey: key,
+		Message:    message,
 	}
 }
