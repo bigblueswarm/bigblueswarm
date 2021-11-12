@@ -20,17 +20,44 @@ func TestStringToSHA1(t *testing.T) {
 }
 
 func TestChecksumValue(t *testing.T) {
-	params := &url.Values{}
-	params.Set("name", "supername")
-	secret := "supersecret"
-	action := "getmeetings"
-
-	checksum := &Checksum{
-		Secret: secret,
-		Action: action,
-		Params: *params,
+	type test struct {
+		name       string
+		parameters *url.Values
+		action     string
+		expected   string
 	}
 
-	assert.Equal(t, checksum.Value(), "getmeetingsname=supernamesupersecret")
+	secret := "supersecret"
 
+	tests := []test{
+		{
+			name: "Checksum value with 1 parameter should does not contains any &",
+			parameters: &url.Values{
+				"name": []string{"supername"},
+			},
+			action:   "getmeetings",
+			expected: "getmeetingsname=supername" + secret,
+		},
+		{
+			name: "Checksum value with 2 parameters should contains some &",
+			parameters: &url.Values{
+				"name":      []string{"supername"},
+				"meetingID": []string{"1"},
+			},
+			action:   "getmeetings",
+			expected: "getmeetingsname=supername&meetingID=1" + secret,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			checksum := &Checksum{
+				Secret: secret,
+				Action: test.action,
+				Params: *test.parameters,
+			}
+
+			assert.Equal(t, checksum.Value(), test.expected)
+		})
+	}
 }
