@@ -94,7 +94,7 @@ func TestApiKeyValidation(t *testing.T) {
 	router := launchRouter(&config.Config{
 		APIKey: defaultAPIKey(),
 		RDB: config.RDB{
-			Address:  container.URI,
+			Address:  redisContainer.URI,
 			Password: "",
 			DB:       0,
 		},

@@ -1,7 +1,7 @@
 package app
 
 import (
-	"b3lb/pkg/admin"
+	"b3lb/pkg/api"
 
 	"net/http"
 
@@ -11,13 +11,13 @@ import (
 
 // AddInstance insert the body into the database.
 func (s *Server) AddInstance(c *gin.Context) {
-	instance := &admin.BigBlueButtonInstance{}
+	instance := &api.BigBlueButtonInstance{}
 	if err := c.ShouldBind(&instance); err != nil || (instance.Secret == "" || instance.URL == "") {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	exists, err := s.Manager.Exists(*instance)
+	exists, err := s.InstanceManager.Exists(*instance)
 
 	if err != nil {
 		log.Error("Failed to check if instance already exists", err)
@@ -31,7 +31,7 @@ func (s *Server) AddInstance(c *gin.Context) {
 		return
 	}
 
-	if err := s.Manager.Add(*instance); err != nil {
+	if err := s.InstanceManager.Add(*instance); err != nil {
 		log.Error("Failed to add new instance", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 	} else {
@@ -41,7 +41,7 @@ func (s *Server) AddInstance(c *gin.Context) {
 
 // ListInstances returns Bigbluebutton instance list
 func (s *Server) ListInstances(c *gin.Context) {
-	instances, err := s.Manager.List()
+	instances, err := s.InstanceManager.List()
 	if err != nil {
 		log.Error("Failed to list instances", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -54,7 +54,7 @@ func (s *Server) ListInstances(c *gin.Context) {
 // DeleteInstance deletes an instance
 func (s *Server) DeleteInstance(c *gin.Context) {
 	if URL, ok := c.GetQuery("url"); ok {
-		exists, err := s.Manager.Exists(admin.BigBlueButtonInstance{URL: URL})
+		exists, err := s.InstanceManager.Exists(api.BigBlueButtonInstance{URL: URL})
 
 		if err != nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
@@ -66,7 +66,7 @@ func (s *Server) DeleteInstance(c *gin.Context) {
 			return
 		}
 
-		if err := s.Manager.Remove(URL); err != nil {
+		if err := s.InstanceManager.Remove(URL); err != nil {
 			log.Error("Failed to delete instance", err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return

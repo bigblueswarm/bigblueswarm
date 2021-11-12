@@ -3,10 +3,16 @@ package app
 import (
 	"b3lb/pkg/api"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
+
+func processParameters(query string) string {
+	reg := regexp.MustCompile(`&?checksum(=[^&]*&?)`)
+	return reg.ReplaceAllString(query, "")
+}
 
 // ChecksumValidation handler validate all requests checksum and returns an error if the checksum is not int the request or if the checksum is invalid
 func (s *Server) ChecksumValidation(c *gin.Context) {
@@ -19,19 +25,17 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 		return
 	}
 
-	params := c.Request.URL.Query()
-	params.Del("checksum")
-
-	checksum := &Checksum{
+	checksum := &api.Checksum{
 		Secret: s.Config.BigBlueButton.Secret,
 		Action: strings.TrimPrefix(c.FullPath(), "/bigbluebutton/api/"),
-		Params: params,
+		Params: processParameters(c.Request.URL.RawQuery),
 	}
 
-	sha, err := StringToSHA1(checksum.Value())
+	sha, err := checksum.Process()
 
 	if err != nil {
-		panic(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
 
 	if checksumParam != string(sha) {
@@ -39,6 +43,8 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 		c.Abort()
 		return
 	}
+
+	setAPIContext(c, checksum)
 
 	c.Next()
 }
@@ -59,4 +65,12 @@ func (s *Server) APIKeyValidation(c *gin.Context) {
 	}
 
 	c.Next()
+}
+
+func setAPIContext(c *gin.Context, checksum *api.Checksum) {
+	c.Set("api_ctx", checksum)
+}
+
+func getAPIContext(c *gin.Context) *api.Checksum {
+	return c.MustGet("api_ctx").(*api.Checksum)
 }

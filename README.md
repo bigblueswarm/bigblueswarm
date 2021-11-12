@@ -30,9 +30,30 @@ Then launch your local cluster with:
 ./scripts/cluster.sh --start
 ```
 
-Connect on InfluxDB server and create an authentication token then configure your cluster to use it
+Init the cluster with:
 ```shell
-./scripts/cluster.sh --set-token [token]
+./scripts/cluster.sh --init
+```
+It initializes the influx db cluster by creating a user, an organization and a bucket. It also set the token into BigBlueButton containers.
+By default, it creates the user `admin` with the password `password`
+
+Call api using `api.sh` script. For example create a room using:
+```shell
+./scripts/api.sh --create
+```
+For more information, use the help method.
+```shell
+./scripts/api.sh --help
+```
+
+Call admin function using `admin.sh` script. For example, add a bigbluebutton instance using:
+```shell
+./scripts/admin.sh --create
+```
+
+For more information, use the help method.
+```shell
+./scripts/admin.sh --help
 ```
 
 ## POC
@@ -53,3 +74,35 @@ from(bucket: "bucket")
   |> group(columns: ["_time"])
   |> top(n:1, columns:["_value"])
 ```
+
+```influxQL
+from(bucket: "bucket")
+  |> range(start: -5m)
+  |> filter(fn: (r) => r["_measurement"] == "cpu" or r["_measurement"] == "mem")
+  |> filter(fn: (r) => r["_field"] == "usage_system" or r["_field"] == "used_percent")
+  |> filter(fn: (r) => r["cpu"] == "cpu-total" or r["_measurement"] == "mem")
+  |> filter(fn: (r) => r["host"] == "28fca396fba6" or r["host"] == "d25f727605e0")
+  |> group(columns: ["host"])
+  |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+  |> map(fn: (r) => ({ r with _value: r["usage_system"] + r["used_percent"] }))
+  |> lowestAverage(n: 1, column: "_value", groupColumns: ["host", "_time"])
+```
+
+```influxQL
+from(bucket: "bucket")
+  |> range(start: -5m)
+  |> filter(fn: (r) => r["_measurement"] == "cpu" or r["_measurement"] == "mem")
+  |> filter(fn: (r) => r["_field"] == "usage_system" or r["_field"] == "used_percent")
+  |> filter(fn: (r) => r["cpu"] == "cpu-total" or r["_measurement"] == "mem")
+  |> filter(fn: (r) => r["b3lb_host"] == "http://localhost/bigbluebutton" or r["b3lb_host"] == "http://localhost:8080/bigbluebutton")
+  |> group(columns: ["b3lb_host"])
+  |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+  |> map(fn: (r) => ({ r with _value: r["usage_system"] + r["used_percent"] }))
+  |> lowestAverage(n: 1, column: "_value", groupColumns: ["b3lb_host", "_time"])
+```
+
+Check join method: https://docs.influxdata.com/influxdb/v2.1/reference/syntax/flux/flux-vs-influxql/#joins
+
+## InfluxDB client
+
+https://github.com/influxdata/influxdb-client-go#how-to-use
