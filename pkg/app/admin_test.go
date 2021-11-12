@@ -2,7 +2,9 @@ package app
 
 import (
 	"b3lb/pkg/config"
+	"b3lb/pkg/utils"
 	"bytes"
+	"encoding/json"
 	"io"
 	"testing"
 
@@ -41,7 +43,7 @@ func TestAddInstance(t *testing.T) {
 	router := launchRouter(&config.Config{
 		APIKey: defaultAPIKey(),
 		RDB: config.RDB{
-			Address:  container.URI,
+			Address:  redisContainer.URI,
 			Password: "",
 			DB:       0,
 		},
@@ -68,7 +70,7 @@ func TestListInstances(t *testing.T) {
 	router := launchRouter(&config.Config{
 		APIKey: defaultAPIKey(),
 		RDB: config.RDB{
-			Address:  container.URI,
+			Address:  redisContainer.URI,
 			Password: "",
 			DB:       0,
 		},
@@ -80,7 +82,13 @@ func TestListInstances(t *testing.T) {
 
 	w := executeRequestWithHeaders(router, "GET", "/admin/servers", nil, headers)
 	assert.Equal(t, 200, w.Code)
-	assert.Equal(t, `["http://localhost/bigbluebutton"]`, w.Body.String())
+	var arr []string
+	err := json.Unmarshal(w.Body.Bytes(), &arr)
+	if err != nil {
+		panic(err)
+	}
+
+	assert.Equal(t, utils.ArrayContainsString(arr, "http://localhost/bigbluebutton"), true)
 }
 
 func TestDeleteInstance(t *testing.T) {
@@ -112,7 +120,7 @@ func TestDeleteInstance(t *testing.T) {
 	router := launchRouter(&config.Config{
 		APIKey: defaultAPIKey(),
 		RDB: config.RDB{
-			Address:  container.URI,
+			Address:  redisContainer.URI,
 			Password: "",
 			DB:       0,
 		},

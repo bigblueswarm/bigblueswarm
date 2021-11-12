@@ -3,54 +3,48 @@ package app
 import (
 	"b3lb/pkg/config"
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-type redisContainer struct {
-	testcontainers.Container
-	URI string
-}
-
-var container redisContainer
+var redisContainer Container
+var influxDBContainer Container
+var bbbContainers []*Container
 
 func TestMain(m *testing.M) {
 	ctx := context.Background()
-	req := testcontainers.ContainerRequest{
-		Name:         "tc_redis",
-		Image:        "redis:6.2-alpine",
-		ExposedPorts: []string{"6379/tcp"},
-		WaitingFor:   wait.ForLog("Ready to accept connections"),
-	}
-	redis, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
 
-	if err != nil {
-		panic(err)
+	redisContainer = *initRedisContainer()
+	influxDBContainer = *initInfluxDBContainer()
+	bbbContainers = []*Container{
+		initBigBlueButtonContainer("tc_bbb1", "80/tcp"),
+		initBigBlueButtonContainer("tc_bbb2", "80/tcp"),
 	}
 
-	endpoint, endpointErr := redis.Endpoint(ctx, "")
-
-	if endpointErr != nil {
-		panic(err)
-	}
-
-	container = redisContainer{
-		Container: redis,
-		URI:       endpoint,
-	}
+	writeIDBData(fmt.Sprintf("http://%s", influxDBContainer.URI), bbbContainers)
+	insertBBBInstances(redisContainer, bbbContainers)
+	setBBBSecret(bbbContainers)
 
 	status := m.Run()
 
-	terminationErr := redis.Terminate(ctx)
-	if terminationErr != nil {
-		panic(err)
+	rTErr := redisContainer.Container.Terminate(ctx)
+	if rTErr != nil {
+		panic(rTErr)
+	}
+
+	iDBTErr := influxDBContainer.Container.Terminate(ctx)
+	if iDBTErr != nil {
+		panic(iDBTErr)
+	}
+
+	for _, bbb := range bbbContainers {
+		bbbErr := bbb.Container.Terminate(ctx)
+		if bbbErr != nil {
+			panic(bbbErr)
+		}
 	}
 
 	os.Exit(status)

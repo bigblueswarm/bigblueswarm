@@ -1,9 +1,7 @@
-package app
+package api
 
 import (
 	"testing"
-
-	"net/url"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,7 +20,7 @@ func TestStringToSHA1(t *testing.T) {
 func TestChecksumValue(t *testing.T) {
 	type test struct {
 		name       string
-		parameters *url.Values
+		parameters string
 		action     string
 		expected   string
 	}
@@ -31,21 +29,16 @@ func TestChecksumValue(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "Checksum value with 1 parameter should does not contains any &",
-			parameters: &url.Values{
-				"name": []string{"supername"},
-			},
-			action:   "getmeetings",
-			expected: "getmeetingsname=supername" + secret,
+			name:       "Checksum value with 1 parameter should does not contains any &",
+			parameters: "name=supername",
+			action:     "getmeetings",
+			expected:   "getmeetingsname=supername" + secret,
 		},
 		{
-			name: "Checksum value with 2 parameters should contains some &",
-			parameters: &url.Values{
-				"name":      []string{"supername"},
-				"meetingID": []string{"1"},
-			},
-			action:   "getmeetings",
-			expected: "getmeetingsname=supername&meetingID=1" + secret,
+			name:       "Checksum value with 2 parameters should contains some &",
+			parameters: "name=supername&meetingID=1",
+			action:     "getmeetings",
+			expected:   "getmeetingsname=supername&meetingID=1" + secret,
 		},
 	}
 
@@ -54,7 +47,7 @@ func TestChecksumValue(t *testing.T) {
 			checksum := &Checksum{
 				Secret: secret,
 				Action: test.action,
-				Params: *test.parameters,
+				Params: test.parameters,
 			}
 
 			assert.Equal(t, checksum.Value(), test.expected)

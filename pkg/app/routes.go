@@ -10,6 +10,7 @@ func (s *Server) initRoutes() {
 		{
 			api.GET("", s.HealthCheck)
 			api.Use(s.ChecksumValidation)
+			api.GET("/create", s.Create)
 			api.GET("/getMeetings", s.GetMeetings)
 		}
 	}
