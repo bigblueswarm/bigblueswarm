@@ -2,6 +2,7 @@
 bigbluebutton:
   secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU
 api_key: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R
+port: 8090
 redis:
   address: localhost:6379
   password:

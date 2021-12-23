@@ -29,6 +29,7 @@ type IDB struct {
 type Config struct {
 	BigBlueButton BigBlueButton `mapstructure:"bigbluebutton"`
 	APIKey        string        `mapstructure:"api_key"`
+	Port          int           `mapstructure:"port"`
 	RDB           RDB           `mapstructure:"redis"`
 	IDB           IDB           `mapstructure:"influxdb"`
 }
@@ -46,6 +47,10 @@ func Load(path string) (*Config, error) {
 
 	if err := config.BindStruct("", &conf); err != nil {
 		return nil, err
+	}
+
+	if conf.Port == 0 {
+		conf.Port = 8080
 	}
 
 	return conf, nil
