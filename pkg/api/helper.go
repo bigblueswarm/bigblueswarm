@@ -23,3 +23,12 @@ func CreateError(key string, message string) *Error {
 		},
 	}
 }
+
+// CreateChecksum returns a checksum given a secret, action and params
+func CreateChecksum(secret string, action string, params string) *Checksum {
+	return &Checksum{
+		Secret: secret,
+		Action: action,
+		Params: params,
+	}
+}

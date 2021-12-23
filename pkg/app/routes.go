@@ -12,8 +12,10 @@ func (s *Server) initRoutes() {
 			api.Use(s.ChecksumValidation)
 			api.GET("/create", s.Create)
 			api.GET("/getMeetings", s.GetMeetings)
+			api.GET("/join", s.Join)
 		}
 	}
+
 	admin := router.Group("/admin")
 	{
 		admin.Use(s.APIKeyValidation)

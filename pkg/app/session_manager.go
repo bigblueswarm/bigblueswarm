@@ -25,3 +25,10 @@ func (m *SessionManager) Add(sessionID string, host string) error {
 
 	return utils.ComputeErr(err)
 }
+
+// Get retrieve the session from the redis database
+func (m *SessionManager) Get(sessionID string) (string, error) {
+	host, err := m.RDB.Get(context.Background(), sessionID).Result()
+
+	return host, utils.ComputeErr(err)
+}
