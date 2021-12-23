@@ -58,3 +58,23 @@ func TestHealthCheckRoute(t *testing.T) {
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, response, w.Body.String())
 }
+
+func defaultConfig() *config.Config {
+	return &config.Config{
+		BigBlueButton: config.BigBlueButton{
+			Secret: "secret",
+		},
+		APIKey: defaultAPIKey(),
+		RDB: config.RDB{
+			Address:  redisContainer.URI,
+			Password: "",
+			DB:       0,
+		},
+		IDB: config.IDB{
+			Address:      fmt.Sprintf("http://%s", influxDBContainer.URI),
+			Token:        influxDBToken,
+			Bucket:       influxDBBucket,
+			Organization: influxDBOrg,
+		},
+	}
+}

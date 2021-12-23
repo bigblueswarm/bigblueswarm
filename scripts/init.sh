@@ -1,7 +1,5 @@
 #!/bin/bash
 
-sudo apt install httpie
-
 go get -u github.com/gin-gonic/gin
 
 # pre-commit installation
@@ -16,3 +14,5 @@ pre-commit install
 npm install --save-dev @commitlint/{config-conventional,cli} husky
 npx husky install
 npx husky add .husky/commit-msg "npx --no -- commitlint --edit \"$1\""
+
+sudo apt-get install tidy

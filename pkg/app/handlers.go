@@ -65,3 +65,43 @@ func (s *Server) Create(c *gin.Context) {
 
 	c.XML(http.StatusOK, apiResponse)
 }
+
+// Join handler join provided session. See https://docs.bigbluebutton.org/dev/api.html#join
+func (s *Server) Join(c *gin.Context) {
+	ctx := getAPIContext(c)
+	meetingID, exists := c.GetQuery("meetingID")
+	if !exists {
+		log.Error("Missing meetingID parameter")
+		c.XML(http.StatusOK, api.CreateError(api.ValidationErrorMessageKey, api.EmptyMeetingIDMessage))
+		return
+	}
+
+	host, err := s.SessionManager.Get(meetingID)
+	if err != nil {
+		log.Error("SessionManager failed to retrieve session", err)
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	if host == "" {
+		log.Error("SessionManager failed to retrieve session host")
+		c.XML(http.StatusOK, api.CreateError(api.NotFoundMessageKey, api.NotFoundMeetingIDMessage))
+		return
+	}
+
+	instance, err := s.InstanceManager.Get(host)
+	if err != nil {
+		log.Error("Manager failed to retrieve target instance for current request", err)
+		c.XML(http.StatusOK, api.CreateError(api.NotFoundMessageKey, api.NotFoundMeetingIDMessage))
+		return
+	}
+
+	redirectURL, err := instance.GetJoinRedirectURL(ctx.Params)
+	if err != nil {
+		log.Error("An error occurred while retrieving redirect URL on session join", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, redirectURL)
+}

@@ -2,9 +2,8 @@ package app
 
 import (
 	"b3lb/pkg/api"
-	"b3lb/pkg/config"
 	"encoding/xml"
-	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,22 +19,7 @@ func TestCreate(t *testing.T) {
 		expectedSessionID string
 	}
 
-	router := launchRouter(&config.Config{
-		BigBlueButton: config.BigBlueButton{
-			Secret: "secret",
-		},
-		RDB: config.RDB{
-			Address:  redisContainer.URI,
-			Password: "",
-			DB:       0,
-		},
-		IDB: config.IDB{
-			Address:      fmt.Sprintf("http://%s", influxDBContainer.URI),
-			Token:        influxDBToken,
-			Bucket:       influxDBBucket,
-			Organization: influxDBOrg,
-		},
-	})
+	router := launchRouter(defaultConfig())
 
 	tests := []test{
 		{
@@ -56,7 +40,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			name:              "Valid create call should create a meeting",
-			url:               "/bigbluebutton/api/create?name=doe&meetingID=id&checksum=62b3012fb88e9c468782e021ea20cded09cec0b4",
+			url:               "/bigbluebutton/api/create?name=doe&meetingID=id&moderatorPW=pwd&checksum=f4db98b7cab8ebc1df423e547ed3fa995d13ad72",
 			expectedCode:      api.SuccessReturnCode,
 			expectedKey:       "",
 			expectedMessage:   "",
@@ -72,11 +56,34 @@ func TestCreate(t *testing.T) {
 				panic(err)
 			}
 
-			assert.Equal(t, 200, w.Code)
+			assert.Equal(t, http.StatusOK, w.Code)
 			assert.Equal(t, test.expectedCode, response.ReturnCode)
 			assert.Equal(t, test.expectedKey, response.MessageKey)
 			assert.Equal(t, test.expectedMessage, response.Message)
 			assert.Equal(t, test.expectedSessionID, response.MeetingID)
 		})
 	}
+}
+
+func TestJoin(t *testing.T) {
+	router := launchRouter(defaultConfig())
+
+	t.Run("Joining a non existing session should returns a notFound error", func(t *testing.T) {
+		w := executeRequest(router, "GET", "/bigbluebutton/api/join?meetingID=123&fullName=Simon&password=pwd&checksum=9215d3a80656cf2aa7e2a772e27fbfe7e3e4ddc8", nil)
+		var response api.Error
+		if err := xml.Unmarshal(w.Body.Bytes(), &response); err != nil {
+			panic(err)
+		}
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, api.FailedReturnCode, response.ReturnCode)
+		assert.Equal(t, api.NotFoundMessageKey, response.MessageKey)
+		assert.Equal(t, api.NotFoundMeetingIDMessage, response.Message)
+	})
+
+	t.Run("Joining a session should redirect", func(t *testing.T) {
+		w := executeRequest(router, "GET", "/bigbluebutton/api/join?meetingID=id&fullName=Simon&password=pwd&checksum=561af1e2093bba548d1c66b66a4484a93f3d5c80", nil)
+
+		assert.Equal(t, http.StatusFound, w.Code)
+	})
 }
