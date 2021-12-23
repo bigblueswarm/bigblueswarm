@@ -3,6 +3,7 @@ package app
 import (
 	"b3lb/pkg/admin"
 	"b3lb/pkg/config"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,7 +34,7 @@ func NewServer(config *config.Config) *Server {
 // Run launches the server
 func (s *Server) Run() error {
 	s.initRoutes()
-	err := s.Router.Run(":8090")
+	err := s.Router.Run(fmt.Sprintf(":%d", s.Config.Port))
 
 	if err != nil {
 		return err
