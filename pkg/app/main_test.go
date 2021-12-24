@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"os"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var redisContainer Container
@@ -48,15 +46,6 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(status)
-}
-
-func TestHealthCheckRoute(t *testing.T) {
-	router := launchRouter(&config.Config{})
-	w := executeRequest(router, "GET", "/bigbluebutton/api", nil)
-
-	response := "<response><returncode>SUCCESS</returncode><version>2.0</version></response>"
-	assert.Equal(t, 200, w.Code)
-	assert.Equal(t, response, w.Body.String())
 }
 
 func defaultConfig() *config.Config {
