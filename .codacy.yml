@@ -1,0 +1,4 @@
+---
+exclude_paths:
+  - "internal/**"
+  - "**/*_test.go"
