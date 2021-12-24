@@ -3,6 +3,7 @@ package app
 import (
 	"b3lb/pkg/admin"
 	"b3lb/pkg/config"
+	"b3lb/pkg/utils"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -19,8 +20,8 @@ type Server struct {
 
 // NewServer creates a new server based on given configuration
 func NewServer(config *config.Config) *Server {
-	redisClient := redisClient(config)
-	influxClient := influxDBClient(config)
+	redisClient := utils.RedisClient(config)
+	influxClient := utils.InfluxDBClient(config)
 
 	return &Server{
 		Router:          gin.Default(),

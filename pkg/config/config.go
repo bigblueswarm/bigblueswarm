@@ -25,10 +25,15 @@ type IDB struct {
 	Bucket       string `mapstructure:"bucket"`
 }
 
+// AdminConfig represents the admin configuration
+type AdminConfig struct {
+	APIKey string `mapstructure:"api_key"`
+}
+
 // Config represents main configuration mapping
 type Config struct {
 	BigBlueButton BigBlueButton `mapstructure:"bigbluebutton"`
-	APIKey        string        `mapstructure:"api_key"`
+	Admin         AdminConfig   `mapstructure:"api_key"`
 	Port          int           `mapstructure:"port"`
 	RDB           RDB           `mapstructure:"redis"`
 	IDB           IDB           `mapstructure:"influxdb"`

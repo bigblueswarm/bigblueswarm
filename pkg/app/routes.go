@@ -1,5 +1,7 @@
 package app
 
+import "b3lb/pkg/admin"
+
 func (s *Server) initRoutes() {
 	router := s.Router
 
@@ -16,12 +18,5 @@ func (s *Server) initRoutes() {
 		}
 	}
 
-	admin := router.Group("/admin")
-	{
-		admin.Use(s.APIKeyValidation)
-		servers := admin.Group("/servers")
-		servers.Handle("GET", "", s.ListInstances)
-		servers.Handle("POST", "", s.AddInstance)
-		servers.Handle("DELETE", "", s.DeleteInstance)
-	}
+	admin.CreateAdmin(s.InstanceManager, &s.Config.Admin).InitRoutes(router)
 }
