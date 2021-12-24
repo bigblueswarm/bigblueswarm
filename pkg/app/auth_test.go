@@ -1,10 +1,10 @@
 package app
 
 import (
+	TestUtil "b3lb/internal/test"
 	"b3lb/pkg/api"
 	"b3lb/pkg/config"
 	"encoding/xml"
-	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -51,59 +51,9 @@ func TestChecksumValidation(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			w := executeRequest(router, "GET", test.url, nil)
+			w := TestUtil.ExecuteRequest(router, "GET", test.url, nil)
 			assert.Equal(t, 200, w.Code)
 			assert.Equal(t, test.expectedBody, w.Body.String())
-		})
-	}
-}
-
-func TestApiKeyValidation(t *testing.T) {
-	type test struct {
-		name           string
-		headers        map[string]string
-		expectedStatus int
-		body           io.Reader
-	}
-
-	tests := []test{
-		{
-			name: "An invalid api key should returns an unauthorized error",
-			headers: map[string]string{
-				"Authorization": defaultAPIKey() + "dummy",
-			},
-			expectedStatus: 401,
-			body:           nil,
-		},
-		{
-			name:           "An empty api key should returns an unauthorized error",
-			headers:        map[string]string{},
-			expectedStatus: 401,
-			body:           nil,
-		},
-		{
-			name: "A valid api key should go through the api key validation middleware",
-			headers: map[string]string{
-				"Authorization": defaultAPIKey(),
-			},
-			expectedStatus: 400,
-			body:           nil,
-		},
-	}
-
-	router := launchRouter(&config.Config{
-		APIKey: defaultAPIKey(),
-		RDB: config.RDB{
-			Address:  redisContainer.URI,
-			Password: "",
-			DB:       0,
-		},
-	})
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			w := executeRequestWithHeaders(router, "POST", "/admin/servers", test.body, test.headers)
-			assert.Equal(t, test.expectedStatus, w.Code)
 		})
 	}
 }

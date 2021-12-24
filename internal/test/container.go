@@ -1,57 +1,28 @@
-package app
+package test
 
 import (
-	"b3lb/pkg/admin"
-	"b3lb/pkg/api"
-	"b3lb/pkg/config"
 	"context"
 	"fmt"
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"os/exec"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-const influxDBToken string = "Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg=="
-const influxDBOrg string = "b3lb"
-const influxDBBucket string = "bucket"
+// InfluxDBToken define the default influxdb token
+const InfluxDBToken string = "Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg=="
 
-const bbbSecret = "0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU"
+// InfluxDBOrg define the default influxdb org
+const InfluxDBOrg string = "b3lb"
 
-func launchRouter(config *config.Config) *gin.Engine {
-	server := NewServer(config)
-	server.initRoutes()
-	return server.Router
-}
+// InfluxDBBucket define the default influxdb bucket
+const InfluxDBBucket string = "bucket"
 
-func executeRequest(router *gin.Engine, method string, path string, body io.Reader) *httptest.ResponseRecorder {
-	return executeRequestWithHeaders(router, method, path, body, nil)
-}
-
-func executeRequestWithHeaders(router *gin.Engine, method string, path string, body io.Reader, headers map[string]string) *httptest.ResponseRecorder {
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(method, path, body)
-
-	for k, v := range headers {
-		req.Header.Set(k, v)
-	}
-
-	router.ServeHTTP(w, req)
-
-	return w
-}
-
-func defaultAPIKey() string {
-	return "supersecret"
-}
+// BBBSecret define the default bigbluebutton secret
+const BBBSecret = "0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU"
 
 // Container represents a test container object
 type Container struct {
@@ -59,9 +30,10 @@ type Container struct {
 	URI string
 }
 
-func initRedisContainer() *Container {
+// InitRedisContainer creates a redis container
+func InitRedisContainer(name string) *Container {
 	req := testcontainers.ContainerRequest{
-		Name:         "tc_redis",
+		Name:         name,
 		Image:        "redis:6.2-alpine",
 		ExposedPorts: []string{"6379/tcp"},
 		WaitingFor:   wait.ForLog("Ready to accept connections"),
@@ -88,9 +60,10 @@ func initRedisContainer() *Container {
 	}
 }
 
-func initInfluxDBContainer() *Container {
+// InitInfluxDBContainer creates an influxdb container
+func InitInfluxDBContainer(name string) *Container {
 	req := testcontainers.ContainerRequest{
-		Name:         "tc_influxdb",
+		Name:         name,
 		Image:        "influxdb:2.0",
 		ExposedPorts: []string{"8086/tcp"},
 		AutoRemove:   true,
@@ -106,7 +79,7 @@ func initInfluxDBContainer() *Container {
 	}
 
 	time.Sleep(15 * time.Second)
-	createInfluxDBAccessToken()
+	createInfluxDBAccessToken(name)
 
 	endpoint, endpointErr := influxdb.Endpoint(context.Background(), "")
 
@@ -120,15 +93,16 @@ func initInfluxDBContainer() *Container {
 	}
 }
 
-func createInfluxDBAccessToken() {
-	_, cmdErr := exec.Command("/bin/sh", "-c", fmt.Sprintf(`sudo docker exec tc_influxdb sh -c "influx setup --name b3lbconfig --org %s --username admin --password password --token %s --bucket %s --retention 0 --force"`, influxDBOrg, influxDBToken, influxDBBucket)).Output()
+func createInfluxDBAccessToken(containerName string) {
+	_, cmdErr := exec.Command("/bin/sh", "-c", fmt.Sprintf(`sudo docker exec %s sh -c "influx setup --name b3lbconfig --org %s --username admin --password password --token %s --bucket %s --retention 0 --force"`, containerName, InfluxDBOrg, InfluxDBToken, InfluxDBBucket)).Output()
 
 	if cmdErr != nil {
 		panic(cmdErr)
 	}
 }
 
-func initBigBlueButtonContainer(name string, port string) *Container {
+// InitBigBlueButtonContainer creates a bigbluebutton container
+func InitBigBlueButtonContainer(name string, port string) *Container {
 	req := testcontainers.ContainerRequest{
 		Name:         name,
 		Image:        "sledunois/bbb-dev:2.4-develop",
@@ -160,58 +134,40 @@ func initBigBlueButtonContainer(name string, port string) *Container {
 	}
 }
 
-func insertBBBInstances(redisContainer Container, bbbs []*Container) {
-	client := redis.NewClient(&redis.Options{
-		Addr:     redisContainer.URI,
-		Password: "",
-		DB:       0,
-	})
-
-	manager := admin.NewInstanceManager(client)
-
-	for _, bbb := range bbbs {
-		instance := api.BigBlueButtonInstance{
-			URL:    formatBBBInstanceURL(bbb.URI),
-			Secret: bbbSecret,
-		}
-
-		if err := manager.Add(instance); err != nil {
-			panic(err)
-		}
-	}
-}
-
-func formatBBBInstanceURL(uri string) string {
+// FormatBBBInstanceURL format bbb uri to a valid url
+func FormatBBBInstanceURL(uri string) string {
 	return fmt.Sprintf("http://%s/bigbluebutton", uri)
 }
 
-func setBBBSecret(bbbs []*Container) {
+// SetBBBSecret set secret of Bigbluebutton containers
+func SetBBBSecret(bbbs []*Container) {
 	for _, bbb := range bbbs {
 		name, err := bbb.Container.Name(context.Background())
 		if err != nil {
 			panic(err)
 		}
 
-		_, cmdErr := exec.Command("/bin/sh", "-c", fmt.Sprintf(`sudo docker exec %s sh -c "bbb-conf --setsecret %s"`, name, bbbSecret)).Output()
+		_, cmdErr := exec.Command("/bin/sh", "-c", fmt.Sprintf(`sudo docker exec %s sh -c "bbb-conf --setsecret %s"`, name, BBBSecret)).Output()
 		if cmdErr != nil {
 			panic(err)
 		}
 	}
 }
 
-func writeIDBData(address string, bbbs []*Container) {
-	client := influxdb2.NewClient(address, influxDBToken)
-	writeAPI := client.WriteAPI(influxDBOrg, influxDBBucket)
-	bbb1 := bbbs[0]
-	bbb2 := bbbs[1]
+// WriteIDBData write some custom metrics for both bbb containers in influxdb
+func WriteIDBData(cluster *Cluster) {
+	client := influxdb2.NewClient(fmt.Sprintf("http://%s", cluster.InfluxDB.URI), InfluxDBToken)
+	writeAPI := client.WriteAPI(InfluxDBOrg, InfluxDBBucket)
+	bbb1 := cluster.BigBlueButtons[0]
+	bbb2 := cluster.BigBlueButtons[1]
 
 	// Write some custom cpu usage points
-	writeAPI.WritePoint(idbCPUUsagePoint(fmt.Sprintf("%s_cpu_1", "bbb1"), bbb1.URI, 10, formatBBBInstanceURL(bbb1.URI)))
-	writeAPI.WritePoint(idbCPUUsagePoint(fmt.Sprintf("%s_cpu_2", "bbb2"), bbb2.URI, 80, formatBBBInstanceURL(bbb2.URI)))
+	writeAPI.WritePoint(idbCPUUsagePoint(fmt.Sprintf("%s_cpu_1", "bbb1"), bbb1.URI, 10, FormatBBBInstanceURL(bbb1.URI)))
+	writeAPI.WritePoint(idbCPUUsagePoint(fmt.Sprintf("%s_cpu_2", "bbb2"), bbb2.URI, 80, FormatBBBInstanceURL(bbb2.URI)))
 
 	// Wite some custom mem used_percent points
-	writeAPI.WritePoint(idbMemPoint(fmt.Sprintf("%s_mem_1", "bbb1"), bbb1.URI, 25, formatBBBInstanceURL(bbb1.URI)))
-	writeAPI.WritePoint(idbMemPoint(fmt.Sprintf("%s_mem_2", "bbb2"), bbb2.URI, 30, formatBBBInstanceURL(bbb2.URI)))
+	writeAPI.WritePoint(idbMemPoint(fmt.Sprintf("%s_mem_1", "bbb1"), bbb1.URI, 25, FormatBBBInstanceURL(bbb1.URI)))
+	writeAPI.WritePoint(idbMemPoint(fmt.Sprintf("%s_mem_2", "bbb2"), bbb2.URI, 30, FormatBBBInstanceURL(bbb2.URI)))
 
 	writeAPI.Flush()
 	client.Close()

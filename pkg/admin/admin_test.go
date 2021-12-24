@@ -1,7 +1,7 @@
-package app
+package admin
 
 import (
-	"b3lb/pkg/config"
+	TestUtil "b3lb/internal/test"
 	"b3lb/pkg/utils"
 	"bytes"
 	"encoding/json"
@@ -40,23 +40,14 @@ func TestAddInstance(t *testing.T) {
 		},
 	}
 
-	router := launchRouter(&config.Config{
-		APIKey: defaultAPIKey(),
-		RDB: config.RDB{
-			Address:  redisContainer.URI,
-			Password: "",
-			DB:       0,
-		},
-	})
-
 	headers := map[string]string{
-		"Authorization": defaultAPIKey(),
+		"Authorization": TestUtil.DefaultAPIKey(),
 		"Content-Type":  "application/json",
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			w := executeRequestWithHeaders(router, "POST", "/admin/servers", test.body, headers)
+			w := TestUtil.ExecuteRequestWithHeaders(router, "POST", "/admin/servers", test.body, headers)
 			assert.Equal(t, test.expectedStatus, w.Code)
 
 			if test.expectedBody != "" {
@@ -67,20 +58,11 @@ func TestAddInstance(t *testing.T) {
 }
 
 func TestListInstances(t *testing.T) {
-	router := launchRouter(&config.Config{
-		APIKey: defaultAPIKey(),
-		RDB: config.RDB{
-			Address:  redisContainer.URI,
-			Password: "",
-			DB:       0,
-		},
-	})
-
 	headers := map[string]string{
-		"Authorization": defaultAPIKey(),
+		"Authorization": TestUtil.DefaultAPIKey(),
 	}
 
-	w := executeRequestWithHeaders(router, "GET", "/admin/servers", nil, headers)
+	w := TestUtil.ExecuteRequestWithHeaders(router, "GET", "/admin/servers", nil, headers)
 	assert.Equal(t, 200, w.Code)
 	var arr []string
 	err := json.Unmarshal(w.Body.Bytes(), &arr)
@@ -117,22 +99,13 @@ func TestDeleteInstance(t *testing.T) {
 		},
 	}
 
-	router := launchRouter(&config.Config{
-		APIKey: defaultAPIKey(),
-		RDB: config.RDB{
-			Address:  redisContainer.URI,
-			Password: "",
-			DB:       0,
-		},
-	})
-
 	headers := map[string]string{
-		"Authorization": defaultAPIKey(),
+		"Authorization": TestUtil.DefaultAPIKey(),
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			w := executeRequestWithHeaders(router, "DELETE", test.url, nil, headers)
+			w := TestUtil.ExecuteRequestWithHeaders(router, "DELETE", test.url, nil, headers)
 			assert.Equal(t, test.expectedStatus, w.Code)
 		})
 	}

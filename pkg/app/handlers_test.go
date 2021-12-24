@@ -1,6 +1,7 @@
 package app
 
 import (
+	TestUtil "b3lb/internal/test"
 	"b3lb/pkg/api"
 	"b3lb/pkg/config"
 	"encoding/xml"
@@ -12,7 +13,7 @@ import (
 
 func TestHealthCheckRoute(t *testing.T) {
 	router := launchRouter(&config.Config{})
-	w := executeRequest(router, "GET", "/bigbluebutton/api", nil)
+	w := TestUtil.ExecuteRequest(router, "GET", "/bigbluebutton/api", nil)
 
 	response := "<response><returncode>SUCCESS</returncode><version>2.0</version></response>"
 	assert.Equal(t, 200, w.Code)
@@ -60,7 +61,7 @@ func TestCreate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			w := executeRequest(router, "GET", test.url, nil)
+			w := TestUtil.ExecuteRequest(router, "GET", test.url, nil)
 			var response api.CreateResponse
 			if err := xml.Unmarshal(w.Body.Bytes(), &response); err != nil {
 				panic(err)
@@ -79,7 +80,7 @@ func TestJoin(t *testing.T) {
 	router := launchRouter(defaultConfig())
 
 	t.Run("Joining a non existing session should returns a notFound error", func(t *testing.T) {
-		w := executeRequest(router, "GET", "/bigbluebutton/api/join?meetingID=123&fullName=Simon&password=pwd&checksum=9215d3a80656cf2aa7e2a772e27fbfe7e3e4ddc8", nil)
+		w := TestUtil.ExecuteRequest(router, "GET", "/bigbluebutton/api/join?meetingID=123&fullName=Simon&password=pwd&checksum=9215d3a80656cf2aa7e2a772e27fbfe7e3e4ddc8", nil)
 		var response api.Error
 		if err := xml.Unmarshal(w.Body.Bytes(), &response); err != nil {
 			panic(err)
@@ -92,7 +93,7 @@ func TestJoin(t *testing.T) {
 	})
 
 	t.Run("Joining a session should redirect", func(t *testing.T) {
-		w := executeRequest(router, "GET", "/bigbluebutton/api/join?meetingID=id&fullName=Simon&password=pwd&checksum=561af1e2093bba548d1c66b66a4484a93f3d5c80", nil)
+		w := TestUtil.ExecuteRequest(router, "GET", "/bigbluebutton/api/join?meetingID=id&fullName=Simon&password=pwd&checksum=561af1e2093bba548d1c66b66a4484a93f3d5c80", nil)
 
 		assert.Equal(t, http.StatusFound, w.Code)
 	})
