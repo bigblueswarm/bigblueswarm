@@ -11,7 +11,7 @@ import (
 
 // Create execute a create api call on the remote BigBlueButton instance
 func (i *BigBlueButtonInstance) Create(params string) *CreateResponse {
-	checksum := CreateChecksum(i.Secret, CreateAPIAction, params)
+	checksum := CreateChecksum(i.Secret, Create, params)
 
 	body, err := i.callAPI(params, checksum)
 
@@ -48,12 +48,12 @@ func (i *BigBlueButtonInstance) callAPI(params string, checksum *Checksum) ([]by
 
 // GetJoinRedirectURL compute the join redirect url
 func (i *BigBlueButtonInstance) GetJoinRedirectURL(params string) (string, error) {
-	checksum := CreateChecksum(i.Secret, JoinAPIAction, params)
+	checksum := CreateChecksum(i.Secret, Join, params)
 	checksumValue, err := checksum.Process()
 	if err != nil {
 		log.Error("Failed to compute checksum while getting join redirect url", err)
 		return "", err
 	}
 
-	return i.URL + "/api/" + JoinAPIAction + "?" + checksum.Params + "&checksum=" + checksumValue, nil
+	return i.URL + "/api/" + Join + "?" + checksum.Params + "&checksum=" + checksumValue, nil
 }
