@@ -1,10 +1,19 @@
 package api
 
-// CreateAPIAction represents the create api name
-const CreateAPIAction = "create"
+// BigBlueButton is the main endpoint for the API
+const BigBlueButton = "bigbluebutton"
 
-// JoinAPIAction represents the create api name
-const JoinAPIAction = "join"
+// API is the sub-endpoint for the API
+const API = "api"
+
+// Create is the sub-endpoint for creating a meeting
+const Create = "create"
+
+// GetMeetings is the sub-endpoint for getting a list of meetings
+const GetMeetings = "getMeetings"
+
+// Join is the sub-endpoint for joining a meeting
+const Join = "join"
 
 // SuccessReturnCode represents the api success return code
 const SuccessReturnCode = "SUCCESS"
