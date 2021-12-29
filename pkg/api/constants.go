@@ -45,7 +45,7 @@ func MessageKeys() *Keys {
 	}
 }
 
-// Messages represents the api messages
+// MessageValues represents the api messages
 type MessageValues struct {
 	EmptyMeetingID     string
 	EmptyMeetingName   string
