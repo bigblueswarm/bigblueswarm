@@ -18,6 +18,11 @@ func (s *Server) GetMeetings(c *gin.Context) {
 	c.String(http.StatusOK, c.FullPath())
 }
 
+func missingMeetingIDParameter(c *gin.Context) {
+	log.Error("Missing meetingID parameter")
+	c.XML(http.StatusOK, api.CreateError(api.MessageKeys().ValidationError, api.Messages().EmptyMeetingID))
+}
+
 // Create handler find a server and create a meeting on balanced server.
 func (s *Server) Create(c *gin.Context) {
 	ctx := getAPIContext(c)
@@ -35,7 +40,7 @@ func (s *Server) Create(c *gin.Context) {
 	}
 
 	target, err := s.Balancer.Process(instances)
-	if err != nil {
+	if err != nil || target == "" {
 		log.Error("Balancer failed to process current request", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -71,15 +76,14 @@ func (s *Server) Join(c *gin.Context) {
 	ctx := getAPIContext(c)
 	meetingID, exists := c.GetQuery("meetingID")
 	if !exists {
-		log.Error("Missing meetingID parameter")
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().ValidationError, api.Messages().EmptyMeetingID))
+		missingMeetingIDParameter(c)
 		return
 	}
 
 	host, err := s.SessionManager.Get(meetingID)
 	if err != nil {
 		log.Error("SessionManager failed to retrieve session", err)
-		c.AbortWithStatus(http.StatusNotFound)
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
 		return
 	}
 
@@ -104,4 +108,51 @@ func (s *Server) Join(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusFound, redirectURL)
+}
+
+// End handler end provided session. See https://docs.bigbluebutton.org/dev/api.html#end
+func (s *Server) End(c *gin.Context) {
+	ctx := getAPIContext(c)
+	meetingID, exists := c.GetQuery("meetingID")
+	if !exists {
+		missingMeetingIDParameter(c)
+		return
+	}
+
+	//TODO manage instance getter into its own function
+	host, err := s.SessionManager.Get(meetingID)
+	if err != nil {
+		log.Error("SessionManager failed to retrieve session", err)
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
+		return
+	}
+
+	if host == "" {
+		log.Error("SessionManager failed to retrieve session host")
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
+		return
+	}
+
+	instance, err := s.InstanceManager.Get(host)
+	if err != nil {
+		log.Error("Manager failed to retrieve target instance for current request", err)
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
+		return
+	}
+
+	endResponse := instance.End(ctx.Params)
+	if endResponse == nil {
+		log.Error("An error occurred while ending remote session")
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	removeErr := s.SessionManager.Remove(meetingID)
+	if removeErr != nil {
+		log.Error("SessionManager failed to remove session", removeErr)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.XML(http.StatusOK, endResponse)
 }

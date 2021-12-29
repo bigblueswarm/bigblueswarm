@@ -32,3 +32,10 @@ func (m *SessionManager) Get(sessionID string) (string, error) {
 
 	return host, utils.ComputeErr(err)
 }
+
+// Remove remove the session from the redis database
+func (m *SessionManager) Remove(sessionID string) error {
+	_, err := m.RDB.Del(context.Background(), sessionID).Result()
+
+	return utils.ComputeErr(err)
+}

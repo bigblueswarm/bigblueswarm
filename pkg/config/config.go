@@ -33,7 +33,7 @@ type AdminConfig struct {
 // Config represents main configuration mapping
 type Config struct {
 	BigBlueButton BigBlueButton `mapstructure:"bigbluebutton"`
-	Admin         AdminConfig   `mapstructure:"api_key"`
+	Admin         AdminConfig   `mapstructure:"admin"`
 	Port          int           `mapstructure:"port"`
 	RDB           RDB           `mapstructure:"redis"`
 	IDB           IDB           `mapstructure:"influxdb"`

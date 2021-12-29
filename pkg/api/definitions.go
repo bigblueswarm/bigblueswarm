@@ -53,3 +53,8 @@ type CreateResponse struct {
 	Duration             string `xml:"duration"`
 	HasBeenForciblyEnded string `xml:"hasBeenForciblyEnded"`
 }
+
+// EndResponse represents the Bigbluebutton end API response type
+type EndResponse struct {
+	Response
+}

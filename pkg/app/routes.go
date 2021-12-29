@@ -49,6 +49,11 @@ func (s *Server) Routes() *[]api.EndpointGroup {
 							Handler: s.Join,
 							Path:    api.Path(api.Join),
 						},
+						api.Endpoint{
+							Method:  http.MethodGet,
+							Handler: s.End,
+							Path:    api.Path(api.End),
+						},
 					},
 				},
 			},
