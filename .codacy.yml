@@ -1,7 +1,5 @@
 ---
 exclude_paths:
-  - "internal/**"
-  - "**/*_test.go"
   - ".codacy.yml"
   - "commitlint.config.js"
   - "config.yml"
