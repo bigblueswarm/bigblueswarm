@@ -72,7 +72,7 @@ func (s *Server) Join(c *gin.Context) {
 	meetingID, exists := c.GetQuery("meetingID")
 	if !exists {
 		log.Error("Missing meetingID parameter")
-		c.XML(http.StatusOK, api.CreateError(api.ValidationErrorMessageKey, api.EmptyMeetingIDMessage))
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().ValidationError, api.Messages().EmptyMeetingID))
 		return
 	}
 
@@ -85,14 +85,14 @@ func (s *Server) Join(c *gin.Context) {
 
 	if host == "" {
 		log.Error("SessionManager failed to retrieve session host")
-		c.XML(http.StatusOK, api.CreateError(api.NotFoundMessageKey, api.NotFoundMeetingIDMessage))
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
 		return
 	}
 
 	instance, err := s.InstanceManager.Get(host)
 	if err != nil {
 		log.Error("Manager failed to retrieve target instance for current request", err)
-		c.XML(http.StatusOK, api.CreateError(api.NotFoundMessageKey, api.NotFoundMeetingIDMessage))
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
 		return
 	}
 

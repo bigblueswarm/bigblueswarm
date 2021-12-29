@@ -36,23 +36,23 @@ func TestCreate(t *testing.T) {
 		{
 			name:              "Create with no name should returns a `no name error`",
 			url:               "/bigbluebutton/api/create?checksum=025401fa251bdbcbba29c347a9cf811f29aa15a1",
-			expectedCode:      api.FailedReturnCode,
-			expectedKey:       api.ValidationErrorMessageKey,
-			expectedMessage:   api.EmptyMeetingNameMessage,
+			expectedCode:      api.ReturnCodes().Failed,
+			expectedKey:       api.MessageKeys().ValidationError,
+			expectedMessage:   api.Messages().EmptyMeetingName,
 			expectedSessionID: "",
 		},
 		{
 			name:              "Create with no meeting id should returns a `no meeting id error`",
 			url:               "/bigbluebutton/api/create?name=doe&checksum=291411768c7aeb243819983459755b32b96aae34",
-			expectedCode:      api.FailedReturnCode,
-			expectedKey:       api.ValidationErrorMessageKey,
-			expectedMessage:   api.EmptyMeetingIDMessage,
+			expectedCode:      api.ReturnCodes().Failed,
+			expectedKey:       api.MessageKeys().ValidationError,
+			expectedMessage:   api.Messages().EmptyMeetingID,
 			expectedSessionID: "",
 		},
 		{
 			name:              "Valid create call should create a meeting",
 			url:               "/bigbluebutton/api/create?name=doe&meetingID=id&moderatorPW=pwd&checksum=f4db98b7cab8ebc1df423e547ed3fa995d13ad72",
-			expectedCode:      api.SuccessReturnCode,
+			expectedCode:      api.ReturnCodes().Success,
 			expectedKey:       "",
 			expectedMessage:   "",
 			expectedSessionID: "id",
@@ -87,9 +87,9 @@ func TestJoin(t *testing.T) {
 		}
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Equal(t, api.FailedReturnCode, response.ReturnCode)
-		assert.Equal(t, api.NotFoundMessageKey, response.MessageKey)
-		assert.Equal(t, api.NotFoundMeetingIDMessage, response.Message)
+		assert.Equal(t, api.ReturnCodes().Failed, response.ReturnCode)
+		assert.Equal(t, api.MessageKeys().NotFound, response.MessageKey)
+		assert.Equal(t, api.Messages().NotFound, response.Message)
 	})
 
 	t.Run("Joining a session should redirect", func(t *testing.T) {
