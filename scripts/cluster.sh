@@ -51,7 +51,7 @@ do
       init_cluster
       ;;
     -t | --set-token)
-      set_influxdb_token "$2"
+      set_influxdb_token "$TOKEN"
       exit 1
       ;;
     -h | --help)

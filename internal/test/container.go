@@ -78,7 +78,7 @@ func InitInfluxDBContainer(name string) *Container {
 		panic(err)
 	}
 
-	time.Sleep(15 * time.Second)
+	time.Sleep(30 * time.Second)
 	createInfluxDBAccessToken(name)
 
 	endpoint, endpointErr := influxdb.Endpoint(context.Background(), "")
@@ -120,7 +120,7 @@ func InitBigBlueButtonContainer(name string, port string) *Container {
 		panic(err)
 	}
 
-	time.Sleep(90 * time.Second)
+	time.Sleep(120 * time.Second)
 
 	endpoint, endpointErr := bbb.Endpoint(context.Background(), "")
 

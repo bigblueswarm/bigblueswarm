@@ -98,3 +98,56 @@ func TestJoin(t *testing.T) {
 		assert.Equal(t, http.StatusFound, w.Code)
 	})
 }
+
+func TestEnd(t *testing.T) {
+	type test struct {
+		name            string
+		url             string
+		expectedKey     string
+		expectedMessage string
+		expectedCode    string
+	}
+
+	router := launchRouter(defaultConfig())
+
+	tests := []test{
+		{
+			name:            "End with an invalid meeting id should returns a `not found error`",
+			url:             "/bigbluebutton/api/end?meetingID=123&password=pwd&checksum=65f76052d9ad86af739dd3fa4abc10540b8ab487",
+			expectedKey:     api.MessageKeys().NotFound,
+			expectedMessage: api.Messages().NotFound,
+			expectedCode:    api.ReturnCodes().Failed,
+		},
+		{
+			name:            "End with an invalid password should returns a `invalid password error`",
+			url:             "/bigbluebutton/api/end?meetingID=id&password=pwd2&checksum=19e0cafcffe893b246913327c847625c013efe0c",
+			expectedKey:     api.MessageKeys().ValidationError,
+			expectedMessage: api.Messages().InvalidModeratorPW,
+			expectedCode:    api.ReturnCodes().Failed,
+		},
+		{
+			name:            "End with a valid meeting id and a valid moderator password should returns a `success`",
+			url:             "/bigbluebutton/api/end?meetingID=meeting_id&password=pwd&checksum=c748c8cc6cc38a47380c64699920b0e7d6affa80",
+			expectedKey:     api.MessageKeys().SendEndMeetingRequest,
+			expectedCode:    api.ReturnCodes().Success,
+			expectedMessage: api.Messages().EndMeeting,
+		},
+	}
+
+	TestUtil.ExecuteRequest(router, "GET", "/bigbluebutton/api/create?name=doe&meetingID=meeting_id&moderatorPW=pwd&checksum=b4a2dcd6ecab0c4697d46f3713f18ebc65c7e827", nil)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			w := TestUtil.ExecuteRequest(router, "GET", test.url, nil)
+			var response api.EndResponse
+			if err := xml.Unmarshal(w.Body.Bytes(), &response); err != nil {
+				panic(err)
+			}
+
+			assert.Equal(t, http.StatusOK, w.Code)
+			assert.Equal(t, test.expectedCode, response.ReturnCode)
+			assert.Equal(t, test.expectedKey, response.MessageKey)
+			assert.Equal(t, test.expectedMessage, response.Message)
+		})
+	}
+}

@@ -53,6 +53,16 @@ create() {
     curl -s -G "http://localhost:8090/bigbluebutton/api/create" -H "Accept: application/xml" --data-urlencode "meetingID=$MEETING_ID" --data-urlencode "attendeePW=$ATTENDEE_PW" --data-urlencode "moderatorPW=$MODERATOR_PW" --data-urlencode "name=$ROOM_NAME" --data-urlencode "checksum=$CHECKSUM" | tidy -xml -i -q -
 }
 
+end() {
+  echo "Enter meeting ID:"
+  read MEETING_ID
+  echo "Enter your password:"
+  read PASSWORD
+  PARAMETERS="meetingID=$MEETING_ID&password=$PASSWORD"
+  CHECKSUM=$(sha1 "end$PARAMETERS$SECRET")
+  curl -s -G http://localhost:8090/bigbluebutton/api/end --data-urlencode "meetingID=$MEETING_ID" --data-urlencode "password=$PASSWORD" --data-urlencode "checksum=$CHECKSUM" | tidy -xml -i -q -
+}
+
 for param in "$@"
 do
   case $param in
@@ -61,6 +71,9 @@ do
       ;;
     -j | --join)
       join
+      ;;
+    -e | --end)
+      end
       ;;
     -h | --help)
       usage
