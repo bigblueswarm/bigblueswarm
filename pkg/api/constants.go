@@ -15,38 +15,38 @@ const GetMeetings = "getMeetings"
 // Join is the sub-endpoint for joining a meeting
 const Join = "join"
 
-// returnCodes represents the api return code
-type returnCodes struct {
+// Codes represents the api return code
+type Codes struct {
 	Success string
 	Failed  string
 }
 
 // ReturnCodes returns a struct containing the api return codes
-func ReturnCodes() *returnCodes {
-	return &returnCodes{
+func ReturnCodes() *Codes {
+	return &Codes{
 		Success: "SUCCESS",
 		Failed:  "FAILED",
 	}
 }
 
-// messageKeys represents the api message key
-type messageKeys struct {
+// Keys represents the api message key
+type Keys struct {
 	ValidationError    string
 	DuplicationWarning string
 	NotFound           string
 }
 
 // MessageKeys return a struct containing the api message keys
-func MessageKeys() *messageKeys {
-	return &messageKeys{
+func MessageKeys() *Keys {
+	return &Keys{
 		ValidationError:    "validationError",
 		DuplicationWarning: "duplicationWarning",
 		NotFound:           "notFound",
 	}
 }
 
-// messages represents the api messages
-type messages struct {
+// Messages represents the api messages
+type MessageValues struct {
 	EmptyMeetingID     string
 	EmptyMeetingName   string
 	DuplicationWarning string
@@ -54,8 +54,8 @@ type messages struct {
 }
 
 // Messages returns a struct containing the api messages
-func Messages() *messages {
-	return &messages{
+func Messages() *MessageValues {
+	return &MessageValues{
 		EmptyMeetingID:     "You must provide a meeting ID",
 		EmptyMeetingName:   "You must provide a meeting name",
 		DuplicationWarning: "This conference was already in existence and may currently be in progress.",
