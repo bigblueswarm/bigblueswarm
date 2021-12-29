@@ -15,29 +15,50 @@ const GetMeetings = "getMeetings"
 // Join is the sub-endpoint for joining a meeting
 const Join = "join"
 
-// SuccessReturnCode represents the api success return code
-const SuccessReturnCode = "SUCCESS"
+// Codes represents the api return code
+type Codes struct {
+	Success string
+	Failed  string
+}
 
-// FailedReturnCode represents the api ailed return code
-const FailedReturnCode = "FAILED"
+// ReturnCodes returns a struct containing the api return codes
+func ReturnCodes() *Codes {
+	return &Codes{
+		Success: "SUCCESS",
+		Failed:  "FAILED",
+	}
+}
 
-// ValidationErrorMessageKey represents the api validation error message key
-const ValidationErrorMessageKey = "validationError"
+// Keys represents the api message key
+type Keys struct {
+	ValidationError    string
+	DuplicationWarning string
+	NotFound           string
+}
 
-// DuplicationWarningMessageKey represents the api duplication warning message key
-const DuplicationWarningMessageKey = "duplicationWarning"
+// MessageKeys return a struct containing the api message keys
+func MessageKeys() *Keys {
+	return &Keys{
+		ValidationError:    "validationError",
+		DuplicationWarning: "duplicationWarning",
+		NotFound:           "notFound",
+	}
+}
 
-// NotFoundMessageKey represents the api not found message key
-const NotFoundMessageKey = "notFound"
+// MessageValues represents the api messages
+type MessageValues struct {
+	EmptyMeetingID     string
+	EmptyMeetingName   string
+	DuplicationWarning string
+	NotFound           string
+}
 
-// EmptyMeetingNameMessage represents the api empty meeting name message
-const EmptyMeetingNameMessage = "You must provide a meeting name"
-
-// EmptyMeetingIDMessage represents the api empty meeting id message
-const EmptyMeetingIDMessage = "You must provide a meeting ID"
-
-// DuplicationWarningMessage represents the api duplication warning message
-const DuplicationWarningMessage = "This conference was already in existence and may currently be in progress."
-
-// NotFoundMeetingIDMessage represents the api not found message
-const NotFoundMeetingIDMessage = "A meeting with that ID does not exist"
+// Messages returns a struct containing the api messages
+func Messages() *MessageValues {
+	return &MessageValues{
+		EmptyMeetingID:     "You must provide a meeting ID",
+		EmptyMeetingName:   "You must provide a meeting name",
+		DuplicationWarning: "This conference was already in existence and may currently be in progress.",
+		NotFound:           "A meeting with that ID does not exist",
+	}
+}

@@ -5,7 +5,6 @@ import (
 )
 
 // Checksum in BigBlueButton authentication system represents an action name, all parameters and a secret concatenated in a single string that is hashed by SHA1.
-// TODO Manage a top context object that contains params and its own Checksum struct
 type Checksum struct {
 	Secret string
 	Action string
