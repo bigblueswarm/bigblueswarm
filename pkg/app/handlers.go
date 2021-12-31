@@ -149,3 +149,29 @@ func (s *Server) End(c *gin.Context) {
 
 	c.XML(http.StatusOK, endResponse)
 }
+
+// IsMeetingRunning handler check if provided session is running. See https://docs.bigbluebutton.org/dev/api.html#ismeetingrunning
+func (s *Server) IsMeetingRunning(c *gin.Context) {
+	ctx := getAPIContext(c)
+	meetingID, exists := c.GetQuery("meetingID")
+	if !exists {
+		missingMeetingIDParameter(c)
+		return
+	}
+
+	instance, err := s.retrieveBBBBInstanceFromMeetingID(meetingID)
+	if err != nil {
+		log.Error(err)
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
+		return
+	}
+
+	isRunningResponse := instance.IsMeetingRunning(ctx.Params)
+	if err != nil {
+		log.Error("An error occurred while checking if remote session is running", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.XML(http.StatusOK, isRunningResponse)
+}

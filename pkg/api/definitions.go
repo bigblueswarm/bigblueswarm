@@ -58,3 +58,10 @@ type CreateResponse struct {
 type EndResponse struct {
 	Response
 }
+
+// IsMeetingsRunningResponse represents the Bigbluebutton isMeetingRunning API response type
+type IsMeetingsRunningResponse struct {
+	XMLName    xml.Name `xml:"response"`
+	ReturnCode string   `xml:"returncode"`
+	Running    bool     `xml:"running"`
+}
