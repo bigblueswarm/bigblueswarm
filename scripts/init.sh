@@ -15,4 +15,4 @@ npm install --save-dev @commitlint/{config-conventional,cli} husky
 npx husky install
 npx husky add .husky/commit-msg "npx --no -- commitlint --edit \"$1\""
 
-sudo apt-get install tidy
+sudo apt-get install tidy jq
