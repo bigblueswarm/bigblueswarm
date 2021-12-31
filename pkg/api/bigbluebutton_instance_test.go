@@ -38,3 +38,10 @@ func TestEnd(t *testing.T) {
 		assert.Equal(t, response.ReturnCode, ReturnCodes().Success)
 	})
 }
+
+func TestIsMeetingRunning(t *testing.T) {
+	t.Run("IsMeetingRunning should return a failed response", func(t *testing.T) {
+		response := instance.End(fmt.Sprintf("meetingID=%s", meetingID))
+		assert.Equal(t, response.ReturnCode, ReturnCodes().Failed)
+	})
+}

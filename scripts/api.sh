@@ -63,6 +63,13 @@ end() {
   curl -s -G http://localhost:8090/bigbluebutton/api/end --data-urlencode "meetingID=$MEETING_ID" --data-urlencode "password=$PASSWORD" --data-urlencode "checksum=$CHECKSUM" | tidy -xml -i -q -
 }
 
+is_meeting_running() {
+  echo "Enter meeting ID:"
+  read MEETING_ID
+  CHECKSUM=$(sha1 "isMeetingRunningmeetingID=$MEETING_ID$SECRET")
+  curl -s -G http://localhost:8090/bigbluebutton/api/isMeetingRunning --data-urlencode "meetingID=$MEETING_ID" --data-urlencode "checksum=$CHECKSUM" | tidy -xml -i -q -
+}
+
 for param in "$@"
 do
   case $param in
@@ -74,6 +81,9 @@ do
       ;;
     -e | --end)
       end
+      ;;
+    -r | --running)
+      is_meeting_running
       ;;
     -h | --help)
       usage

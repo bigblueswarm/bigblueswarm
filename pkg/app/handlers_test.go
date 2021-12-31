@@ -151,3 +151,33 @@ func TestEnd(t *testing.T) {
 		})
 	}
 }
+
+func TestIsMeetingRunning(t *testing.T) {
+	router := launchRouter(defaultConfig())
+
+	t.Run("Checking if an non existant meeting is running should returns a not found error", func(t *testing.T) {
+		w := TestUtil.ExecuteRequest(router, "GET", "/bigbluebutton/api/isMeetingRunning?meetingID=meeting_id&checksum=d791c7a640acb66cd30ae06d9cde28b306497308", nil)
+		var response api.Response
+		if err := xml.Unmarshal(w.Body.Bytes(), &response); err != nil {
+			panic(err)
+		}
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, api.ReturnCodes().Failed, response.ReturnCode)
+		assert.Equal(t, api.MessageKeys().NotFound, response.MessageKey)
+		assert.Equal(t, api.Messages().NotFound, response.Message)
+	})
+
+	t.Run("Checking if a meeting is running should returns success response", func(t *testing.T) {
+		TestUtil.ExecuteRequest(router, "GET", "/bigbluebutton/api/create?name=doe&meetingID=meeting_id&moderatorPW=pwd&checksum=b4a2dcd6ecab0c4697d46f3713f18ebc65c7e827", nil)
+		w := TestUtil.ExecuteRequest(router, "GET", "/bigbluebutton/api/isMeetingRunning?meetingID=meeting_id&checksum=d791c7a640acb66cd30ae06d9cde28b306497308", nil)
+		var response api.IsMeetingsRunningResponse
+		if err := xml.Unmarshal(w.Body.Bytes(), &response); err != nil {
+			panic(err)
+		}
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+		assert.False(t, response.Running)
+	})
+}

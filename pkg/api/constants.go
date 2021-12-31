@@ -18,6 +18,9 @@ const Join = "join"
 // End is the sub-endpoint for ending a meeting
 const End = "end"
 
+// IsMeetingRunning is the sub-endpoint for checking if a meeting is running
+const IsMeetingRunning = "isMeetingRunning"
+
 // Codes represents the api return code
 type Codes struct {
 	Success string

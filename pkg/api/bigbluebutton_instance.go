@@ -77,3 +77,22 @@ func (i *BigBlueButtonInstance) End(params string) *EndResponse {
 
 	return &response
 }
+
+// IsMeetingRunning checks if a meeting is running on the remote Bigbluebutton instance
+func (i *BigBlueButtonInstance) IsMeetingRunning(params string) *IsMeetingsRunningResponse {
+	checksum := CreateChecksum(i.Secret, IsMeetingRunning, params)
+	body, err := i.callAPI(params, checksum)
+
+	if err != nil {
+		log.Error(fmt.Sprintf("Failed to call %s instance api is meeting running", i.URL), err)
+		return nil
+	}
+
+	var response IsMeetingsRunningResponse
+	if err := xml.Unmarshal(body, &response); err != nil {
+		log.Error("Failed to unmarshal is meting running api call body content", err)
+		return nil
+	}
+
+	return &response
+}

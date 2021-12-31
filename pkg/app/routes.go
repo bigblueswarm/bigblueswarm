@@ -54,6 +54,11 @@ func (s *Server) Routes() *[]api.EndpointGroup {
 							Handler: s.End,
 							Path:    api.Path(api.End),
 						},
+						api.Endpoint{
+							Method:  http.MethodGet,
+							Handler: s.IsMeetingRunning,
+							Path:    api.Path(api.IsMeetingRunning),
+						},
 					},
 				},
 			},
