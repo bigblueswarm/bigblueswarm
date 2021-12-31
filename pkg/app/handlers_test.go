@@ -181,3 +181,32 @@ func TestIsMeetingRunning(t *testing.T) {
 		assert.False(t, response.Running)
 	})
 }
+
+func TestGetMeetingInfo(t *testing.T) {
+	router := launchRouter(defaultConfig())
+	t.Run("Checking a meeting that does not exists should returns a not found error", func(t *testing.T) {
+		w := TestUtil.ExecuteRequest(router, "GET", "/bigbluebutton/api/getMeetingInfo?meetingID=meeting_id&checksum=b49265e3baa6b4ecb5e6caf443e3511f62c434e5", nil)
+		var response api.Response
+		if err := xml.Unmarshal(w.Body.Bytes(), &response); err != nil {
+			panic(err)
+		}
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, api.ReturnCodes().Failed, response.ReturnCode)
+		assert.Equal(t, api.MessageKeys().NotFound, response.MessageKey)
+		assert.Equal(t, api.Messages().NotFound, response.Message)
+	})
+
+	t.Run("Checking info from existing meeting should returns a success response and a valid meeting identifier", func(t *testing.T) {
+		TestUtil.ExecuteRequest(router, "GET", "/bigbluebutton/api/create?name=doe&meetingID=meeting_id&moderatorPW=pwd&checksum=b4a2dcd6ecab0c4697d46f3713f18ebc65c7e827", nil)
+		w := TestUtil.ExecuteRequest(router, "GET", "/bigbluebutton/api/getMeetingInfo?meetingID=meeting_id&checksum=b49265e3baa6b4ecb5e6caf443e3511f62c434e5", nil)
+		var response api.GetMeetingInfoResponse
+		if err := xml.Unmarshal(w.Body.Bytes(), &response); err != nil {
+			panic(err)
+		}
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+		assert.Equal(t, "meeting_id", response.MeetingID)
+	})
+}

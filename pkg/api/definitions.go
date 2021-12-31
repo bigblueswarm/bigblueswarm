@@ -65,3 +65,47 @@ type IsMeetingsRunningResponse struct {
 	ReturnCode string   `xml:"returncode"`
 	Running    bool     `xml:"running"`
 }
+
+// Attendee represents a Bigbluebutton attendee
+type Attendee struct {
+	UserID          string `xml:"userID"`
+	FullName        string `xml:"fullName"`
+	Role            string `xml:"role"`
+	IsPresenter     bool   `xml:"isPresenter"`
+	IsListeningOnly bool   `xml:"isListeningOnly"`
+	HasJoinedVoice  bool   `xml:"hasJoinedVoice"`
+	HasVideo        bool   `xml:"hasVideo"`
+	ClientType      string `xml:"clientType"`
+}
+
+// GetMeetingInfoResponse represents the Bigbluebutton getMeetingInfo API response type
+type GetMeetingInfoResponse struct {
+	XMLName               xml.Name   `xml:"response"`
+	ReturnCode            string     `xml:"returncode"`
+	InternalMeetingID     string     `xml:"internalMeetingID"`
+	MeetingID             string     `xml:"meetingID"`
+	CreateTime            string     `xml:"createTime"`
+	CreateDate            string     `xml:"createDate"`
+	VoiceBridge           string     `xml:"voiceBridge"`
+	DialNumber            string     `xml:"dialNumber"`
+	AttendeePW            string     `xml:"attendeePW"`
+	ModeratorPW           string     `xml:"moderatorPW"`
+	Running               bool       `xml:"running"`
+	Duration              int        `xml:"duration"`
+	HasUserJoined         string     `xml:"hasUserJoined"`
+	Recording             bool       `xml:"recording"`
+	HasBeenForciblyEnded  bool       `xml:"hasBeenForciblyEnded"`
+	StartTime             int        `xml:"startTime"`
+	EndTime               int        `xml:"endTime"`
+	ParticipantCount      int        `xml:"participantCount"`
+	ListenerCount         int        `xml:"listenerCount"`
+	VoiceParticipantCount int        `xml:"voiceParticipantCount"`
+	VideoCount            int        `xml:"videoCount"`
+	MaxUsers              int        `xml:"maxUsers"`
+	ModeratorCount        int        `xml:"moderatorCount"`
+	Attendees             []Attendee `xml:"attendees>attendee"`
+	MetaData              struct {
+		Inner []byte `xml:",innerxml"`
+	} `xml:"metadata"`
+	IsBreakout bool `xml:"isBreakout"`
+}

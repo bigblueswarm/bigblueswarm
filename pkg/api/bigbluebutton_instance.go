@@ -96,3 +96,22 @@ func (i *BigBlueButtonInstance) IsMeetingRunning(params string) *IsMeetingsRunni
 
 	return &response
 }
+
+// GetMeetingInfo execute a get meeting info api call on the remote BigBlueButton instance
+func (i *BigBlueButtonInstance) GetMeetingInfo(params string) *GetMeetingInfoResponse {
+	checksum := CreateChecksum(i.Secret, GetMeetingInfo, params)
+	body, err := i.callAPI(params, checksum)
+
+	if err != nil {
+		log.Error(fmt.Sprintf("Failed to call %s instance api get meeting info", i.URL), err)
+		return nil
+	}
+
+	var response GetMeetingInfoResponse
+	if err := xml.Unmarshal(body, &response); err != nil {
+		log.Error("Failed to unmarshal get meeting info api call body content", err)
+		return nil
+	}
+
+	return &response
+}
