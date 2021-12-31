@@ -21,6 +21,9 @@ const End = "end"
 // IsMeetingRunning is the sub-endpoint for checking if a meeting is running
 const IsMeetingRunning = "isMeetingRunning"
 
+// GetMeetingInfo is the sub-endpoint for getting a meeting info
+const GetMeetingInfo = "getMeetingInfo"
+
 // Codes represents the api return code
 type Codes struct {
 	Success string

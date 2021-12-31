@@ -120,7 +120,7 @@ func InitBigBlueButtonContainer(name string, port string) *Container {
 		panic(err)
 	}
 
-	time.Sleep(120 * time.Second)
+	time.Sleep(240 * time.Second)
 
 	endpoint, endpointErr := bbb.Endpoint(context.Background(), "")
 

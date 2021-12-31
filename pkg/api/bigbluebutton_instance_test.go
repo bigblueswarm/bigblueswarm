@@ -45,3 +45,10 @@ func TestIsMeetingRunning(t *testing.T) {
 		assert.Equal(t, response.ReturnCode, ReturnCodes().Failed)
 	})
 }
+
+func TestGetMeetingInfo(t *testing.T) {
+	t.Run("GetMeetingInfo should return a failed response", func(t *testing.T) {
+		response := instance.GetMeetingInfo(fmt.Sprintf("meetingID=%s", meetingID))
+		assert.Equal(t, response.ReturnCode, ReturnCodes().Failed)
+	})
+}

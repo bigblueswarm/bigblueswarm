@@ -76,7 +76,7 @@ func (s *Server) Create(c *gin.Context) {
 	apiResponse := instance.Create(ctx.Params)
 
 	if apiResponse == nil {
-		log.Error("An error occurred while creating remote session")
+		log.Error("An error occurred while creating remote session, instance returns a nil response")
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -167,11 +167,37 @@ func (s *Server) IsMeetingRunning(c *gin.Context) {
 	}
 
 	isRunningResponse := instance.IsMeetingRunning(ctx.Params)
-	if err != nil {
+	if isRunningResponse == nil {
 		log.Error("An error occurred while checking if remote session is running", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
 	c.XML(http.StatusOK, isRunningResponse)
+}
+
+// GetMeetingInfo handler get information about provided session. See https://docs.bigbluebutton.org/dev/api.html#getmeetinginfo
+func (s *Server) GetMeetingInfo(c *gin.Context) {
+	ctx := getAPIContext(c)
+	meetingID, exists := c.GetQuery("meetingID")
+	if !exists {
+		missingMeetingIDParameter(c)
+		return
+	}
+
+	instance, err := s.retrieveBBBBInstanceFromMeetingID(meetingID)
+	if err != nil {
+		log.Error(err)
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
+		return
+	}
+
+	meetingInfoResponse := instance.GetMeetingInfo(ctx.Params)
+	if meetingInfoResponse == nil {
+		log.Error("An error occurred while getting remote meeting info", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.XML(http.StatusOK, meetingInfoResponse)
 }
