@@ -2,6 +2,8 @@ package app
 
 import (
 	"b3lb/pkg/api"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +23,24 @@ func (s *Server) GetMeetings(c *gin.Context) {
 func missingMeetingIDParameter(c *gin.Context) {
 	log.Error("Missing meetingID parameter")
 	c.XML(http.StatusOK, api.CreateError(api.MessageKeys().ValidationError, api.Messages().EmptyMeetingID))
+}
+
+func (s *Server) retrieveBBBBInstanceFromMeetingID(meetingID string) (api.BigBlueButtonInstance, error) {
+	host, err := s.SessionManager.Get(meetingID)
+	if err != nil {
+		return api.BigBlueButtonInstance{}, fmt.Errorf("SessionManager failed to retrieve session: %s", err.Error())
+	}
+
+	if host == "" {
+		return api.BigBlueButtonInstance{}, errors.New("SessionManager failed to retrieve session host")
+	}
+
+	instance, err := s.InstanceManager.Get(host)
+	if err != nil {
+		return api.BigBlueButtonInstance{}, fmt.Errorf("Manager failed to retrieve target instance for current request %s", err.Error())
+	}
+
+	return instance, nil
 }
 
 // Create handler find a server and create a meeting on balanced server.
@@ -80,22 +100,9 @@ func (s *Server) Join(c *gin.Context) {
 		return
 	}
 
-	host, err := s.SessionManager.Get(meetingID)
+	instance, err := s.retrieveBBBBInstanceFromMeetingID(meetingID)
 	if err != nil {
-		log.Error("SessionManager failed to retrieve session", err)
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
-		return
-	}
-
-	if host == "" {
-		log.Error("SessionManager failed to retrieve session host")
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
-		return
-	}
-
-	instance, err := s.InstanceManager.Get(host)
-	if err != nil {
-		log.Error("Manager failed to retrieve target instance for current request", err)
+		log.Error(err)
 		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
 		return
 	}
@@ -119,23 +126,9 @@ func (s *Server) End(c *gin.Context) {
 		return
 	}
 
-	//TODO manage instance getter into its own function
-	host, err := s.SessionManager.Get(meetingID)
+	instance, err := s.retrieveBBBBInstanceFromMeetingID(meetingID)
 	if err != nil {
-		log.Error("SessionManager failed to retrieve session", err)
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
-		return
-	}
-
-	if host == "" {
-		log.Error("SessionManager failed to retrieve session host")
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
-		return
-	}
-
-	instance, err := s.InstanceManager.Get(host)
-	if err != nil {
-		log.Error("Manager failed to retrieve target instance for current request", err)
+		log.Error(err)
 		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
 		return
 	}
