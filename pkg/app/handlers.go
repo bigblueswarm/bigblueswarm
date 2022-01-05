@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -119,6 +121,20 @@ func (s *Server) Join(c *gin.Context) {
 
 // End handler end provided session. See https://docs.bigbluebutton.org/dev/api.html#end
 func (s *Server) End(c *gin.Context) {
+	endProcess := func() error {
+		meetingID, _ := c.GetQuery("meetingID")
+		removeErr := s.SessionManager.Remove(meetingID)
+		if removeErr != nil {
+			return fmt.Errorf("SessionManager failed to remove session %s: %s", meetingID, removeErr)
+		}
+
+		return nil
+	}
+
+	s.proxy(c, api.End, endProcess)
+}
+
+func (s *Server) proxy(c *gin.Context, action string, endProcess func() error) {
 	ctx := getAPIContext(c)
 	meetingID, exists := c.GetQuery("meetingID")
 	if !exists {
@@ -133,71 +149,39 @@ func (s *Server) End(c *gin.Context) {
 		return
 	}
 
-	endResponse := instance.End(ctx.Params)
-	if endResponse == nil {
-		log.Error("An error occurred while ending remote session")
+	methodName := strings.Title(action)
+	method := reflect.ValueOf(&instance).MethodByName(methodName)
+	if method.IsNil() {
+		log.Errorf("Failed to retrieve %s method on bigbluebutton instance", methodName)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	removeErr := s.SessionManager.Remove(meetingID)
-	if removeErr != nil {
-		log.Error("SessionManager failed to remove session", removeErr)
+	response := method.Call([]reflect.Value{reflect.ValueOf(ctx.Params)})[0].Interface()
+
+	if response == nil {
+		log.Errorf("An error occurred while calling %s method on remote instance", action)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	c.XML(http.StatusOK, endResponse)
+	if endProcess != nil {
+		err := endProcess()
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	c.XML(http.StatusOK, response)
 }
 
 // IsMeetingRunning handler check if provided session is running. See https://docs.bigbluebutton.org/dev/api.html#ismeetingrunning
 func (s *Server) IsMeetingRunning(c *gin.Context) {
-	ctx := getAPIContext(c)
-	meetingID, exists := c.GetQuery("meetingID")
-	if !exists {
-		missingMeetingIDParameter(c)
-		return
-	}
-
-	instance, err := s.retrieveBBBBInstanceFromMeetingID(meetingID)
-	if err != nil {
-		log.Error(err)
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
-		return
-	}
-
-	isRunningResponse := instance.IsMeetingRunning(ctx.Params)
-	if isRunningResponse == nil {
-		log.Error("An error occurred while checking if remote session is running", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.XML(http.StatusOK, isRunningResponse)
+	s.proxy(c, api.IsMeetingRunning, nil)
 }
 
 // GetMeetingInfo handler get information about provided session. See https://docs.bigbluebutton.org/dev/api.html#getmeetinginfo
 func (s *Server) GetMeetingInfo(c *gin.Context) {
-	ctx := getAPIContext(c)
-	meetingID, exists := c.GetQuery("meetingID")
-	if !exists {
-		missingMeetingIDParameter(c)
-		return
-	}
-
-	instance, err := s.retrieveBBBBInstanceFromMeetingID(meetingID)
-	if err != nil {
-		log.Error(err)
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
-		return
-	}
-
-	meetingInfoResponse := instance.GetMeetingInfo(ctx.Params)
-	if meetingInfoResponse == nil {
-		log.Error("An error occurred while getting remote meeting info", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.XML(http.StatusOK, meetingInfoResponse)
+	s.proxy(c, api.GetMeetingInfo, nil)
 }
