@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -150,8 +152,7 @@ func (s *Server) End(c *gin.Context) {
 	c.XML(http.StatusOK, endResponse)
 }
 
-// IsMeetingRunning handler check if provided session is running. See https://docs.bigbluebutton.org/dev/api.html#ismeetingrunning
-func (s *Server) IsMeetingRunning(c *gin.Context) {
+func (s *Server) proxy(c *gin.Context, action string) {
 	ctx := getAPIContext(c)
 	meetingID, exists := c.GetQuery("meetingID")
 	if !exists {
@@ -166,38 +167,31 @@ func (s *Server) IsMeetingRunning(c *gin.Context) {
 		return
 	}
 
-	isRunningResponse := instance.IsMeetingRunning(ctx.Params)
-	if isRunningResponse == nil {
-		log.Error("An error occurred while checking if remote session is running", err)
+	methodName := strings.Title(action)
+	method := reflect.ValueOf(&instance).MethodByName(methodName)
+	if method.IsNil() {
+		log.Errorf("Failed to retrieve %s method on bigbluebutton instance", methodName)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	c.XML(http.StatusOK, isRunningResponse)
+	response := method.Call([]reflect.Value{reflect.ValueOf(ctx.Params)})[0].Interface()
+
+	if response == nil {
+		log.Errorf("An error occurred while calling %s method on remote instance", action)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.XML(http.StatusOK, response)
+}
+
+// IsMeetingRunning handler check if provided session is running. See https://docs.bigbluebutton.org/dev/api.html#ismeetingrunning
+func (s *Server) IsMeetingRunning(c *gin.Context) {
+	s.proxy(c, api.IsMeetingRunning)
 }
 
 // GetMeetingInfo handler get information about provided session. See https://docs.bigbluebutton.org/dev/api.html#getmeetinginfo
 func (s *Server) GetMeetingInfo(c *gin.Context) {
-	ctx := getAPIContext(c)
-	meetingID, exists := c.GetQuery("meetingID")
-	if !exists {
-		missingMeetingIDParameter(c)
-		return
-	}
-
-	instance, err := s.retrieveBBBBInstanceFromMeetingID(meetingID)
-	if err != nil {
-		log.Error(err)
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
-		return
-	}
-
-	meetingInfoResponse := instance.GetMeetingInfo(ctx.Params)
-	if meetingInfoResponse == nil {
-		log.Error("An error occurred while getting remote meeting info", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.XML(http.StatusOK, meetingInfoResponse)
+	s.proxy(c, api.GetMeetingInfo)
 }
