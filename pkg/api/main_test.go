@@ -1,23 +1,22 @@
 package api
 
 import (
+	"b3lb/internal/mock"
 	TestUtil "b3lb/internal/test"
+	"b3lb/pkg/restclient"
 	"os"
 	"testing"
-	"time"
 )
 
 var instance *BigBlueButtonInstance
 
 func TestMain(m *testing.M) {
-	bbb := TestUtil.InitBigBlueButtonContainer("tc_bbb1_api", "80/tcp")
-	time.Sleep(30 * time.Second)
-	TestUtil.SetBBBSecret([]*TestUtil.Container{bbb})
-
 	instance = &BigBlueButtonInstance{
-		URL:    TestUtil.FormatBBBInstanceURL(bbb.URI),
+		URL:    "http://localhost:80/bigbluebutton",
 		Secret: TestUtil.BBBSecret,
 	}
+
+	restclient.Client = &mock.MockRestClient{}
 
 	status := m.Run()
 
