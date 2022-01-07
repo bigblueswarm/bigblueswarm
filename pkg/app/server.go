@@ -3,6 +3,7 @@ package app
 import (
 	"b3lb/pkg/admin"
 	"b3lb/pkg/config"
+	"b3lb/pkg/restclient"
 	"b3lb/pkg/utils"
 	"fmt"
 
@@ -22,6 +23,8 @@ type Server struct {
 func NewServer(config *config.Config) *Server {
 	redisClient := utils.RedisClient(config)
 	influxClient := utils.InfluxDBClient(config)
+
+	restclient.Init()
 
 	return &Server{
 		Router:          gin.Default(),

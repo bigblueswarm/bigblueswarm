@@ -75,10 +75,10 @@ func (s *Server) Create(c *gin.Context) {
 		return
 	}
 
-	apiResponse := instance.Create(ctx.Params)
+	apiResponse, err := instance.Create(ctx.Params)
 
-	if apiResponse == nil {
-		log.Error("An error occurred while creating remote session, instance returns a nil response")
+	if err != nil {
+		log.Error("An error occurred while creating remote session, instance returns a nil response", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -157,9 +157,11 @@ func (s *Server) proxy(c *gin.Context, action string, endProcess func() error) {
 		return
 	}
 
-	response := method.Call([]reflect.Value{reflect.ValueOf(ctx.Params)})[0].Interface()
+	values := method.Call([]reflect.Value{reflect.ValueOf(ctx.Params)})
+	response := values[0].Interface()
+	responseErr := values[1].Interface()
 
-	if response == nil {
+	if responseErr != nil {
 		log.Errorf("An error occurred while calling %s method on remote instance", action)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
