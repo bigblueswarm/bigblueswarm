@@ -4,6 +4,7 @@ import (
 	"b3lb/pkg/api"
 	"b3lb/pkg/utils"
 	"context"
+	"errors"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -28,9 +29,9 @@ type RedisInstanceManager struct {
 }
 
 // NewInstanceManager creates a new instance manager
-func NewInstanceManager(rdb *redis.Client) InstanceManager {
+func NewInstanceManager(rdb redis.Client) InstanceManager {
 	return &RedisInstanceManager{
-		RDB: rdb,
+		RDB: &rdb,
 	}
 }
 
@@ -61,6 +62,11 @@ func (m *RedisInstanceManager) Remove(URL string) error {
 // Get retrieve a BigBlueButton instance based on its url
 func (m *RedisInstanceManager) Get(URL string) (api.BigBlueButtonInstance, error) {
 	secret, err := m.RDB.HGet(ctx, B3LBInstances, URL).Result()
+
+	if secret == "" {
+		return api.BigBlueButtonInstance{}, errors.New("Instance not found")
+	}
+
 	return api.BigBlueButtonInstance{
 		URL:    URL,
 		Secret: secret,

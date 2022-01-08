@@ -15,8 +15,8 @@ type Server struct {
 	Router          *gin.Engine
 	Config          *config.Config
 	InstanceManager admin.InstanceManager
-	SessionManager  *SessionManager
-	Balancer        *Balancer
+	SessionManager  SessionManager
+	Balancer        Balancer
 }
 
 // NewServer creates a new server based on given configuration
@@ -29,7 +29,7 @@ func NewServer(config *config.Config) *Server {
 	return &Server{
 		Router:          gin.Default(),
 		Config:          config,
-		InstanceManager: admin.NewInstanceManager(redisClient),
+		InstanceManager: admin.NewInstanceManager(*redisClient),
 		SessionManager:  NewSessionManager(*redisClient),
 		Balancer:        NewBalancer(influxClient),
 	}

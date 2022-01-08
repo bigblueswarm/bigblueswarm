@@ -1,50 +1,49 @@
 package admin
 
 import (
-	TestUtil "b3lb/internal/test"
-	"io"
+	"b3lb/internal/test"
+	"b3lb/pkg/admin/mock"
+	"b3lb/pkg/config"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestApiKeyValidation(t *testing.T) {
-	type test struct {
-		name           string
-		headers        map[string]string
-		expectedStatus int
-		body           io.Reader
-	}
-
-	tests := []test{
+	var w *httptest.ResponseRecorder
+	var c *gin.Context
+	admin := CreateAdmin(&mock.InstanceManager{}, &config.AdminConfig{APIKey: test.DefaultAPIKey()})
+	tests := []test.Test{
 		{
-			name: "An invalid api key should returns an unauthorized error",
-			headers: map[string]string{
-				"Authorization": TestUtil.DefaultAPIKey() + "dummy",
+			Name: "An empty api key should returns an unauthorized error",
+			Mock: func() {
+				test.SetRequestHeader(c, "Authorization", "")
 			},
-			expectedStatus: 401,
-			body:           nil,
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusUnauthorized, w.Code)
+			},
 		},
 		{
-			name:           "An empty api key should returns an unauthorized error",
-			headers:        map[string]string{},
-			expectedStatus: 401,
-			body:           nil,
-		},
-		{
-			name: "A valid api key should go through the api key validation middleware",
-			headers: map[string]string{
-				"Authorization": TestUtil.DefaultAPIKey(),
+			Name: "An invalid api key should returns an unauthorized error",
+			Mock: func() {
+				test.SetRequestHeader(c, "Authorization", "invalid_key")
 			},
-			expectedStatus: 400,
-			body:           nil,
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusUnauthorized, w.Code)
+			},
 		},
 	}
 
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			w := TestUtil.ExecuteRequestWithHeaders(router, "POST", "/admin/servers", test.body, test.headers)
-			assert.Equal(t, test.expectedStatus, w.Code)
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			test.Mock()
+			admin.APIKeyValidation(c)
+			test.Validator(t, nil, nil)
 		})
 	}
 }

@@ -1,26 +1,32 @@
 package app
 
 import (
-	TestUtil "b3lb/internal/test"
 	"b3lb/pkg/admin"
-	"b3lb/pkg/api"
-	"b3lb/pkg/config"
-	"context"
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redismock/v8"
 )
 
-var cluster *TestUtil.Cluster
+var (
+	redisMock       redismock.ClientMock
+	redisClient     *redis.Client
+	sessionManager  SessionManager
+	instanceManager admin.InstanceManager
+)
 
 func TestMain(m *testing.M) {
-	ctx := context.Background()
+	//ctx := context.Background()
+	gin.SetMode(gin.TestMode)
+	client, rMock := redismock.NewClientMock()
+	redisClient = client
+	redisMock = rMock
+	sessionManager = NewSessionManager(*redisClient)
+	instanceManager = admin.NewInstanceManager(*redisClient)
 
-	cluster = &TestUtil.Cluster{
-		Redis:    TestUtil.InitRedisContainer("tc_redis_app"),
+	/*cluster = &TestUtil.Cluster{
 		InfluxDB: TestUtil.InitInfluxDBContainer("tc_influxdb_app"),
 		BigBlueButtons: []*TestUtil.Container{
 			TestUtil.InitBigBlueButtonContainer("tc_bbb1", "80/tcp"),
@@ -30,16 +36,11 @@ func TestMain(m *testing.M) {
 
 	TestUtil.WriteIDBData(cluster)
 	insertBBBInstances(cluster)
-	TestUtil.SetBBBSecret(cluster.BigBlueButtons)
+	TestUtil.SetBBBSecret(cluster.BigBlueButtons)*/
 
 	status := m.Run()
 
-	rTErr := cluster.Redis.Container.Terminate(ctx)
-	if rTErr != nil {
-		panic(rTErr)
-	}
-
-	iDBTErr := cluster.InfluxDB.Container.Terminate(ctx)
+	/*iDBTErr := cluster.InfluxDB.Container.Terminate(ctx)
 	if iDBTErr != nil {
 		panic(iDBTErr)
 	}
@@ -49,57 +50,11 @@ func TestMain(m *testing.M) {
 		if bbbErr != nil {
 			panic(bbbErr)
 		}
+	}*/
+
+	if err := redisMock.ExpectationsWereMet(); err != nil {
+		panic(err)
 	}
 
 	os.Exit(status)
-}
-
-func defaultConfig() *config.Config {
-	return &config.Config{
-		BigBlueButton: config.BigBlueButton{
-			Secret: "secret",
-		},
-		Admin: config.AdminConfig{
-			APIKey: TestUtil.DefaultAPIKey(),
-		},
-		RDB: config.RDB{
-			Address:  cluster.Redis.URI,
-			Password: "",
-			DB:       0,
-		},
-		IDB: config.IDB{
-			Address:      fmt.Sprintf("http://%s", cluster.InfluxDB.URI),
-			Token:        TestUtil.InfluxDBToken,
-			Bucket:       TestUtil.InfluxDBBucket,
-			Organization: TestUtil.InfluxDBOrg,
-		},
-	}
-}
-
-func launchRouter(config *config.Config) *gin.Engine {
-	server := NewServer(config)
-	server.initRoutes()
-	return server.Router
-}
-
-// InsertBBBInstances inserts bigbluebutton instances into the database
-func insertBBBInstances(cluster *TestUtil.Cluster) {
-	client := redis.NewClient(&redis.Options{
-		Addr:     cluster.Redis.URI,
-		Password: "",
-		DB:       0,
-	})
-
-	manager := admin.NewInstanceManager(client)
-
-	for _, bbb := range cluster.BigBlueButtons {
-		instance := api.BigBlueButtonInstance{
-			URL:    TestUtil.FormatBBBInstanceURL(bbb.URI),
-			Secret: TestUtil.BBBSecret,
-		}
-
-		if err := manager.Add(instance); err != nil {
-			panic(err)
-		}
-	}
 }
