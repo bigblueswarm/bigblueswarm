@@ -24,8 +24,8 @@ func TestAddInstance(t *testing.T) {
 			Mock: func() {
 				test.AddRequestBody(c, "")
 			},
-			Validator: func(value interface{}, err error) bool {
-				return w.Code == http.StatusBadRequest
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusBadRequest, w.Code)
 			},
 		},
 		{
@@ -38,9 +38,8 @@ func TestAddInstance(t *testing.T) {
 				test.SetRequestContentType(c, "application/json")
 				test.AddRequestBody(c, `{"url":"http://localhost/bigbluebutton", "secret":"secret"}`)
 			},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				return true
 			},
 		},
 		{
@@ -53,9 +52,8 @@ func TestAddInstance(t *testing.T) {
 				test.SetRequestContentType(c, "application/json")
 				test.AddRequestBody(c, `{"url":"http://localhost/bigbluebutton", "secret":"secret"}`)
 			},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(vt *testing.T, alue interface{}, err error) {
 				assert.Equal(t, http.StatusConflict, w.Code)
-				return true
 			},
 		},
 		{
@@ -71,9 +69,8 @@ func TestAddInstance(t *testing.T) {
 				test.SetRequestContentType(c, "application/json")
 				test.AddRequestBody(c, `{"url":"http://localhost/bigbluebutton", "secret":"secret"}`)
 			},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				return true
 			},
 		},
 		{
@@ -89,10 +86,9 @@ func TestAddInstance(t *testing.T) {
 				test.SetRequestContentType(c, "application/json")
 				test.AddRequestBody(c, `{"url":"http://localhost/bigbluebutton", "secret":"secret"}`)
 			},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(vt *testing.T, alue interface{}, err error) {
 				assert.Equal(t, w.Body.String(), `{"url":"http://localhost/bigbluebutton","secret":"secret"}`)
 				assert.Equal(t, http.StatusCreated, w.Code)
-				return true
 			},
 		},
 	}
@@ -103,7 +99,7 @@ func TestAddInstance(t *testing.T) {
 			c, _ = gin.CreateTestContext(w)
 			test.Mock()
 			admin.AddInstance(c)
-			test.Validator(nil, nil)
+			test.Validator(t, nil, nil)
 		})
 	}
 }
@@ -121,10 +117,9 @@ func TestListInstances(t *testing.T) {
 					return []string{url}, nil
 				}
 			},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusOK, w.Code)
 				assert.Equal(t, test.StringToJSONArray(w.Body.String())[0], url)
-				return true
 			},
 		},
 		{
@@ -134,9 +129,8 @@ func TestListInstances(t *testing.T) {
 					return nil, errors.New("unexpected error")
 				}
 			},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				return true
 			},
 		},
 	}
@@ -147,7 +141,7 @@ func TestListInstances(t *testing.T) {
 			c, _ := gin.CreateTestContext(w)
 			test.Mock()
 			admin.ListInstances(c)
-			test.Validator(nil, nil)
+			test.Validator(t, nil, nil)
 		})
 	}
 }
@@ -160,9 +154,8 @@ func TestDeleteInstance(t *testing.T) {
 		{
 			Name: "Delete should return a bad request status if instance url is not provided",
 			Mock: func() {},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusBadRequest, w.Code)
-				return true
 			},
 		},
 		{
@@ -173,9 +166,8 @@ func TestDeleteInstance(t *testing.T) {
 				}
 				test.SetRequestParams(c, "url=http://localhost/bigbluebutton")
 			},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				return true
 			},
 		},
 		{
@@ -186,9 +178,8 @@ func TestDeleteInstance(t *testing.T) {
 				}
 				test.SetRequestParams(c, "url=http://localhost/bigbluebutton")
 			},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusNotFound, w.Code)
-				return true
 			},
 		},
 		{
@@ -202,9 +193,8 @@ func TestDeleteInstance(t *testing.T) {
 				}
 				test.SetRequestParams(c, "url=http://localhost/bigbluebutton")
 			},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				return true
 			},
 		},
 		{
@@ -218,9 +208,8 @@ func TestDeleteInstance(t *testing.T) {
 				}
 				test.SetRequestParams(c, "url=http://localhost/bigbluebutton")
 			},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusNoContent, w.Code)
-				return true
 			},
 		},
 	}
@@ -231,7 +220,7 @@ func TestDeleteInstance(t *testing.T) {
 			c, _ = gin.CreateTestContext(w)
 			test.Mock()
 			admin.DeleteInstance(c)
-			test.Validator(nil, nil)
+			test.Validator(t, nil, nil)
 		})
 	}
 }

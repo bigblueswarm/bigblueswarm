@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 	redisClient = client
 	redisMock = mock
 
-	instanceManager = NewInstanceManager(client)
+	instanceManager = NewInstanceManager(*client)
 
 	router = gin.Default()
 	CreateAdmin(instanceManager, &config.AdminConfig{

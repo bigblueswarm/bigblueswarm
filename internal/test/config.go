@@ -4,3 +4,8 @@ package test
 func DefaultAPIKey() string {
 	return "supersecret"
 }
+
+// DefaultSecret returns the default testing secret
+func DefaultSecret() string {
+	return "supersecret"
+}

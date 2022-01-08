@@ -21,8 +21,9 @@ func TestExists(t *testing.T) {
 				mock.SetErr(nil)
 				mock.SetVal(true)
 			},
-			Validator: func(value interface{}, err error) bool {
-				return value.(bool) && err == nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.True(t, value.(bool))
+				assert.Nil(t, err)
 			},
 		},
 		{
@@ -32,8 +33,9 @@ func TestExists(t *testing.T) {
 				mock.SetErr(nil)
 				mock.SetVal(false)
 			},
-			Validator: func(value interface{}, err error) bool {
-				return !value.(bool) && err == nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.False(t, value.(bool))
+				assert.Nil(t, err)
 			},
 		},
 		{
@@ -43,8 +45,9 @@ func TestExists(t *testing.T) {
 				mock.SetErr(redis.Nil)
 				mock.SetVal(false)
 			},
-			Validator: func(value interface{}, err error) bool {
-				return !value.(bool) && err == nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.False(t, value.(bool))
+				assert.Nil(t, err)
 			},
 		},
 		{
@@ -53,8 +56,8 @@ func TestExists(t *testing.T) {
 				mock := redisMock.ExpectHExists(B3LBInstances, url)
 				mock.SetErr(errors.New("test error"))
 			},
-			Validator: func(value interface{}, err error) bool {
-				return err != nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.NotNil(t, err)
 			},
 		},
 	}
@@ -63,7 +66,7 @@ func TestExists(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Mock()
 			exists, err := instanceManager.Exists(api.BigBlueButtonInstance{URL: url})
-			assert.True(t, test.Validator(exists, err))
+			test.Validator(t, exists, err)
 		})
 	}
 }
@@ -75,8 +78,9 @@ func TestList(t *testing.T) {
 			Mock: func() {
 				redisMock.ExpectHKeys(B3LBInstances).SetVal([]string{url})
 			},
-			Validator: func(value interface{}, err error) bool {
-				return value.([]string)[0] == url && err == nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, value.([]string)[0], url)
+				assert.Nil(t, err)
 			},
 		},
 		{
@@ -86,8 +90,9 @@ func TestList(t *testing.T) {
 				mock.SetErr(redis.Nil)
 				mock.SetVal([]string{})
 			},
-			Validator: func(value interface{}, err error) bool {
-				return len(value.([]string)) == 0 && err == nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, len(value.([]string)), 0)
+				assert.Nil(t, err)
 			},
 		},
 		{
@@ -95,8 +100,8 @@ func TestList(t *testing.T) {
 			Mock: func() {
 				redisMock.ExpectHKeys(B3LBInstances).SetErr(errors.New("test error"))
 			},
-			Validator: func(value interface{}, err error) bool {
-				return err != nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.NotNil(t, err)
 			},
 		},
 	}
@@ -105,7 +110,7 @@ func TestList(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Mock()
 			keys, err := instanceManager.List()
-			assert.True(t, test.Validator(keys, err))
+			test.Validator(t, keys, err)
 		})
 	}
 }
@@ -117,8 +122,8 @@ func TestAdd(t *testing.T) {
 			Mock: func() {
 				redisMock.ExpectHSet(B3LBInstances, url, "secret")
 			},
-			Validator: func(value interface{}, err error) bool {
-				return err != nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.NotNil(t, err)
 			},
 		},
 		{
@@ -126,8 +131,8 @@ func TestAdd(t *testing.T) {
 			Mock: func() {
 				redisMock.ExpectHSet(B3LBInstances, url, "secret").SetErr(errors.New("test error"))
 			},
-			Validator: func(value interface{}, err error) bool {
-				return err != nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.NotNil(t, err)
 			},
 		},
 	}
@@ -136,7 +141,7 @@ func TestAdd(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Mock()
 			err := instanceManager.Add(api.BigBlueButtonInstance{URL: url, Secret: "secret"})
-			assert.True(t, test.Validator(nil, err))
+			test.Validator(t, nil, err)
 		})
 	}
 }
@@ -150,8 +155,8 @@ func TestRemove(t *testing.T) {
 				mock.SetErr(nil)
 				mock.SetVal(1)
 			},
-			Validator: func(value interface{}, err error) bool {
-				return err == nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Nil(t, err)
 			},
 		},
 		{
@@ -159,8 +164,8 @@ func TestRemove(t *testing.T) {
 			Mock: func() {
 				redisMock.ExpectHDel(B3LBInstances, url).SetErr(errors.New("test error"))
 			},
-			Validator: func(value interface{}, err error) bool {
-				return err != nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.NotNil(t, err)
 			},
 		},
 	}
@@ -169,7 +174,7 @@ func TestRemove(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Mock()
 			err := instanceManager.Remove(url)
-			assert.True(t, test.Validator(nil, err))
+			test.Validator(t, nil, err)
 		})
 	}
 }
@@ -184,9 +189,11 @@ func TestGet(t *testing.T) {
 				mock.SetErr(nil)
 				mock.SetVal(secret)
 			},
-			Validator: func(value interface{}, err error) bool {
+			Validator: func(t *testing.T, value interface{}, err error) {
 				instance := value.(api.BigBlueButtonInstance)
-				return instance.URL == url && instance.Secret == secret && err == nil
+				assert.Equal(t, instance.URL, url)
+				assert.Equal(t, instance.Secret, secret)
+				assert.Nil(t, err)
 			},
 		},
 		{
@@ -195,8 +202,8 @@ func TestGet(t *testing.T) {
 				mock := redisMock.ExpectHGet(B3LBInstances, url)
 				mock.SetErr(errors.New("test error"))
 			},
-			Validator: func(value interface{}, err error) bool {
-				return err != nil
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.NotNil(t, err)
 			},
 		},
 	}
@@ -205,7 +212,7 @@ func TestGet(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Mock()
 			instance, err := instanceManager.Get(url)
-			assert.True(t, test.Validator(instance, err))
+			test.Validator(t, instance, err)
 		})
 	}
 }

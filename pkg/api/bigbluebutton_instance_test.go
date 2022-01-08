@@ -127,7 +127,7 @@ func TestGetJoinRedirectURL(t *testing.T) {
 			panic(err)
 		}
 
-		expectedURL := fmt.Sprintf("%s/api/join?%s&%s", instance.URL, params, "checksum=fd830ac8255d26170825bb676a746754dab86731")
+		expectedURL := fmt.Sprintf("%s/api/join?%s&%s", instance.URL, params, "checksum=ca7b6a04636c6fba1dd6158a1f2b72ab4811472a")
 		assert.Equal(t, expectedURL, url)
 	})
 }

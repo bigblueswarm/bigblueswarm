@@ -1,5 +1,8 @@
 package api
 
+// Version is the version of the api
+const Version = "2.0"
+
 // BigBlueButton is the main endpoint for the API
 const BigBlueButton = "bigbluebutton"
 

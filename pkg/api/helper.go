@@ -4,7 +4,7 @@ package api
 func CreateHealthCheck() *HealthCheck {
 	return &HealthCheck{
 		ReturnCode: "SUCCESS",
-		Version:    "2.0",
+		Version:    Version,
 	}
 }
 

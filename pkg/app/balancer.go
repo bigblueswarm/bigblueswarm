@@ -3,39 +3,45 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	redisApi "github.com/influxdata/influxdb-client-go/v2/api"
 	log "github.com/sirupsen/logrus"
 )
 
 // Balancer find the right server to use
-type Balancer struct {
+type Balancer interface {
+	Process(instances []string) (string, error)
+}
+
+// InfluxDBBalancer is the InfluxDB implementation of Balancer
+type InfluxDBBalancer struct {
 	Client redisApi.QueryAPI
 }
 
 // NewBalancer creates a new Balancer object
-func NewBalancer(idb redisApi.QueryAPI) *Balancer {
-	return &Balancer{
+func NewBalancer(idb redisApi.QueryAPI) Balancer {
+	return &InfluxDBBalancer{
 		Client: idb,
 	}
 }
 
-func (b *Balancer) formatInstancesFilter(instances []string) string {
+func (b *InfluxDBBalancer) formatInstancesFilter(instances []string) string {
 	var result string
 	for i, instance := range instances {
 		filter := fmt.Sprintf(`r["b3lb_host"] == "%s"`, instance)
 		result = fmt.Sprintf("%s %s", result, filter)
 
 		if i != (len(instances) - 1) {
-			result = fmt.Sprintf("%s or ", result)
+			result = fmt.Sprintf("%s or", result)
 		}
 	}
 
-	return result
+	return strings.TrimSpace(result)
 }
 
 // Process compute data to find a bigbluebutton server
-func (b *Balancer) Process(instances []string) (string, error) {
+func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
 	req := fmt.Sprintf(`from(bucket: "bucket")
 	|> range(start: -5m)
 	|> filter(fn: (r) => r["_measurement"] == "cpu" or r["_measurement"] == "mem")

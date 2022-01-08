@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"testing"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +15,7 @@ import (
 type Test struct {
 	Name      string
 	Mock      func()
-	Validator func(value interface{}, err error) bool
+	Validator func(t *testing.T, value interface{}, err error)
 }
 
 // StringToJSONArray convert a json string to a string array
@@ -28,6 +29,7 @@ func initRequestContext(c *gin.Context) {
 	if c.Request == nil {
 		c.Request = &http.Request{
 			Header: make(http.Header),
+			URL:    &url.URL{},
 		}
 	}
 }
@@ -56,4 +58,10 @@ func SetRequestParams(c *gin.Context, value string) {
 	c.Request.URL = &url.URL{
 		RawQuery: value,
 	}
+}
+
+// SetRequestHeader set the request header
+func SetRequestHeader(c *gin.Context, key, value string) {
+	initRequestContext(c)
+	c.Request.Header.Set(key, value)
 }
