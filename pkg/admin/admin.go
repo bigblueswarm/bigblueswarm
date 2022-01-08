@@ -11,12 +11,12 @@ import (
 
 // Admin struct manager b3lb administration
 type Admin struct {
-	InstanceManager *InstanceManager
+	InstanceManager InstanceManager
 	Config          *config.AdminConfig
 }
 
 // CreateAdmin creates a new admin based on given configuration
-func CreateAdmin(instanceManager *InstanceManager, config *config.AdminConfig) *Admin {
+func CreateAdmin(instanceManager InstanceManager, config *config.AdminConfig) *Admin {
 	return &Admin{
 		InstanceManager: instanceManager,
 		Config:          config,
@@ -86,7 +86,7 @@ func (a *Admin) DeleteInstance(c *gin.Context) {
 			return
 		}
 
-		c.Status(http.StatusNoContent)
+		c.AbortWithStatus(http.StatusNoContent)
 	} else {
 		c.AbortWithStatus(http.StatusBadRequest)
 	}

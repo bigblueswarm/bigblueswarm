@@ -1,7 +1,7 @@
 package api
 
 import (
-	"b3lb/internal/mock"
+	"b3lb/pkg/restclient/mock"
 	"bytes"
 	"encoding/xml"
 	"fmt"

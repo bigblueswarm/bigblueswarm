@@ -1,9 +1,9 @@
 package api
 
 import (
-	"b3lb/internal/mock"
 	TestUtil "b3lb/internal/test"
 	"b3lb/pkg/restclient"
+	"b3lb/pkg/restclient/mock"
 	"os"
 	"testing"
 )
@@ -16,7 +16,7 @@ func TestMain(m *testing.M) {
 		Secret: TestUtil.BBBSecret,
 	}
 
-	restclient.Client = &mock.MockRestClient{}
+	restclient.Client = &mock.RestClient{}
 
 	status := m.Run()
 
