@@ -14,7 +14,7 @@ import (
 type Server struct {
 	Router          *gin.Engine
 	Config          *config.Config
-	InstanceManager *admin.InstanceManager
+	InstanceManager admin.InstanceManager
 	SessionManager  *SessionManager
 	Balancer        *Balancer
 }

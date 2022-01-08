@@ -14,42 +14,52 @@ var ctx = context.Background()
 const B3LBInstances = "b3lb_instances"
 
 // InstanceManager manager Bigbluebutton instances
-type InstanceManager struct {
+type InstanceManager interface {
+	Exists(instance api.BigBlueButtonInstance) (bool, error)
+	List() ([]string, error)
+	Add(instance api.BigBlueButtonInstance) error
+	Remove(URL string) error
+	Get(URL string) (api.BigBlueButtonInstance, error)
+}
+
+// RedisInstanceManager is the redis implementation of InstanceManager
+type RedisInstanceManager struct {
 	RDB *redis.Client
 }
 
-// NewInstanceManager creates a nes instance manager
-func NewInstanceManager(rdb *redis.Client) *InstanceManager {
-	return &InstanceManager{
+// NewInstanceManager creates a new instance manager
+func NewInstanceManager(rdb *redis.Client) InstanceManager {
+	return &RedisInstanceManager{
 		RDB: rdb,
 	}
 }
 
 // Exists checks if an instance exists
-func (m *InstanceManager) Exists(instance api.BigBlueButtonInstance) (bool, error) {
-	return m.RDB.HExists(ctx, B3LBInstances, instance.URL).Result()
+func (m *RedisInstanceManager) Exists(instance api.BigBlueButtonInstance) (bool, error) {
+	exists, err := m.RDB.HExists(ctx, B3LBInstances, instance.URL).Result()
+	return exists, utils.ComputeErr(err)
 }
 
 // List returns the list of instances
-func (m *InstanceManager) List() ([]string, error) {
+func (m *RedisInstanceManager) List() ([]string, error) {
 	instances, err := m.RDB.HKeys(ctx, B3LBInstances).Result()
 	return instances, utils.ComputeErr(err)
 }
 
 // Add adds an instance to the manager
-func (m *InstanceManager) Add(instance api.BigBlueButtonInstance) error {
+func (m *RedisInstanceManager) Add(instance api.BigBlueButtonInstance) error {
 	_, err := m.RDB.HSet(ctx, B3LBInstances, instance.URL, instance.Secret).Result()
 	return utils.ComputeErr(err)
 }
 
 // Remove and instance from the manager
-func (m *InstanceManager) Remove(URL string) error {
+func (m *RedisInstanceManager) Remove(URL string) error {
 	_, err := m.RDB.HDel(ctx, B3LBInstances, URL).Result()
 	return utils.ComputeErr(err)
 }
 
 // Get retrieve a BigBlueButton instance based on its url
-func (m *InstanceManager) Get(URL string) (api.BigBlueButtonInstance, error) {
+func (m *RedisInstanceManager) Get(URL string) (api.BigBlueButtonInstance, error) {
 	secret, err := m.RDB.HGet(ctx, B3LBInstances, URL).Result()
 	return api.BigBlueButtonInstance{
 		URL:    URL,

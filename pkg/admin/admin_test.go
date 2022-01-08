@@ -1,112 +1,237 @@
 package admin
 
 import (
-	TestUtil "b3lb/internal/test"
-	"b3lb/pkg/utils"
-	"bytes"
-	"encoding/json"
-	"io"
+	"b3lb/internal/test"
+	"b3lb/pkg/admin/mock"
+	"b3lb/pkg/api"
+	"b3lb/pkg/config"
+	"errors"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAddInstance(t *testing.T) {
-	type test struct {
-		name           string
-		body           io.Reader
-		expectedStatus int
-		expectedBody   string
-	}
-
-	tests := []test{
+	var w *httptest.ResponseRecorder
+	var c *gin.Context
+	admin := CreateAdmin(&mock.InstanceManager{}, &config.AdminConfig{})
+	tests := []test.Test{
 		{
-			name:           "Nil body should trigger a bad request status",
-			body:           nil,
-			expectedStatus: 400,
-			expectedBody:   "",
+			Name: "Add should return a bad request if the request body is empty",
+			Mock: func() {
+				test.AddRequestBody(c, "")
+			},
+			Validator: func(value interface{}, err error) bool {
+				return w.Code == http.StatusBadRequest
+			},
 		},
 		{
-			name:           "Correct body should create a bbb instance",
-			body:           bytes.NewBufferString(`{"url": "http://localhost/bigbluebutton", "secret": "supersecret"}`),
-			expectedStatus: 201,
-			expectedBody:   `{"url":"http://localhost/bigbluebutton","secret":"supersecret"}`,
+			Name: "Add should return an internal server error if the instance manager returns an error when checking if instance already exists",
+			Mock: func() {
+				mock.ExistsFunc = func(instance api.BigBlueButtonInstance) (bool, error) {
+					return false, errors.New("unexpected error")
+				}
+				test.SetRequestMethod(c, http.MethodPost)
+				test.SetRequestContentType(c, "application/json")
+				test.AddRequestBody(c, `{"url":"http://localhost/bigbluebutton", "secret":"secret"}`)
+			},
+			Validator: func(value interface{}, err error) bool {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				return true
+			},
 		},
 		{
-			name:           "Adding a duplication should returns a 409 conflict status",
-			body:           bytes.NewBufferString(`{"url": "http://localhost/bigbluebutton", "secret": "supersecret"}`),
-			expectedStatus: 409,
-			expectedBody:   "",
+			Name: "Add should return a conflict error if instance already exists",
+			Mock: func() {
+				mock.ExistsFunc = func(instance api.BigBlueButtonInstance) (bool, error) {
+					return true, nil
+				}
+				test.SetRequestMethod(c, http.MethodPost)
+				test.SetRequestContentType(c, "application/json")
+				test.AddRequestBody(c, `{"url":"http://localhost/bigbluebutton", "secret":"secret"}`)
+			},
+			Validator: func(value interface{}, err error) bool {
+				assert.Equal(t, http.StatusConflict, w.Code)
+				return true
+			},
 		},
-	}
-
-	headers := map[string]string{
-		"Authorization": TestUtil.DefaultAPIKey(),
-		"Content-Type":  "application/json",
+		{
+			Name: "Add should return an internal server error if instance manager returns an error when adding instance",
+			Mock: func() {
+				mock.ExistsFunc = func(instance api.BigBlueButtonInstance) (bool, error) {
+					return false, nil
+				}
+				mock.AddFunc = func(instance api.BigBlueButtonInstance) error {
+					return errors.New("unexpected error")
+				}
+				test.SetRequestMethod(c, http.MethodPost)
+				test.SetRequestContentType(c, "application/json")
+				test.AddRequestBody(c, `{"url":"http://localhost/bigbluebutton", "secret":"secret"}`)
+			},
+			Validator: func(value interface{}, err error) bool {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				return true
+			},
+		},
+		{
+			Name: "Add should return a created status and instance if instance is added successfully",
+			Mock: func() {
+				mock.ExistsFunc = func(instance api.BigBlueButtonInstance) (bool, error) {
+					return false, nil
+				}
+				mock.AddFunc = func(instance api.BigBlueButtonInstance) error {
+					return nil
+				}
+				test.SetRequestMethod(c, http.MethodPost)
+				test.SetRequestContentType(c, "application/json")
+				test.AddRequestBody(c, `{"url":"http://localhost/bigbluebutton", "secret":"secret"}`)
+			},
+			Validator: func(value interface{}, err error) bool {
+				assert.Equal(t, w.Body.String(), `{"url":"http://localhost/bigbluebutton","secret":"secret"}`)
+				assert.Equal(t, http.StatusCreated, w.Code)
+				return true
+			},
+		},
 	}
 
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			w := TestUtil.ExecuteRequestWithHeaders(router, "POST", "/admin/servers", test.body, headers)
-			assert.Equal(t, test.expectedStatus, w.Code)
-
-			if test.expectedBody != "" {
-				assert.Equal(t, test.expectedBody, w.Body.String())
-			}
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			test.Mock()
+			admin.AddInstance(c)
+			test.Validator(nil, nil)
 		})
 	}
 }
 
 func TestListInstances(t *testing.T) {
-	headers := map[string]string{
-		"Authorization": TestUtil.DefaultAPIKey(),
-	}
+	url := "http://localhost/bigbluebutton"
+	var w *httptest.ResponseRecorder
+	admin := CreateAdmin(&mock.InstanceManager{}, &config.AdminConfig{})
 
-	w := TestUtil.ExecuteRequestWithHeaders(router, "GET", "/admin/servers", nil, headers)
-	assert.Equal(t, 200, w.Code)
-	var arr []string
-	err := json.Unmarshal(w.Body.Bytes(), &arr)
-	if err != nil {
-		panic(err)
-	}
-
-	assert.Equal(t, utils.ArrayContainsString(arr, "http://localhost/bigbluebutton"), true)
-}
-
-func TestDeleteInstance(t *testing.T) {
-
-	type test struct {
-		name           string
-		url            string
-		expectedStatus int
-	}
-
-	tests := []test{
+	tests := []test.Test{
 		{
-			name:           "Delete without an url should return a 400",
-			url:            "/admin/servers",
-			expectedStatus: 400,
+			Name: "List should returns a list containg a single bigbluebutton instance",
+			Mock: func() {
+				mock.ListFunc = func() ([]string, error) {
+					return []string{url}, nil
+				}
+			},
+			Validator: func(value interface{}, err error) bool {
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, test.StringToJSONArray(w.Body.String())[0], url)
+				return true
+			},
 		},
 		{
-			name:           "Delete a non existing instance should return a 404",
-			url:            "/admin/servers?url=http://fakebbb",
-			expectedStatus: 404,
+			Name: "List should return an internal server error if instance manager returns an error",
+			Mock: func() {
+				mock.ListFunc = func() ([]string, error) {
+					return nil, errors.New("unexpected error")
+				}
+			},
+			Validator: func(value interface{}, err error) bool {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				return true
+			},
 		},
-		{
-			name:           "Delete an existing instance should return a 204",
-			url:            "/admin/servers?url=http://localhost/bigbluebutton",
-			expectedStatus: 204,
-		},
-	}
-
-	headers := map[string]string{
-		"Authorization": TestUtil.DefaultAPIKey(),
 	}
 
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			w := TestUtil.ExecuteRequestWithHeaders(router, "DELETE", test.url, nil, headers)
-			assert.Equal(t, test.expectedStatus, w.Code)
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			test.Mock()
+			admin.ListInstances(c)
+			test.Validator(nil, nil)
+		})
+	}
+}
+
+func TestDeleteInstance(t *testing.T) {
+	var w *httptest.ResponseRecorder
+	var c *gin.Context
+	admin := CreateAdmin(&mock.InstanceManager{}, &config.AdminConfig{})
+	tests := []test.Test{
+		{
+			Name: "Delete should return a bad request status if instance url is not provided",
+			Mock: func() {},
+			Validator: func(value interface{}, err error) bool {
+				assert.Equal(t, http.StatusBadRequest, w.Code)
+				return true
+			},
+		},
+		{
+			Name: "Delete should return an internal server error if instance manager returns an error",
+			Mock: func() {
+				mock.ExistsFunc = func(instance api.BigBlueButtonInstance) (bool, error) {
+					return false, errors.New("unexpected error")
+				}
+				test.SetRequestParams(c, "url=http://localhost/bigbluebutton")
+			},
+			Validator: func(value interface{}, err error) bool {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				return true
+			},
+		},
+		{
+			Name: "Delete should return a not found error if instance does not exist",
+			Mock: func() {
+				mock.ExistsFunc = func(instance api.BigBlueButtonInstance) (bool, error) {
+					return false, nil
+				}
+				test.SetRequestParams(c, "url=http://localhost/bigbluebutton")
+			},
+			Validator: func(value interface{}, err error) bool {
+				assert.Equal(t, http.StatusNotFound, w.Code)
+				return true
+			},
+		},
+		{
+			Name: "Delete should an internal server error if instance manager returns an error on deleting instance",
+			Mock: func() {
+				mock.ExistsFunc = func(instance api.BigBlueButtonInstance) (bool, error) {
+					return true, nil
+				}
+				mock.RemoveFunc = func(URL string) error {
+					return errors.New("unexpected error")
+				}
+				test.SetRequestParams(c, "url=http://localhost/bigbluebutton")
+			},
+			Validator: func(value interface{}, err error) bool {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				return true
+			},
+		},
+		{
+			Name: "Delete should return a no content status if instance is deleted",
+			Mock: func() {
+				mock.ExistsFunc = func(instance api.BigBlueButtonInstance) (bool, error) {
+					return true, nil
+				}
+				mock.RemoveFunc = func(URL string) error {
+					return nil
+				}
+				test.SetRequestParams(c, "url=http://localhost/bigbluebutton")
+			},
+			Validator: func(value interface{}, err error) bool {
+				assert.Equal(t, http.StatusNoContent, w.Code)
+				return true
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			test.Mock()
+			admin.DeleteInstance(c)
+			test.Validator(nil, nil)
 		})
 	}
 }

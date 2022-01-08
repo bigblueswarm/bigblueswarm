@@ -3,30 +3,26 @@ package admin
 import (
 	TestUtil "b3lb/internal/test"
 	"b3lb/pkg/config"
-	"b3lb/pkg/utils"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redismock/v8"
 )
 
 var router *gin.Engine
+var instanceManager InstanceManager
+var redisMock redismock.ClientMock
+var redisClient *redis.Client
 
 func TestMain(m *testing.M) {
-	cluster := &TestUtil.Cluster{
-		Redis: TestUtil.InitRedisContainer("tc_redis_admin"),
-	}
+	gin.SetMode(gin.TestMode)
+	client, mock := redismock.NewClientMock()
+	redisClient = client
+	redisMock = mock
 
-	time.Sleep(20 * time.Second)
-
-	instanceManager := NewInstanceManager(utils.RedisClient(&config.Config{
-		RDB: config.RDB{
-			Address:  cluster.Redis.URI,
-			DB:       0,
-			Password: "",
-		},
-	}))
+	instanceManager = NewInstanceManager(client)
 
 	router = gin.Default()
 	CreateAdmin(instanceManager, &config.AdminConfig{
@@ -34,10 +30,8 @@ func TestMain(m *testing.M) {
 	}).InitRoutes(router)
 
 	status := m.Run()
-
-	rTErr := cluster.Redis.Container.Terminate(ctx)
-	if rTErr != nil {
-		panic(rTErr)
+	if err := redisMock.ExpectationsWereMet(); err != nil {
+		panic(err)
 	}
 
 	os.Exit(status)
