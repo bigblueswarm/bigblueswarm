@@ -1,0 +1,639 @@
+{
+	"info": {
+		"_postman_id": "854c260e-9721-408d-8b37-57a49c8d98e8",
+		"name": "B3LB",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Add an instance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Adding an instance should return a 201 status code \", () => {",
+									"    pm.response.to.have.status(201)",
+									"})",
+									"",
+									"pm.test(\"Adding an instance should return a valid body\", () => {",
+									"    const response = pm.response.json()",
+									"    pm.expect(response.url).to.eql(pm.environment.get(\"instance_url\"))",
+									"    pm.expect(response.secret).to.eql(pm.environment.get(\"instance_secret\"))",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"url\": \"{{instance_url}}\",\n    \"secret\": \"{{instance_secret}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/servers",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"admin",
+								"servers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List instances",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Adding an instance should return a 200 status code \", () => {",
+									"    pm.response.to.have.status(200)",
+									"})",
+									"",
+									"pm.test(\"Listing instance should returns an array containing previous inserted instance\", () => {",
+									"    const response = pm.response.json()",
+									"    pm.expect(response.length).to.eql(1)",
+									"    pm.expect(response[0]).to.eql(pm.environment.get(\"instance_url\"))",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"postman.setNextRequest(\"Health check\")"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/servers",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"admin",
+								"servers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete an instance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Deleting an instance should return a 204 - No Content - status code\", () => {",
+									"    pm.response.to.have.status(204)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"postman.setNextRequest(null)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/servers?url={{instance_url}}",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"admin",
+								"servers"
+							],
+							"query": [
+								{
+									"key": "url",
+									"value": "{{instance_url}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "apikey",
+				"apikey": [
+					{
+						"key": "value",
+						"value": "{{b3lb_admin_api_key}}",
+						"type": "string"
+					},
+					{
+						"key": "key",
+						"value": "Authorization",
+						"type": "string"
+					},
+					{
+						"key": "in",
+						"value": "header",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "API",
+			"item": [
+				{
+					"name": "Health check",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Health check should return a 200 status - Status Ok\", () => {",
+									"    pm.response.to.have.status(200)",
+									"})",
+									"",
+									"pm.test(\"Health check should return a success return code and a 2.0 api version\", () => {",
+									"    response = xml2Json(responseBody).response",
+									"    pm.expect(response.returncode).to.eql(\"SUCCESS\")",
+									"    pm.expect(response.version).to.eql(\"2.0\")",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"bigbluebutton",
+								"api"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create meeting",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Create api should return a 200 - Status OK - code and SUCCESS return code\", () => {",
+									"    response = xml2Json(responseBody).response",
+									"    pm.expect(response.returncode).to.eql(\"SUCCESS\")",
+									"    pm.response.to.have.status(200)",
+									"})",
+									"",
+									"pm.test(\"Create api should return a valid response\", () => {",
+									"    response = xml2Json(responseBody).response",
+									"    pm.expect(response.meetingID).to.eql(pm.environment.get(\"meeting_id\"))",
+									"    pm.expect(response.moderatorPW).to.eql(pm.environment.get(\"moderator_pw\"))",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/create?name={{session_name}}&meetingID={{meeting_id}}&moderatorPW={{moderator_pw}}&attendeePW={{attendee_pw}}",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"bigbluebutton",
+								"api",
+								"create"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{session_name}}"
+								},
+								{
+									"key": "meetingID",
+									"value": "{{meeting_id}}"
+								},
+								{
+									"key": "moderatorPW",
+									"value": "{{moderator_pw}}"
+								},
+								{
+									"key": "attendeePW",
+									"value": "{{attendee_pw}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Join meeting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Join should return a 302 - Status Found - return code\", () => {",
+									"    pm.response.to.have.status(302)",
+									"})",
+									"",
+									"pm.test(\"Join should provide a Location header with a valid value\", () => {",
+									"    pm.response.to.have.header(\"Location\")",
+									"    pm.response.headers.get(\"Location\").startsWith(`${pm.environment.get(\"instance_url\")}/bigbluebutton/api/join`)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/join?fullName=Simon LEDUNOIS&password={{moderator_pw}}&meetingID={{meeting_id}}",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"bigbluebutton",
+								"api",
+								"join"
+							],
+							"query": [
+								{
+									"key": "fullName",
+									"value": "Simon LEDUNOIS"
+								},
+								{
+									"key": "password",
+									"value": "{{moderator_pw}}"
+								},
+								{
+									"key": "meetingID",
+									"value": "{{meeting_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Is meeting running",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"IsMeetingRunning should return a 200 status - Status Ok\", () => {",
+									"    pm.response.to.have.status(200)",
+									"})",
+									"",
+									"pm.test(\"IsMeetingRunning should return a success return code and a non running statement\", () => {",
+									"    response = xml2Json(responseBody).response",
+									"    pm.expect(response.returncode).to.eql(\"SUCCESS\")",
+									"    pm.expect(response.running).to.eql(\"false\")",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/isMeetingRunning?meetingID={{meeting_id}}",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"bigbluebutton",
+								"api",
+								"isMeetingRunning"
+							],
+							"query": [
+								{
+									"key": "meetingID",
+									"value": "{{meeting_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get meeting info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GetMeetingInfo should return a 200 status - Status Ok\", () => {",
+									"    pm.response.to.have.status(200)",
+									"})",
+									"",
+									"pm.test(\"GetMeetingInfo should return a success return code and a valid meeting id\", () => {",
+									"    response = xml2Json(responseBody).response",
+									"    pm.expect(response.returncode).to.eql(\"SUCCESS\")",
+									"    pm.expect(response.meetingID).to.eql(pm.environment.get(\"meeting_id\"))",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/getMeetingInfo?meetingID={{meeting_id}}",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"bigbluebutton",
+								"api",
+								"getMeetingInfo"
+							],
+							"query": [
+								{
+									"key": "meetingID",
+									"value": "{{meeting_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "End meeting",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"postman.setNextRequest(\"Delete an instance\")"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"End should return a success return code and 200 status - Status OK\", () => {",
+									"    response = xml2Json(responseBody).response",
+									"    pm.expect(response.returncode).to.eql(\"SUCCESS\")",
+									"    pm.response.to.have.status(200)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/end?meetingID={{meeting_id}}&password={{moderator_pw}}",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"bigbluebutton",
+								"api",
+								"end"
+							],
+							"query": [
+								{
+									"key": "meetingID",
+									"value": "{{meeting_id}}"
+								},
+								{
+									"key": "password",
+									"value": "{{moderator_pw}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"var uuid = require('uuid')",
+							"",
+							"id = {",
+							"    new: function () {",
+							"        return uuid.v4()",
+							"    }",
+							"}",
+							"",
+							"checksum = {",
+							"    process: function() {",
+							"        const queries = pm.request.url.query",
+							"",
+							"        let action = () => {",
+							"            return pm.request.url.path[pm.request.url.path.length - 1]",
+							"        }",
+							"",
+							"        let parameter = (value) => {",
+							"            if (value.startsWith(\"{{\")) {",
+							"                return pm.environment.get(value.replace(\"{{\", \"\").replace(\"}}\", \"\"))",
+							"            }",
+							"",
+							"            return value",
+							"        }",
+							"",
+							"        let checksum = action()",
+							"        for (let i = 0; i < queries.count(); i++) {",
+							"            let query = queries.idx(i)",
+							"",
+							"            checksum += `${query.key}=${encodeURIComponent(parameter(query.value))}&`",
+							"        }",
+							"",
+							"        checksum = checksum.slice(0, -1)",
+							"        checksum += pm.environment.get(\"b3lb_secret\")",
+							"        console.log(checksum)",
+							"",
+							"        return CryptoJS.SHA1(checksum).toString()",
+							"    }",
+							"}",
+							"",
+							"if (!pm.environment.has(\"meeting_id\")){",
+							"    console.log(id.new())",
+							"    pm.environment.set(\"meeting_id\", id.new());",
+							"}",
+							"",
+							"if (!pm.environment.has(\"moderator_pw\")){",
+							"    pm.environment.set(\"moderator_pw\", id.new());",
+							"}",
+							"",
+							"if (!pm.environment.has(\"attendee_pw\")){",
+							"    pm.environment.set(\"attendee_pw\", id.new());",
+							"}",
+							"",
+							"if (pm.request.url.query.count() > 0) pm.request.url.query.add(`checksum=${checksum.process()}`)"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "madatory_b3lb_request",
+			"value": ""
+		},
+		{
+			"key": "meetingID",
+			"value": ""
+		},
+		{
+			"key": "moderatorPW",
+			"value": ""
+		},
+		{
+			"key": "attendeePW",
+			"value": ""
+		}
+	]
+}

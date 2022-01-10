@@ -1,15 +1,29 @@
 #!/bin/bash
+set -e 
+YELLOW="\e[33m"
+GREEN="\e[32m"
+ENDCOLOR="\e[0m"
 
 TOKEN=$(grep  -Po "token: (.*)" $(dirname "$0")/../config.yml | cut -d: -f2  | xargs)
 
+log() {
+    echo -e "${YELLOW}[CLUSTER]${ENDCOLOR} $1"
+}
+
+dash() {
+    echo "$(/usr/bin/printf "\xE2\x9C\x94")"
+}
+
 start() {
-    echo "Starting BigBlueButton cluster..."
+    log "Starting BigBlueButton cluster"
     docker-compose -f "$(dirname "$0")/docker-compose.yml" up -d
+    log "Started ${GREEN}$(dash)${ENDCOLOR}"
 }
 
 stop() {
-    echo "Stopping cluster..."
+    log "Stopping cluster"
     docker stop bbb1 bbb2 influxdb redis
+    log "Stopped ${GREEN}$(dash)${ENDCOLOR}"
 }
 
 usage() {
@@ -26,15 +40,17 @@ usage() {
 }
 
 set_influxdb_token() {
-  echo "Setting up InfluxDB token..."
+  log "Setting up InfluxDB token"
   docker exec -it bbb1 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost/bigbluebutton' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
   docker exec -it bbb2 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost:8080/bigbluebutton' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
-  echo "Done"
+  log "Done ${GREEN}$(dash)${ENDCOLOR}"
 }
 
 init_cluster() {
-  echo "Initializing cluster..."
+  log "Initializing cluster"
+  log "Setting up InfluxDB token"
   docker exec -it influxdb sh -c "influx setup --name b3lbconfig --org b3lb --username admin --password password --token ${TOKEN} --bucket bucket --retention 0 --force"
+  log "${GREEN}Done${ENDCOLOR}"
   set_influxdb_token "$TOKEN"
 }
 
@@ -59,7 +75,7 @@ do
       exit 1
       ;;
     *)
-      echo "Invalid argument : $param"
+      log "Invalid argument : $param"
   esac
   if [ ! $? -eq 0 ]; then
     exit 1

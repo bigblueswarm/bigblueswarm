@@ -9,6 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const version = "1.0.0-SNAPSHOT"
+
 func main() {
 	initLog()
 	conf, err := config.Load(configPath())
@@ -39,6 +41,7 @@ func configPath() string {
 }
 
 func run(conf config.Config) error {
+	log.Info(fmt.Sprintf("Starting b3lb server version %s", version))
 	err := app.NewServer(&conf).Run()
 
 	if err != nil {

@@ -11,7 +11,7 @@ pip install pre-commit
 pre-commit --version
 pre-commit install
 
-npm install --save-dev @commitlint/{config-conventional,cli} husky
+npm install --save-dev @commitlint/{config-conventional,cli} husky, newman
 npx husky install
 npx husky add .husky/commit-msg "npx --no -- commitlint --edit \"$1\""
 
