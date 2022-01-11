@@ -17,17 +17,19 @@ const meetingID = "id"
 
 type test struct {
 	Name            string
+	HasParams       bool
 	Params          string
 	ExpectedError   bool
 	MockFunction    func(req *http.Request) (*http.Response, error)
-	CustomValidator func(response interface{}) bool
+	CustomValidator func(t *testing.T, response interface{})
 }
 
-func getTests(action string, params string, validResponse interface{}, customValidator func(interface{}) bool) []test {
+func getTests(action string, hasParams bool, params string, validResponse interface{}, customValidator func(*testing.T, interface{})) []test {
 	return []test{
 		{
 			Name:            fmt.Sprintf("%s should return a valid response", action),
 			Params:          params,
+			HasParams:       hasParams,
 			ExpectedError:   false,
 			CustomValidator: customValidator,
 			MockFunction: func(req *http.Request) (*http.Response, error) {
@@ -46,6 +48,7 @@ func getTests(action string, params string, validResponse interface{}, customVal
 		{
 			Name:          fmt.Sprintf("%s should return an error if remote instance returns a 500 status code", action),
 			Params:        "",
+			HasParams:     hasParams,
 			ExpectedError: true,
 			MockFunction: func(req *http.Request) (*http.Response, error) {
 				return &http.Response{
@@ -56,6 +59,7 @@ func getTests(action string, params string, validResponse interface{}, customVal
 		{
 			Name:          fmt.Sprintf("%s should return an error if remote instance call returns and error", action),
 			Params:        "",
+			HasParams:     hasParams,
 			ExpectedError: true,
 			MockFunction: func(req *http.Request) (*http.Response, error) {
 				return nil, fmt.Errorf("Unexpected error")
@@ -64,6 +68,7 @@ func getTests(action string, params string, validResponse interface{}, customVal
 		{
 			Name:          fmt.Sprintf("%s should return an error if remote instance response is not a valid XML", action),
 			Params:        params,
+			HasParams:     hasParams,
 			ExpectedError: true,
 			MockFunction: func(req *http.Request) (*http.Response, error) {
 				return &http.Response{
@@ -84,14 +89,19 @@ func executeTests(t *testing.T, action string, tests []test) {
 				panic(fmt.Sprintf("Method %s not found", action))
 			}
 
-			values := method.Call([]reflect.Value{reflect.ValueOf(test.Params)})
+			var values []reflect.Value
+			if test.HasParams {
+				values = method.Call([]reflect.Value{reflect.ValueOf(test.Params)})
+			} else {
+				values = method.Call([]reflect.Value{})
+			}
 			response := values[0].Interface()
 			err := values[1].Interface()
 
 			assert.True(t, test.ExpectedError == (err != nil))
 
 			if test.CustomValidator != nil {
-				assert.True(t, test.CustomValidator(response))
+				test.CustomValidator(t, response)
 			}
 		})
 	}
@@ -105,15 +115,17 @@ func TestCreate(t *testing.T) {
 		MeetingID: meetingID,
 	}
 
-	customValidator := func(response interface{}) bool {
+	customValidator := func(t *testing.T, response interface{}) {
 		creation, ok := response.(*CreateResponse)
 		if !ok {
-			return false
+			t.Error("Response is not a CreateResponse")
+			return
 		}
 
-		return creation.ReturnCode == ReturnCodes().Success && creation.MeetingID == meetingID
+		assert.Equal(t, creation.ReturnCode, ReturnCodes().Success)
+		assert.Equal(t, creation.MeetingID, meetingID)
 	}
-	tests := getTests("Create", fmt.Sprintf("name=doe&meetingID=%s&moderatorPW=pwd", meetingID), validResponse, customValidator)
+	tests := getTests("Create", true, fmt.Sprintf("name=doe&meetingID=%s&moderatorPW=pwd", meetingID), validResponse, customValidator)
 
 	executeTests(t, "Create", tests)
 }
@@ -139,15 +151,16 @@ func TestEnd(t *testing.T) {
 		},
 	}
 
-	customValidator := func(response interface{}) bool {
+	customValidator := func(t *testing.T, response interface{}) {
 		end, ok := response.(*EndResponse)
 		if !ok {
-			return false
+			t.Error("Response is not a EndResponse")
+			return
 		}
 
-		return end.ReturnCode == ReturnCodes().Success
+		assert.Equal(t, end.ReturnCode, ReturnCodes().Success)
 	}
-	tests := getTests("End", fmt.Sprintf("meetingID=%s&password=pwd", meetingID), validResponse, customValidator)
+	tests := getTests("End", true, fmt.Sprintf("meetingID=%s&password=pwd", meetingID), validResponse, customValidator)
 
 	executeTests(t, "End", tests)
 }
@@ -158,16 +171,18 @@ func TestIsMeetingRunning(t *testing.T) {
 		Running:    true,
 	}
 
-	customValidator := func(response interface{}) bool {
+	customValidator := func(t *testing.T, response interface{}) {
 		running, ok := response.(*IsMeetingsRunningResponse)
 		if !ok {
-			return false
+			t.Error("Response is not a IsMeetingsRunningResponse")
+			return
 		}
 
-		return running.ReturnCode == ReturnCodes().Success && running.Running
+		assert.Equal(t, running.ReturnCode, ReturnCodes().Success)
+		assert.True(t, running.Running)
 	}
 
-	tests := getTests("IsMeetingRunning", fmt.Sprintf("meetingID=%s", meetingID), validResponse, customValidator)
+	tests := getTests("IsMeetingRunning", true, fmt.Sprintf("meetingID=%s", meetingID), validResponse, customValidator)
 
 	executeTests(t, "IsMeetingRunning", tests)
 }
@@ -175,19 +190,50 @@ func TestIsMeetingRunning(t *testing.T) {
 func TestGetMeetingInfo(t *testing.T) {
 	validResponse := &GetMeetingInfoResponse{
 		ReturnCode: ReturnCodes().Success,
-		MeetingID:  meetingID,
+		MeetingInfo: MeetingInfo{
+			MeetingID: meetingID,
+		},
 	}
 
-	customValidator := func(response interface{}) bool {
+	customValidator := func(t *testing.T, response interface{}) {
 		info, ok := response.(*GetMeetingInfoResponse)
 		if !ok {
-			return false
+			t.Error("Response is not a GetMeetingInfoResponse")
+			return
 		}
 
-		return info.ReturnCode == ReturnCodes().Success && info.MeetingID == meetingID
+		assert.Equal(t, info.ReturnCode, ReturnCodes().Success)
+		assert.Equal(t, info.MeetingInfo.MeetingID, meetingID)
 	}
 
-	tests := getTests("GetMeetingInfo", fmt.Sprintf("meetingID=%s", meetingID), validResponse, customValidator)
+	tests := getTests("GetMeetingInfo", true, fmt.Sprintf("meetingID=%s", meetingID), validResponse, customValidator)
 
 	executeTests(t, "GetMeetingInfo", tests)
+}
+
+func TestGetMeetings(t *testing.T) {
+	validResponse := &GetMeetingsResponse{
+		ReturnCode: ReturnCodes().Success,
+		Meetings: []MeetingInfo{
+			{
+				MeetingID: meetingID,
+			},
+		},
+	}
+
+	customValidator := func(t *testing.T, response interface{}) {
+		meetings, ok := response.(*GetMeetingsResponse)
+		if !ok {
+			t.Error("Response is not a GetMeetingInfoResponse")
+			return
+		}
+
+		assert.Equal(t, meetings.ReturnCode, ReturnCodes().Success)
+		assert.Equal(t, 1, len(meetings.Meetings))
+		assert.Equal(t, meetingID, meetings.Meetings[0].MeetingID)
+	}
+
+	tests := getTests("GetMeetings", false, "", validResponse, customValidator)
+
+	executeTests(t, "GetMeetings", tests)
 }

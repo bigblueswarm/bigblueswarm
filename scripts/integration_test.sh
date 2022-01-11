@@ -64,7 +64,7 @@ stop() {
     log "Stopping cluster"
     ./$CLUSTER_SCRIPT -s
     log "Removing cluster containers"
-    docker rm -f $(docker ps -a -q)
+    docker rm -f bbb1 bbb2 redis influxdb
     end
 }
 

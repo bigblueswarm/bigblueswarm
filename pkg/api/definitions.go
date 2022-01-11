@@ -78,10 +78,9 @@ type Attendee struct {
 	ClientType      string `xml:"clientType"`
 }
 
-// GetMeetingInfoResponse represents the Bigbluebutton getMeetingInfo API response type
-type GetMeetingInfoResponse struct {
-	XMLName               xml.Name   `xml:"response"`
-	ReturnCode            string     `xml:"returncode"`
+// MeetingInfo represents the Bigbluebutton meeting info API object
+type MeetingInfo struct {
+	MeetingName           string     `xml:"meetingName"`
 	InternalMeetingID     string     `xml:"internalMeetingID"`
 	MeetingID             string     `xml:"meetingID"`
 	CreateTime            string     `xml:"createTime"`
@@ -108,4 +107,18 @@ type GetMeetingInfoResponse struct {
 		Inner []byte `xml:",innerxml"`
 	} `xml:"metadata"`
 	IsBreakout bool `xml:"isBreakout"`
+}
+
+// GetMeetingInfoResponse represents the Bigbluebutton getMeetingInfo API response type
+type GetMeetingInfoResponse struct {
+	XMLName    xml.Name `xml:"response"`
+	ReturnCode string   `xml:"returncode"`
+	MeetingInfo
+}
+
+// GetMeetingsResponse represents the Bigbluebutton getMeetings API response type
+type GetMeetingsResponse struct {
+	XMLName    xml.Name      `xml:"response"`
+	ReturnCode string        `xml:"returncode"`
+	Meetings   []MeetingInfo `xml:"meetings>meeting"`
 }

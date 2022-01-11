@@ -19,7 +19,28 @@ func (s *Server) HealthCheck(c *gin.Context) {
 
 // GetMeetings handler returns the getMeetings API. See https://docs.bigbluebutton.org/dev/api.html#getmeetings.
 func (s *Server) GetMeetings(c *gin.Context) {
-	c.String(http.StatusOK, c.FullPath())
+	instances, err := s.InstanceManager.ListInstances()
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	response := &api.GetMeetingsResponse{
+		ReturnCode: api.ReturnCodes().Success,
+		Meetings:   make([]api.MeetingInfo, 0),
+	}
+
+	for _, instance := range instances {
+		meetings, err := instance.GetMeetings()
+		if err != nil {
+			log.Error("An error occurred while retrieving meetings from instance", err)
+			continue
+		}
+
+		response.Meetings = append(response.Meetings, meetings.Meetings...)
+	}
+
+	c.XML(http.StatusOK, response)
 }
 
 func missingMeetingIDParameter(c *gin.Context) {
