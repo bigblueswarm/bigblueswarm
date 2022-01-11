@@ -41,15 +41,15 @@ usage() {
 
 set_influxdb_token() {
   log "Setting up InfluxDB token"
-  docker exec -it bbb1 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost/bigbluebutton' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
-  docker exec -it bbb2 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost:8080/bigbluebutton' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
+  docker exec bbb1 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost/bigbluebutton' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
+  docker exec bbb2 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost:8080/bigbluebutton' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
   log "Done ${GREEN}$(dash)${ENDCOLOR}"
 }
 
 init_cluster() {
   log "Initializing cluster"
   log "Setting up InfluxDB token"
-  docker exec -it influxdb sh -c "influx setup --name b3lbconfig --org b3lb --username admin --password password --token ${TOKEN} --bucket bucket --retention 0 --force"
+  docker exec influxdb sh -c "influx setup --name b3lbconfig --org b3lb --username admin --password password --token ${TOKEN} --bucket bucket --retention 0 --force"
   log "${GREEN}Done${ENDCOLOR}"
   set_influxdb_token "$TOKEN"
 }

@@ -1,0 +1,23 @@
+name: Integration tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    name: Integration test
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build B3LB artifact
+        run: ./scripts/integration_test.sh -b
+      - name: Run integration test cluster
+        run: ./scripts/integration_test.sh -r
+      - name: Launch integration tests
+        run: ./scripts/integration_test.sh -l
+      - name: Stop integration test cluster
+        run: ./scripts/integration_test.sh -s
