@@ -18,6 +18,7 @@ const B3LBInstances = "b3lb_instances"
 type InstanceManager interface {
 	Exists(instance api.BigBlueButtonInstance) (bool, error)
 	List() ([]string, error)
+	ListInstances() ([]api.BigBlueButtonInstance, error)
 	Add(instance api.BigBlueButtonInstance) error
 	Remove(URL string) error
 	Get(URL string) (api.BigBlueButtonInstance, error)
@@ -71,4 +72,19 @@ func (m *RedisInstanceManager) Get(URL string) (api.BigBlueButtonInstance, error
 		URL:    URL,
 		Secret: secret,
 	}, utils.ComputeErr(err)
+}
+
+// ListInstances retrieve all instance as a BigBlueButtonInstance array
+func (m *RedisInstanceManager) ListInstances() ([]api.BigBlueButtonInstance, error) {
+	instanceMap, err := m.RDB.HGetAll(ctx, B3LBInstances).Result()
+
+	instances := make([]api.BigBlueButtonInstance, 0)
+	for k, v := range instanceMap {
+		instances = append(instances, api.BigBlueButtonInstance{
+			URL:    k,
+			Secret: v,
+		})
+	}
+
+	return instances, utils.ComputeErr(err)
 }

@@ -16,6 +16,8 @@ var (
 	RemoveFunc func(URL string) error
 	// GetFunc is the function that will be called when the mock instance manager is used.
 	GetFunc func(URL string) (api.BigBlueButtonInstance, error)
+	// ListInstancesFunc is the function that will be called when the mock instance manager is used.
+	ListInstancesFunc func() ([]api.BigBlueButtonInstance, error)
 )
 
 // Exists is a mock implementation that returns true if the instance exists.
@@ -41,4 +43,9 @@ func (m *InstanceManager) Remove(URL string) error {
 // Get is a mock implementation that returns an instance.
 func (m *InstanceManager) Get(URL string) (api.BigBlueButtonInstance, error) {
 	return GetFunc(URL)
+}
+
+// ListInstances is a mock implementation that returns all instances.
+func (m *InstanceManager) ListInstances() ([]api.BigBlueButtonInstance, error) {
+	return ListInstancesFunc()
 }

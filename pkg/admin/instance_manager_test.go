@@ -12,7 +12,7 @@ import (
 
 const url string = "https://bbb_test.com"
 
-func TestExists(t *testing.T) {
+func TestInstanceManagerExists(t *testing.T) {
 	tests := []test.Test{
 		{
 			Name: "Existing value should return true and no error",
@@ -71,7 +71,7 @@ func TestExists(t *testing.T) {
 	}
 }
 
-func TestList(t *testing.T) {
+func TestInstanceManagerList(t *testing.T) {
 	tests := []test.Test{
 		{
 			Name: "Returning a list of keys should return the list and no error",
@@ -115,7 +115,7 @@ func TestList(t *testing.T) {
 	}
 }
 
-func TestAdd(t *testing.T) {
+func TestInstanceManagerAdd(t *testing.T) {
 	tests := []test.Test{
 		{
 			Name: "Adding a new instance should return no error",
@@ -146,7 +146,7 @@ func TestAdd(t *testing.T) {
 	}
 }
 
-func TestRemove(t *testing.T) {
+func TestInstanceManagerRemove(t *testing.T) {
 	tests := []test.Test{
 		{
 			Name: "Removing an instance should return no error",
@@ -179,7 +179,7 @@ func TestRemove(t *testing.T) {
 	}
 }
 
-func TestGet(t *testing.T) {
+func TestInstanceManagerGet(t *testing.T) {
 	secret := "secret"
 	tests := []test.Test{
 		{
@@ -213,6 +213,57 @@ func TestGet(t *testing.T) {
 			test.Mock()
 			instance, err := instanceManager.Get(url)
 			test.Validator(t, instance, err)
+		})
+	}
+}
+
+func TestInstanceManagerListInstances(t *testing.T) {
+	tests := []test.Test{
+		{
+			Name: "An empty map should return an empty list",
+			Mock: func() {
+				redisMock.ExpectHGetAll(B3LBInstances).SetVal(map[string]string{})
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				instances := value.([]api.BigBlueButtonInstance)
+				assert.Nil(t, err)
+				assert.Equal(t, len(instances), 0)
+			},
+		},
+		{
+			Name: "A map contanaing one instance should return a list with one instance",
+			Mock: func() {
+				instances := map[string]string{
+					"http://localhost/bigbluebutton": "secret",
+				}
+				redisMock.ExpectHGetAll(B3LBInstances).SetVal(instances)
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				instances := value.([]api.BigBlueButtonInstance)
+				assert.Nil(t, err)
+				assert.Equal(t, len(instances), 1)
+				assert.Equal(t, instances[0].URL, "http://localhost/bigbluebutton")
+				assert.Equal(t, instances[0].Secret, "secret")
+			},
+		},
+		{
+			Name: "Redis returning an error should return an error and an empty list",
+			Mock: func() {
+				redisMock.ExpectHGetAll(B3LBInstances).SetErr(errors.New("redis error"))
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				instances := value.([]api.BigBlueButtonInstance)
+				assert.NotNil(t, err)
+				assert.Equal(t, len(instances), 0)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Mock()
+			instances, err := instanceManager.ListInstances()
+			test.Validator(t, instances, err)
 		})
 	}
 }

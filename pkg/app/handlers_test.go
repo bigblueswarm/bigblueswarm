@@ -84,6 +84,15 @@ func unMarshallCreateResponse(body []byte) api.CreateResponse {
 	return response
 }
 
+func unMarshallGetMeetingsResponse(body []byte) api.GetMeetingsResponse {
+	var response api.GetMeetingsResponse
+	if err := xml.Unmarshal(body, &response); err != nil {
+		panic(err)
+	}
+
+	return response
+}
+
 func TestHealthCheckRoute(t *testing.T) {
 	// Healthcheck has a single test. The method always returns success and the same response.
 	t.Run("Healtcheck should returns a valid response", func(t *testing.T) {
@@ -644,7 +653,9 @@ func TestGetMeetingInfo(t *testing.T) {
 				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
 					meetingResponse := &api.GetMeetingInfoResponse{
 						ReturnCode: api.ReturnCodes().Success,
-						MeetingID:  meetingID,
+						MeetingInfo: api.MeetingInfo{
+							MeetingID: meetingID,
+						},
 					}
 
 					response, err := xml.Marshal(meetingResponse)
@@ -671,9 +682,111 @@ func TestGetMeetingInfo(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
-			test.Mock()
 			server := doGenericInitialization()
+			test.Mock()
 			server.GetMeetingInfo(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}
+
+func TestGetMeetings(t *testing.T) {
+	tests := []test.Test{
+		{
+			Name: "An error thrown by instance manager should return an http internal error status",
+			Mock: func() {
+				redisMock.ExpectHGetAll(admin.B3LBInstances).SetErr(errors.New("redis error"))
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+		{
+			Name: "A valid request should return a valid response",
+			Mock: func() {
+				instances := map[string]string{
+					"http://localhost/bigbluebutton": test.DefaultSecret(),
+				}
+				redisMock.ExpectHGetAll(admin.B3LBInstances).SetVal(instances)
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					meetings := &api.GetMeetingsResponse{
+						ReturnCode: api.ReturnCodes().Success,
+						Meetings: []api.MeetingInfo{
+							{
+								MeetingID: "meeting-id",
+							},
+						},
+					}
+
+					response, err := xml.Marshal(meetings)
+					if err != nil {
+						panic(err)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewReader(response)),
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				response := unMarshallGetMeetingsResponse(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+				assert.Equal(t, 1, len(response.Meetings))
+				assert.Equal(t, "meeting-id", response.Meetings[0].MeetingID)
+			},
+		},
+		{
+			Name: "An error thrown by a remte instance should not block the response",
+			Mock: func() {
+				instances := map[string]string{
+					"http://localhost/bigbluebutton":      test.DefaultSecret(),
+					"http://localhost:8080/bigbluebutton": test.DefaultSecret(),
+				}
+				redisMock.ExpectHGetAll(admin.B3LBInstances).SetVal(instances)
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					if req.URL.Host == "localhost:8080" {
+						return nil, errors.New("remote error")
+					}
+
+					meetings := &api.GetMeetingsResponse{
+						ReturnCode: api.ReturnCodes().Success,
+						Meetings: []api.MeetingInfo{
+							{
+								MeetingID: "meeting-id",
+							},
+						},
+					}
+
+					response, err := xml.Marshal(meetings)
+					if err != nil {
+						panic(err)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewReader(response)),
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				response := unMarshallGetMeetingsResponse(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+				assert.Equal(t, 1, len(response.Meetings))
+				assert.Equal(t, "meeting-id", response.Meetings[0].MeetingID)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			server := doGenericInitialization()
+			test.Mock()
+			server.GetMeetings(c)
 			test.Validator(t, nil, nil)
 		})
 	}
