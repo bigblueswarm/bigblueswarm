@@ -1,0 +1,13 @@
+name: Unit tests and coverage
+on: ["push"]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Unit tests
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run test and coverage
+        run: ./scripts/test.sh
+      - name: Send code coverage
+        if: github.ref == 'refs/heads/main'
+        run: CODACY_PROJECT_TOKEN=${{ secrets.CODACY_PROJECT_TOKEN }} bash <(curl -Ls https://coverage.codacy.com/get.sh) report --force-coverage-parser go -r coverage.out
