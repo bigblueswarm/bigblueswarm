@@ -5,6 +5,7 @@
 ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/sledunois/b3lb/Unit%20tests%20and%20coverage/main?label=Unit%20tests)
 ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/sledunois/b3lb/Integration%20tests/main?label=Integration%20tests)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/sledunois/b3lb)
+![GitHub](https://img.shields.io/github/license/SLedunois/b3lb)
 
 `scripts` folder contains every script you need to build and develop.
 *   `init.sh`: Download and install go dependencies
