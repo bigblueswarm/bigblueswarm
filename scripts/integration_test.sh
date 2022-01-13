@@ -44,10 +44,10 @@ start() {
 
     # Launching cluster and setting up the cluster configuration
     log "Launching cluster"
-    ./$CLUSTER_SCRIPT -r
+    sh -c "./$CLUSTER_SCRIPT -r"
     sleep 5m
     log "Setting up cluster configuration"
-    ./$CLUSTER_SCRIPT -i
+    sh -c "./$CLUSTER_SCRIPT -i"
     log "Starting B3LB artifact $VERSION"
     nohup ./$(dirname "$0")/../bin/b3lb-$VERSION &
     echo $! > "$(dirname "$0")"/../bin/b3lb.pid
@@ -62,7 +62,7 @@ stop() {
     rm -f "$(dirname "$0")"/../bin/b3lb.pid
     end
     log "Stopping cluster"
-    ./$CLUSTER_SCRIPT -s
+    sh -c "./$CLUSTER_SCRIPT -s"
     log "Removing cluster containers"
     docker rm -f bbb1 bbb2 redis influxdb
     end
