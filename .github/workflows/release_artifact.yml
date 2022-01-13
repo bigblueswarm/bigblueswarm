@@ -16,8 +16,6 @@ jobs:
         goarch: ["386", amd64, arm64]
     steps:
     - uses: actions/checkout@v2
-    - name: Set APP_VERSION env
-      run: echo APP_VERSION=$(./scripts/version.sh) >> ${GITHUB_ENV}
     - uses: wangyoucao577/go-release-action@v1.22
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -25,5 +23,5 @@ jobs:
         goarch: ${{ matrix.goarch }}
         goversion: 1.15
         project_path: "${{ env.CMD_PATH }}"
-        binary_name: "${{ env.BINARY_NAME }}-${{ env.APP_VERSION }}"
+        binary_name: "${{ env.BINARY_NAME }}"
         extra_files: LICENSE README.md
