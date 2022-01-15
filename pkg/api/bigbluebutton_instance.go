@@ -1,11 +1,12 @@
 package api
 
 import (
-	"b3lb/pkg/restclient"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/SLedunois/b3lb/pkg/restclient"
 
 	log "github.com/sirupsen/logrus"
 )

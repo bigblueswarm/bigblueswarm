@@ -1,6 +1,6 @@
 package mock
 
-import "b3lb/pkg/api"
+import "github.com/SLedunois/b3lb/pkg/api"
 
 // InstanceManager is a mock implementation of the InstanceManager interface.
 type InstanceManager struct{}

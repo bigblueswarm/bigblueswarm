@@ -1,8 +1,9 @@
 package admin
 
 import (
-	"b3lb/pkg/api"
 	"net/http"
+
+	"github.com/SLedunois/b3lb/pkg/api"
 
 	"github.com/gin-gonic/gin"
 )

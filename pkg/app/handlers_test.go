@@ -1,13 +1,6 @@
 package app
 
 import (
-	"b3lb/internal/test"
-	"b3lb/pkg/admin"
-	"b3lb/pkg/api"
-	AppMock "b3lb/pkg/app/mock"
-	"b3lb/pkg/config"
-	"b3lb/pkg/restclient"
-	RestClientMock "b3lb/pkg/restclient/mock"
 	"bytes"
 	"encoding/xml"
 	"errors"
@@ -16,6 +9,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/SLedunois/b3lb/pkg/admin"
+	"github.com/SLedunois/b3lb/pkg/api"
+
+	RestClientMock "github.com/SLedunois/b3lb/pkg/restclient/mock"
+
+	"github.com/SLedunois/b3lb/internal/test"
+	AppMock "github.com/SLedunois/b3lb/pkg/app/mock"
+	"github.com/SLedunois/b3lb/pkg/config"
+	"github.com/SLedunois/b3lb/pkg/restclient"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

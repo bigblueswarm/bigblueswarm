@@ -1,11 +1,13 @@
 package app
 
 import (
-	"b3lb/pkg/admin"
-	"b3lb/pkg/config"
-	"b3lb/pkg/restclient"
-	"b3lb/pkg/utils"
 	"fmt"
+
+	"github.com/SLedunois/b3lb/pkg/admin"
+
+	"github.com/SLedunois/b3lb/pkg/config"
+	"github.com/SLedunois/b3lb/pkg/restclient"
+	"github.com/SLedunois/b3lb/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )

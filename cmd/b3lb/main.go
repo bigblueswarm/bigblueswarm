@@ -1,10 +1,11 @@
 package main
 
 import (
-	"b3lb/pkg/app"
-	"b3lb/pkg/config"
 	"flag"
 	"fmt"
+
+	"github.com/SLedunois/b3lb/pkg/app"
+	"github.com/SLedunois/b3lb/pkg/config"
 
 	log "github.com/sirupsen/logrus"
 )

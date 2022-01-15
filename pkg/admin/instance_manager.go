@@ -1,10 +1,11 @@
 package admin
 
 import (
-	"b3lb/pkg/api"
-	"b3lb/pkg/utils"
 	"context"
 	"errors"
+
+	"github.com/SLedunois/b3lb/pkg/api"
+	"github.com/SLedunois/b3lb/pkg/utils"
 
 	"github.com/go-redis/redis/v8"
 )

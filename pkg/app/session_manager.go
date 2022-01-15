@@ -1,8 +1,9 @@
 package app
 
 import (
-	"b3lb/pkg/utils"
 	"context"
+
+	"github.com/SLedunois/b3lb/pkg/utils"
 
 	"github.com/go-redis/redis/v8"
 )

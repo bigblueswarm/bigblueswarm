@@ -1,11 +1,12 @@
 package api
 
 import (
-	TestUtil "b3lb/internal/test"
-	"b3lb/pkg/restclient"
-	"b3lb/pkg/restclient/mock"
 	"os"
 	"testing"
+
+	TestUtil "github.com/SLedunois/b3lb/internal/test"
+	"github.com/SLedunois/b3lb/pkg/restclient"
+	"github.com/SLedunois/b3lb/pkg/restclient/mock"
 )
 
 var instance *BigBlueButtonInstance

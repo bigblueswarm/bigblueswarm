@@ -1,12 +1,14 @@
 package admin
 
 import (
-	"b3lb/internal/test"
-	"b3lb/pkg/admin/mock"
-	"b3lb/pkg/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/SLedunois/b3lb/pkg/config"
+
+	"github.com/SLedunois/b3lb/internal/test"
+	"github.com/SLedunois/b3lb/pkg/admin/mock"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

@@ -1,12 +1,13 @@
 package app
 
 import (
-	"b3lb/pkg/api"
 	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
+
+	"github.com/SLedunois/b3lb/pkg/api"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
