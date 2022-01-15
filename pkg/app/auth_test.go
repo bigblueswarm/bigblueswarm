@@ -1,14 +1,16 @@
 package app
 
 import (
-	"b3lb/internal/test"
 	"encoding/xml"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"b3lb/pkg/api"
-	"b3lb/pkg/config"
+	"github.com/SLedunois/b3lb/internal/test"
+
+	"github.com/SLedunois/b3lb/pkg/api"
+
+	"github.com/SLedunois/b3lb/pkg/config"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

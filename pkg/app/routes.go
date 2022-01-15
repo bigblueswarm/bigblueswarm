@@ -1,9 +1,10 @@
 package app
 
 import (
-	"b3lb/pkg/admin"
-	"b3lb/pkg/api"
 	"net/http"
+
+	"github.com/SLedunois/b3lb/pkg/admin"
+	"github.com/SLedunois/b3lb/pkg/api"
 )
 
 func (s *Server) initRoutes() {

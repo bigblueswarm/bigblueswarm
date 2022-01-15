@@ -1,10 +1,11 @@
 package admin
 
 import (
-	"b3lb/internal/test"
-	"b3lb/pkg/api"
 	"errors"
 	"testing"
+
+	"github.com/SLedunois/b3lb/internal/test"
+	"github.com/SLedunois/b3lb/pkg/api"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"

@@ -1,9 +1,10 @@
 package admin
 
 import (
-	"b3lb/pkg/api"
-	"b3lb/pkg/config"
 	"net/http"
+
+	"github.com/SLedunois/b3lb/pkg/api"
+	"github.com/SLedunois/b3lb/pkg/config"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"

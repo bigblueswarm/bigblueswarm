@@ -1,10 +1,11 @@
 package admin
 
 import (
-	TestUtil "b3lb/internal/test"
-	"b3lb/pkg/config"
 	"os"
 	"testing"
+
+	TestUtil "github.com/SLedunois/b3lb/internal/test"
+	"github.com/SLedunois/b3lb/pkg/config"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"

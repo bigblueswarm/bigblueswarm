@@ -1,7 +1,6 @@
 package api
 
 import (
-	"b3lb/pkg/restclient/mock"
 	"bytes"
 	"encoding/xml"
 	"fmt"
@@ -9,6 +8,8 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/SLedunois/b3lb/pkg/restclient/mock"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -1,9 +1,10 @@
 package app
 
 import (
-	"b3lb/internal/test"
 	"errors"
 	"testing"
+
+	"github.com/SLedunois/b3lb/internal/test"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"

@@ -1,4 +1,4 @@
-module b3lb
+module github.com/SLedunois/b3lb
 
 go 1.15
 

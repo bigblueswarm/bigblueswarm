@@ -1,12 +1,14 @@
 package app
 
 import (
-	"b3lb/internal/test"
-	"b3lb/pkg/config"
-	"b3lb/pkg/utils"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/SLedunois/b3lb/pkg/utils"
+
+	"github.com/SLedunois/b3lb/internal/test"
+	"github.com/SLedunois/b3lb/pkg/config"
 
 	"github.com/stretchr/testify/assert"
 )

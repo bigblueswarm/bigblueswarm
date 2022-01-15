@@ -1,10 +1,11 @@
 package app
 
 import (
-	"b3lb/pkg/api"
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/SLedunois/b3lb/pkg/api"
 
 	"github.com/gin-gonic/gin"
 )

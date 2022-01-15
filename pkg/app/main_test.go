@@ -1,9 +1,10 @@
 package app
 
 import (
-	"b3lb/pkg/admin"
 	"os"
 	"testing"
+
+	"github.com/SLedunois/b3lb/pkg/admin"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
