@@ -238,3 +238,28 @@ func TestGetMeetings(t *testing.T) {
 
 	executeTests(t, "GetMeetings", tests)
 }
+
+func TestJoin(t *testing.T) {
+	joinURL := "http://localhost/client/BigBlueButton.html?sessionToken=ai1wqj8wb6s7rnk0"
+	validResponse := &JoinRedirectResponse{
+		Response: Response{
+			ReturnCode: ReturnCodes().Success,
+		},
+		URL: joinURL,
+	}
+
+	customValidator := func(t *testing.T, response interface{}) {
+		join, ok := response.(*JoinRedirectResponse)
+		if !ok {
+			t.Error("Response is not a JoinRedirectResponse")
+			return
+		}
+
+		assert.Equal(t, ReturnCodes().Success, join.ReturnCode)
+		assert.Equal(t, joinURL, join.URL)
+	}
+
+	tests := getTests("Join", true, fmt.Sprintf("meetingID=%s&fullName=Simon&password=pwd", meetingID), validResponse, customValidator)
+
+	executeTests(t, "Join", tests)
+}
