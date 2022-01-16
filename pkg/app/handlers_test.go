@@ -96,6 +96,15 @@ func unMarshallGetMeetingsResponse(body []byte) api.GetMeetingsResponse {
 	return response
 }
 
+func unMarshallJoinRedirectResponse(body []byte) api.JoinRedirectResponse {
+	var response api.JoinRedirectResponse
+	if err := xml.Unmarshal(body, &response); err != nil {
+		panic(err)
+	}
+
+	return response
+}
+
 func TestHealthCheckRoute(t *testing.T) {
 	// Healthcheck has a single test. The method always returns success and the same response.
 	t.Run("Healtcheck should returns a valid response", func(t *testing.T) {
@@ -389,6 +398,64 @@ func TestJoin(t *testing.T) {
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusOK, w.Code) // Test returs a 200 status instead of 302
 				assert.Equal(t, w.Header().Get("Location"), fmt.Sprintf("%s/api/join?meetingID=%s&checksum=3326f2a7090212891651d6da31a608ec88f3ca58", instance, meetingID))
+			},
+		},
+		{
+			Name: "An error return by BigBlueButton instance while calling join api with `redirect=false` parameter set should return an internal server error status code",
+			Mock: func() {
+				test.SetRequestParams(c, fmt.Sprintf("%s&redirect=false", params))
+				redisMock.ExpectGet(meetingID).SetVal(instance)
+				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
+				checksum := &api.Checksum{
+					Secret: test.DefaultSecret(),
+					Params: fmt.Sprintf("%s&redirect=false", params),
+					Action: api.Join,
+				}
+				c.Set("api_ctx", checksum)
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					return nil, errors.New("instance error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+		{
+			Name: "Calling join api with `redirect=false` parameter set should return a valid JoinRedirectResponse",
+			Mock: func() {
+				test.SetRequestParams(c, fmt.Sprintf("%s&redirect=false", params))
+				redisMock.ExpectGet(meetingID).SetVal(instance)
+				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
+				checksum := &api.Checksum{
+					Secret: test.DefaultSecret(),
+					Params: fmt.Sprintf("%s&redirect=false", params),
+					Action: api.Join,
+				}
+				c.Set("api_ctx", checksum)
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					joinResponse := &api.JoinRedirectResponse{
+						Response: api.Response{
+							ReturnCode: api.ReturnCodes().Success,
+						},
+						URL: "https://localhost:8080/html5client/join?sessionToken=ai1wqj8wb6s7rnk0",
+					}
+
+					response, err := xml.Marshal(joinResponse)
+					if err != nil {
+						panic(err)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewReader(response)),
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				response := unMarshallJoinRedirectResponse(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+				assert.Equal(t, "https://localhost:8080/html5client/join?sessionToken=ai1wqj8wb6s7rnk0", response.URL)
 			},
 		},
 	}

@@ -60,6 +60,26 @@ func (i *BigBlueButtonInstance) GetJoinRedirectURL(params string) (string, error
 	return i.URL + "/api/" + Join + "?" + checksum.Params + "&checksum=" + checksumValue, nil
 }
 
+// Join execute a join api call on the remote BigBlueButton instance
+func (i *BigBlueButtonInstance) Join(params string) (*JoinRedirectResponse, error) {
+	checksum := CreateChecksum(i.Secret, Join, params)
+
+	body, err := i.callAPI(params, checksum)
+
+	if err != nil {
+		log.Error(fmt.Sprintf("Failed to call %s instance join api", i.URL), err)
+		return nil, err
+	}
+
+	var response JoinRedirectResponse
+	if err := xml.Unmarshal(body, &response); err != nil {
+		log.Error("Failed to unmarshal join api call body content", err)
+		return nil, err
+	}
+
+	return &response, nil
+}
+
 // End execute a end api call on the remote BigBlueButton instance
 func (i *BigBlueButtonInstance) End(params string) (*EndResponse, error) {
 	checksum := CreateChecksum(i.Secret, End, params)

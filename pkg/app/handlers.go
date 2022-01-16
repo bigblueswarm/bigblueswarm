@@ -61,7 +61,7 @@ func (s *Server) retrieveBBBBInstanceFromMeetingID(meetingID string) (api.BigBlu
 
 	instance, err := s.InstanceManager.Get(host)
 	if err != nil {
-		return api.BigBlueButtonInstance{}, fmt.Errorf("Manager failed to retrieve target instance for current request %s", err.Error())
+		return api.BigBlueButtonInstance{}, fmt.Errorf("manager failed to retrieve target instance for current request %s", err.Error())
 	}
 
 	return instance, nil
@@ -124,6 +124,8 @@ func (s *Server) Join(c *gin.Context) {
 		return
 	}
 
+	redirect, redirectExists := c.GetQuery("redirect")
+
 	instance, err := s.retrieveBBBBInstanceFromMeetingID(meetingID)
 	if err != nil {
 		log.Error(err)
@@ -131,14 +133,25 @@ func (s *Server) Join(c *gin.Context) {
 		return
 	}
 
-	redirectURL, err := instance.GetJoinRedirectURL(ctx.Params)
-	if err != nil {
-		log.Error("An error occurred while retrieving redirect URL on session join", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
+	if redirectExists && redirect == "false" {
+		response, err := instance.Join(ctx.Params)
+		if err != nil {
+			log.Error("An error occurred while calling join instance api", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 
-	c.Redirect(http.StatusFound, redirectURL)
+		c.XML(http.StatusOK, response)
+	} else {
+		redirectURL, err := instance.GetJoinRedirectURL(ctx.Params)
+		if err != nil {
+			log.Error("An error occurred while retrieving redirect URL on session join", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		c.Redirect(http.StatusFound, redirectURL)
+	}
 }
 
 // End handler end provided session. See https://docs.bigbluebutton.org/dev/api.html#end

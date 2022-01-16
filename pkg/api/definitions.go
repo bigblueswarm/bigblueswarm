@@ -122,3 +122,13 @@ type GetMeetingsResponse struct {
 	ReturnCode string        `xml:"returncode"`
 	Meetings   []MeetingInfo `xml:"meetings>meeting"`
 }
+
+// JoinRedirectResponse represents the BigBlueButton join API response type when query parameter `redirect=false` is set
+type JoinRedirectResponse struct {
+	Response
+	MeetingID    string `xml:"meeting_id"`
+	UserID       string `xml:"user_id"`
+	AuthToken    string `xml:"auth_token"`
+	SessionToken string `xml:"session_token"`
+	URL          string `xml:"url"`
+}
