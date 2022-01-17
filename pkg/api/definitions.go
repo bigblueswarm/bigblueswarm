@@ -132,3 +132,27 @@ type JoinRedirectResponse struct {
 	SessionToken string `xml:"session_token"`
 	URL          string `xml:"url"`
 }
+
+// Recording represents the BigBlueButton recording API object
+type Recording struct {
+	XMLName           xml.Name `xml:"recording"`
+	RecordID          string   `xml:"recordID"`
+	MeetingID         string   `xml:"meetingID"`
+	InternalMeetingID string   `xml:"internalMeetingID"`
+	Name              string   `xml:"name"`
+	IsBreakout        bool     `xml:"isBreakout"`
+	Published         bool     `xml:"published"`
+	State             string   `xml:"state"`
+	StartTime         int      `xml:"startTime"`
+	EndTime           int      `xml:"endTime"`
+	Participants      int      `xml:"participants"`
+	MetaData          struct {
+		Inner []byte `xml:",innerxml"`
+	} `xml:"metadata"`
+}
+
+// GetRecordingsResponse represents the Bigbluebutton getRecordings API response type
+type GetRecordingsResponse struct {
+	Response
+	Recordings []Recording `xml:"recordings>recording"`
+}

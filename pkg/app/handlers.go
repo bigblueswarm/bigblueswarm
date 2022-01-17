@@ -222,3 +222,46 @@ func (s *Server) IsMeetingRunning(c *gin.Context) {
 func (s *Server) GetMeetingInfo(c *gin.Context) {
 	s.proxy(c, api.GetMeetingInfo, nil)
 }
+
+// GetRecordings handler get recordings for provided session. See https://docs.bigbluebutton.org/dev/api.html#getrecordings
+func (s *Server) GetRecordings(c *gin.Context) {
+	ctx := getAPIContext(c)
+	emptyRecordingsResponse := &api.GetRecordingsResponse{
+		Response: api.Response{
+			ReturnCode: api.ReturnCodes().Success,
+			MessageKey: api.MessageKeys().NoRecordings,
+			Message:    api.Messages().NoRecordings,
+		},
+	}
+
+	instances, err := s.InstanceManager.ListInstances()
+	if err != nil {
+		log.Error("Manager failed to retrieve instances for getRecordings request", err)
+		c.XML(http.StatusOK, emptyRecordingsResponse)
+		return
+	}
+
+	response := &api.GetRecordingsResponse{
+		Response: api.Response{
+			ReturnCode: api.ReturnCodes().Success,
+		},
+		Recordings: []api.Recording{},
+	}
+
+	for _, instance := range instances {
+		recordings, err := instance.GetRecordings(ctx.Params)
+		if err != nil {
+			log.Errorln(fmt.Sprintf("Instance %s failed to retrieve recordings.", instance.URL), err)
+			continue
+		}
+
+		response.Recordings = append(response.Recordings, recordings.Recordings...)
+	}
+
+	if len(response.Recordings) == 0 {
+		c.XML(http.StatusOK, emptyRecordingsResponse)
+		return
+	}
+
+	c.XML(http.StatusOK, response)
+}
