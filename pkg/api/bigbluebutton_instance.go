@@ -2,9 +2,11 @@ package api
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 
 	"github.com/SLedunois/b3lb/pkg/restclient"
 
@@ -13,22 +15,17 @@ import (
 
 // Create execute a create api call on the remote BigBlueButton instance
 func (i *BigBlueButtonInstance) Create(params string) (*CreateResponse, error) {
-	checksum := CreateChecksum(i.Secret, Create, params)
-
-	body, err := i.callAPI(params, checksum)
+	response, err := i.api(Create, params)
 
 	if err != nil {
-		log.Error(fmt.Sprintf("Failed to call %s instance api create", i.URL), err)
 		return nil, err
 	}
 
-	var response CreateResponse
-	if err := xml.Unmarshal(body, &response); err != nil {
-		log.Error("Failed to unmarshal create api call body content", err)
-		return nil, err
+	if creation, ok := response.(*CreateResponse); ok {
+		return creation, nil
 	}
 
-	return &response, nil
+	return nil, errors.New("Failed to cast api response to CreateResponse")
 }
 
 func (i *BigBlueButtonInstance) callAPI(params string, checksum *Checksum) ([]byte, error) {
@@ -48,6 +45,45 @@ func (i *BigBlueButtonInstance) callAPI(params string, checksum *Checksum) ([]by
 	return ioutil.ReadAll(resp.Body)
 }
 
+func (i *BigBlueButtonInstance) api(action string, params string) (interface{}, error) {
+	checksum := CreateChecksum(i.Secret, action, params)
+
+	body, err := i.callAPI(params, checksum)
+
+	if err != nil {
+		log.Error(fmt.Sprintf("Failed to call %s instance %s api", i.URL, action), err)
+		return nil, err
+	}
+
+	dataType := actionMapper(action)
+	result := reflect.New(dataType).Interface().(interface{})
+	if err := xml.Unmarshal(body, &result); err != nil {
+		log.Error(fmt.Sprintf("Failed to unmarshal %s api call body content", action), err)
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func actionMapper(action string) reflect.Type {
+	switch action {
+	case Create:
+		return reflect.TypeOf(CreateResponse{})
+	case Join:
+		return reflect.TypeOf(JoinRedirectResponse{})
+	case End:
+		return reflect.TypeOf(EndResponse{})
+	case IsMeetingRunning:
+		return reflect.TypeOf(IsMeetingsRunningResponse{})
+	case GetMeetingInfo:
+		return reflect.TypeOf(GetMeetingInfoResponse{})
+	case GetMeetings:
+		return reflect.TypeOf(GetMeetingsResponse{})
+	default:
+		return nil
+	}
+}
+
 // GetJoinRedirectURL compute the join redirect url
 func (i *BigBlueButtonInstance) GetJoinRedirectURL(params string) (string, error) {
 	checksum := CreateChecksum(i.Secret, Join, params)
@@ -62,97 +98,75 @@ func (i *BigBlueButtonInstance) GetJoinRedirectURL(params string) (string, error
 
 // Join execute a join api call on the remote BigBlueButton instance
 func (i *BigBlueButtonInstance) Join(params string) (*JoinRedirectResponse, error) {
-	checksum := CreateChecksum(i.Secret, Join, params)
-
-	body, err := i.callAPI(params, checksum)
+	response, err := i.api(Join, params)
 
 	if err != nil {
-		log.Error(fmt.Sprintf("Failed to call %s instance join api", i.URL), err)
 		return nil, err
 	}
 
-	var response JoinRedirectResponse
-	if err := xml.Unmarshal(body, &response); err != nil {
-		log.Error("Failed to unmarshal join api call body content", err)
-		return nil, err
+	if join, ok := response.(*JoinRedirectResponse); ok {
+		return join, nil
 	}
 
-	return &response, nil
+	return nil, errors.New("Failed to cast api response to JoinRedirectResponse")
 }
 
 // End execute a end api call on the remote BigBlueButton instance
 func (i *BigBlueButtonInstance) End(params string) (*EndResponse, error) {
-	checksum := CreateChecksum(i.Secret, End, params)
-
-	body, err := i.callAPI(params, checksum)
+	response, err := i.api(End, params)
 
 	if err != nil {
-		log.Error(fmt.Sprintf("Failed to call %s instance api end", i.URL), err)
 		return nil, err
 	}
 
-	var response EndResponse
-	if err := xml.Unmarshal(body, &response); err != nil {
-		log.Error("Failed to unmarshal end api call body content", err)
-		return nil, err
+	if end, ok := response.(*EndResponse); ok {
+		return end, nil
 	}
 
-	return &response, nil
+	return nil, errors.New("Failed to cast api response to EndResponse")
 }
 
 // IsMeetingRunning checks if a meeting is running on the remote Bigbluebutton instance
 func (i *BigBlueButtonInstance) IsMeetingRunning(params string) (*IsMeetingsRunningResponse, error) {
-	checksum := CreateChecksum(i.Secret, IsMeetingRunning, params)
-	body, err := i.callAPI(params, checksum)
+	response, err := i.api(IsMeetingRunning, params)
 
 	if err != nil {
-		log.Error(fmt.Sprintf("Failed to call %s instance api is meeting running", i.URL), err)
 		return nil, err
 	}
 
-	var response IsMeetingsRunningResponse
-	if err := xml.Unmarshal(body, &response); err != nil {
-		log.Error("Failed to unmarshal is meting running api call body content", err)
-		return nil, err
+	if running, ok := response.(*IsMeetingsRunningResponse); ok {
+		return running, nil
 	}
 
-	return &response, nil
+	return nil, errors.New("Failed to cast api response to IsMeetingsRunningResponse")
 }
 
 // GetMeetingInfo execute a get meeting info api call on the remote BigBlueButton instance
 func (i *BigBlueButtonInstance) GetMeetingInfo(params string) (*GetMeetingInfoResponse, error) {
-	checksum := CreateChecksum(i.Secret, GetMeetingInfo, params)
-	body, err := i.callAPI(params, checksum)
+	response, err := i.api(GetMeetingInfo, params)
 
 	if err != nil {
-		log.Error(fmt.Sprintf("Failed to call %s instance api get meeting info", i.URL), err)
 		return nil, err
 	}
 
-	var response GetMeetingInfoResponse
-	if err := xml.Unmarshal(body, &response); err != nil {
-		log.Error("Failed to unmarshal get meeting info api call body content", err)
-		return nil, err
+	if meeting, ok := response.(*GetMeetingInfoResponse); ok {
+		return meeting, nil
 	}
 
-	return &response, nil
+	return nil, errors.New("Failed to cast api response to GetMeetingInfoResponse")
 }
 
 // GetMeetings execute a get meetings api call on the remote BigBlueButton instance
 func (i *BigBlueButtonInstance) GetMeetings() (*GetMeetingsResponse, error) {
-	checksum := CreateChecksum(i.Secret, GetMeetings, "")
-	body, err := i.callAPI("", checksum)
+	response, err := i.api(GetMeetings, "")
 
 	if err != nil {
-		log.Error(fmt.Sprintf("Failed to call %s instance api get meetings", i.URL), err)
 		return nil, err
 	}
 
-	var response GetMeetingsResponse
-	if err := xml.Unmarshal(body, &response); err != nil {
-		log.Error("Failed to unmarshal get meetings api call body content", err)
-		return nil, err
+	if meetings, ok := response.(*GetMeetingsResponse); ok {
+		return meetings, nil
 	}
 
-	return &response, nil
+	return nil, errors.New("Failed to cast api response to GetMeetingsResponse")
 }
