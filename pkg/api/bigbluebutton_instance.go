@@ -79,6 +79,8 @@ func actionMapper(action string) reflect.Type {
 		return reflect.TypeOf(GetMeetingInfoResponse{})
 	case GetMeetings:
 		return reflect.TypeOf(GetMeetingsResponse{})
+	case GetRecordings:
+		return reflect.TypeOf(GetRecordingsResponse{})
 	default:
 		return nil
 	}
@@ -108,7 +110,7 @@ func (i *BigBlueButtonInstance) Join(params string) (*JoinRedirectResponse, erro
 		return join, nil
 	}
 
-	return nil, errors.New("Failed to cast api response to JoinRedirectResponse")
+	return nil, errors.New("failed to cast api response to JoinRedirectResponse")
 }
 
 // End execute a end api call on the remote BigBlueButton instance
@@ -123,7 +125,7 @@ func (i *BigBlueButtonInstance) End(params string) (*EndResponse, error) {
 		return end, nil
 	}
 
-	return nil, errors.New("Failed to cast api response to EndResponse")
+	return nil, errors.New("failed to cast api response to EndResponse")
 }
 
 // IsMeetingRunning checks if a meeting is running on the remote Bigbluebutton instance
@@ -138,7 +140,7 @@ func (i *BigBlueButtonInstance) IsMeetingRunning(params string) (*IsMeetingsRunn
 		return running, nil
 	}
 
-	return nil, errors.New("Failed to cast api response to IsMeetingsRunningResponse")
+	return nil, errors.New("failed to cast api response to IsMeetingsRunningResponse")
 }
 
 // GetMeetingInfo execute a get meeting info api call on the remote BigBlueButton instance
@@ -153,7 +155,7 @@ func (i *BigBlueButtonInstance) GetMeetingInfo(params string) (*GetMeetingInfoRe
 		return meeting, nil
 	}
 
-	return nil, errors.New("Failed to cast api response to GetMeetingInfoResponse")
+	return nil, errors.New("failed to cast api response to GetMeetingInfoResponse")
 }
 
 // GetMeetings execute a get meetings api call on the remote BigBlueButton instance
@@ -168,5 +170,20 @@ func (i *BigBlueButtonInstance) GetMeetings() (*GetMeetingsResponse, error) {
 		return meetings, nil
 	}
 
-	return nil, errors.New("Failed to cast api response to GetMeetingsResponse")
+	return nil, errors.New("failed to cast api response to GetMeetingsResponse")
+}
+
+// GetRecordings perform a get recordings api call on the remote BigBlueButton instance
+func (i *BigBlueButtonInstance) GetRecordings(params string) (*GetRecordingsResponse, error) {
+	response, err := i.api(GetRecordings, params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if recordings, ok := response.(*GetRecordingsResponse); ok {
+		return recordings, nil
+	}
+
+	return nil, errors.New("failed to cast api response to GetRecordingsResponse")
 }

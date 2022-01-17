@@ -19,6 +19,8 @@ import (
 	AppMock "github.com/SLedunois/b3lb/pkg/app/mock"
 	"github.com/SLedunois/b3lb/pkg/config"
 	"github.com/SLedunois/b3lb/pkg/restclient"
+	log "github.com/sirupsen/logrus"
+	LogTest "github.com/sirupsen/logrus/hooks/test"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -98,6 +100,15 @@ func unMarshallGetMeetingsResponse(body []byte) api.GetMeetingsResponse {
 
 func unMarshallJoinRedirectResponse(body []byte) api.JoinRedirectResponse {
 	var response api.JoinRedirectResponse
+	if err := xml.Unmarshal(body, &response); err != nil {
+		panic(err)
+	}
+
+	return response
+}
+
+func unMarshallGetRecordingsResponse(body []byte) api.GetRecordingsResponse {
+	var response api.GetRecordingsResponse
 	if err := xml.Unmarshal(body, &response); err != nil {
 		panic(err)
 	}
@@ -857,6 +868,137 @@ func TestGetMeetings(t *testing.T) {
 			server := doGenericInitialization()
 			test.Mock()
 			server.GetMeetings(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}
+
+func TestGetRecodings(t *testing.T) {
+	checksum := &api.Checksum{
+		Secret: test.DefaultSecret(),
+		Params: "",
+		Action: api.GetRecordings,
+	}
+
+	instances := map[string]string{
+		"http://localhost/bigbluebutton": test.DefaultSecret(),
+	}
+
+	logHook := LogTest.NewGlobal()
+	log.AddHook(logHook)
+
+	tests := []test.Test{
+		{
+			Name: "An error returned by the instance manager ListInstance method should return a no recordings response",
+			Mock: func() {
+				c.Set("api_ctx", checksum)
+				mock := redisMock.ExpectHGetAll(admin.B3LBInstances)
+				mock.SetErr(errors.New("redis error"))
+				mock.SetVal(map[string]string{})
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				response := unMarshallGetRecordingsResponse(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+				assert.Equal(t, api.MessageKeys().NoRecordings, response.MessageKey)
+				assert.Equal(t, api.Messages().NoRecordings, response.Message)
+				assert.Equal(t, 0, len(response.Recordings))
+			},
+		},
+		{
+			Name: "An error returned by the remote instance should be logged",
+			Mock: func() {
+				c.Set("api_ctx", checksum)
+				redisMock.ExpectHGetAll(admin.B3LBInstances).SetVal(instances)
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					return nil, errors.New("remote error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, "Instance http://localhost/bigbluebutton failed to retrieve recordings. remote error", logHook.LastEntry().Message)
+			},
+		},
+		{
+			Name: "An empty response from the remote instance should return a no recordings response",
+			Mock: func() {
+				c.Set("api_ctx", checksum)
+				redisMock.ExpectHGetAll(admin.B3LBInstances).SetVal(instances)
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					recordings := api.GetRecordingsResponse{
+						Response: api.Response{
+							ReturnCode: api.ReturnCodes().Success,
+							MessageKey: api.MessageKeys().NoRecordings,
+							Message:    api.Messages().NoRecordings,
+						},
+					}
+
+					response, err := xml.Marshal(recordings)
+					if err != nil {
+						panic(err)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewReader(response)),
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				response := unMarshallGetRecordingsResponse(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+				assert.Equal(t, api.MessageKeys().NoRecordings, response.MessageKey)
+				assert.Equal(t, api.Messages().NoRecordings, response.Message)
+				assert.Equal(t, 0, len(response.Recordings))
+			},
+		},
+		{
+			Name: "An non empty response from the remote instance should return a valid response",
+			Mock: func() {
+				c.Set("api_ctx", checksum)
+				redisMock.ExpectHGetAll(admin.B3LBInstances).SetVal(instances)
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					recordings := api.GetRecordingsResponse{
+						Response: api.Response{
+							ReturnCode: api.ReturnCodes().Success,
+						},
+						Recordings: []api.Recording{
+							{
+								RecordID:  "record-id",
+								MeetingID: "meeting-id",
+							},
+						},
+					}
+
+					response, err := xml.Marshal(recordings)
+					if err != nil {
+						panic(err)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewReader(response)),
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				response := unMarshallGetRecordingsResponse(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+				assert.Equal(t, 1, len(response.Recordings))
+				assert.Equal(t, "record-id", response.Recordings[0].RecordID)
+				assert.Equal(t, "meeting-id", response.Recordings[0].MeetingID)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			server := doGenericInitialization()
+			test.Mock()
+			server.GetRecordings(c)
 			test.Validator(t, nil, nil)
 		})
 	}

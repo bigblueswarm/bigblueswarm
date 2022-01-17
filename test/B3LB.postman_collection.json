@@ -571,6 +571,49 @@
 					"response": []
 				},
 				{
+					"name": "Get recordings",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Create api should return a 200 - Status OK - code and SUCCESS return code\", () => {",
+									"    response = xml2Json(responseBody).response",
+									"    pm.expect(response.returncode).to.eql(\"SUCCESS\")",
+									"    pm.response.to.have.status(200)",
+									"})",
+									"",
+									"pm.test(\"GetMeetings api should return a valid response\", () => {",
+									"    response = xml2Json(responseBody).response",
+									"    pm.expect(response.messageKey).to.eql(\"noRecordings\")",
+									"    pm.expect(response.message).to.eql(\"There are no recordings for the meeting(s).\")",
+									"    pm.expect(Object.keys(response.recordings).length).to.eql(0)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/getRecordings",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"bigbluebutton",
+								"api",
+								"getRecordings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "End meeting",
 					"event": [
 						{

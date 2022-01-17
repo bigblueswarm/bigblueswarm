@@ -27,6 +27,9 @@ const IsMeetingRunning = "isMeetingRunning"
 // GetMeetingInfo is the sub-endpoint for getting a meeting info
 const GetMeetingInfo = "getMeetingInfo"
 
+// GetRecordings is the sub-endpoint for getting a list of recordings
+const GetRecordings = "getRecordings"
+
 // Codes represents the api return code
 type Codes struct {
 	Success string
@@ -47,6 +50,7 @@ type Keys struct {
 	DuplicationWarning    string
 	NotFound              string
 	SendEndMeetingRequest string
+	NoRecordings          string
 }
 
 // MessageKeys return a struct containing the api message keys
@@ -56,6 +60,7 @@ func MessageKeys() *Keys {
 		DuplicationWarning:    "duplicationWarning",
 		NotFound:              "notFound",
 		SendEndMeetingRequest: "sentEndMeetingRequest",
+		NoRecordings:          "noRecordings",
 	}
 }
 
@@ -67,6 +72,7 @@ type MessageValues struct {
 	NotFound           string
 	EndMeeting         string
 	InvalidModeratorPW string
+	NoRecordings       string
 }
 
 // Messages returns a struct containing the api messages
@@ -78,5 +84,6 @@ func Messages() *MessageValues {
 		NotFound:           "A meeting with that ID does not exist",
 		EndMeeting:         "A request to end the meeting was sent. Please wait a few seconds, and then use the getMeetingInfo or isMeetingRunning API calls to verify that it was ended.",
 		InvalidModeratorPW: "Provided moderator password is incorrect",
+		NoRecordings:       "There are no recordings for the meeting(s).",
 	}
 }

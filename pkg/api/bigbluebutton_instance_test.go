@@ -263,3 +263,34 @@ func TestJoin(t *testing.T) {
 
 	executeTests(t, "Join", tests)
 }
+
+func TestGetRecordings(t *testing.T) {
+	validResponse := &GetRecordingsResponse{
+		Response: Response{
+			ReturnCode: ReturnCodes().Success,
+		},
+		Recordings: []Recording{
+			{
+				RecordID:  "recordID",
+				MeetingID: meetingID,
+			},
+		},
+	}
+
+	customValidator := func(t *testing.T, response interface{}) {
+		recordings, ok := response.(*GetRecordingsResponse)
+		if !ok {
+			t.Error("Response is not a GetRecordingsResponse")
+			return
+		}
+
+		assert.Equal(t, recordings.Response.ReturnCode, ReturnCodes().Success)
+		assert.Equal(t, 1, len(recordings.Recordings))
+		assert.Equal(t, meetingID, recordings.Recordings[0].MeetingID)
+		assert.Equal(t, "recordID", recordings.Recordings[0].RecordID)
+	}
+
+	tests := getTests("GetRecordings", true, "", validResponse, customValidator)
+
+	executeTests(t, "GetRecordings", tests)
+}
