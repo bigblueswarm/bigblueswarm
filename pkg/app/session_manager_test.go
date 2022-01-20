@@ -13,12 +13,16 @@ import (
 const sessionID string = "session_id"
 const host string = "http://localhost/bigbluebutton"
 
+func TestCacheKey(t *testing.T) {
+	assert.Equal(t, "meeting:session_id", cacheKey(sessionID))
+}
+
 func TestAdd(t *testing.T) {
 	tests := []test.Test{
 		{
 			Name: "Add should not return and error if the value is added",
 			Mock: func() {
-				mock := redisMock.ExpectSet(sessionID, host, 0)
+				mock := redisMock.ExpectSet(cacheKey(sessionID), host, 0)
 				mock.SetErr(redis.Nil)
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
@@ -28,7 +32,7 @@ func TestAdd(t *testing.T) {
 		{
 			Name: "Add should return an error if redis throws an error",
 			Mock: func() {
-				mock := redisMock.ExpectSet(sessionID, host, 0)
+				mock := redisMock.ExpectSet(cacheKey(sessionID), host, 0)
 				mock.SetErr(errors.New("redis error"))
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
@@ -51,7 +55,7 @@ func TestGet(t *testing.T) {
 		{
 			Name: "Get should return the host and no error if the session is found",
 			Mock: func() {
-				redisMock.ExpectGet(sessionID).SetVal(host)
+				redisMock.ExpectGet(cacheKey(sessionID)).SetVal(host)
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Nil(t, err)
@@ -61,7 +65,7 @@ func TestGet(t *testing.T) {
 		{
 			Name: "Get should return an error if redis throws an error",
 			Mock: func() {
-				mock := redisMock.ExpectGet(sessionID)
+				mock := redisMock.ExpectGet(cacheKey(sessionID))
 				mock.SetErr(errors.New("redis error"))
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
@@ -71,7 +75,7 @@ func TestGet(t *testing.T) {
 		{
 			Name: "Get should return an empty string if the session is not found",
 			Mock: func() {
-				redisMock.ExpectGet(sessionID).SetVal("")
+				redisMock.ExpectGet(cacheKey(sessionID)).SetVal("")
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Nil(t, err)
@@ -94,7 +98,7 @@ func TestRemove(t *testing.T) {
 		{
 			Name: "Remove should return nil if the session is removed",
 			Mock: func() {
-				redisMock.ExpectDel(sessionID).SetErr(redis.Nil)
+				redisMock.ExpectDel(cacheKey(sessionID)).SetErr(redis.Nil)
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Nil(t, err)
@@ -103,7 +107,7 @@ func TestRemove(t *testing.T) {
 		{
 			Name: "Remove should return an error if redis throws an error",
 			Mock: func() {
-				redisMock.ExpectDel(sessionID).SetErr(errors.New("redis error"))
+				redisMock.ExpectDel(cacheKey(sessionID)).SetErr(errors.New("redis error"))
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.NotNil(t, err)
