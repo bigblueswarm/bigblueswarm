@@ -7,7 +7,8 @@ import (
 
 // BigBlueButton configuration mapping
 type BigBlueButton struct {
-	Secret string `mapstructure:"secret"`
+	Secret                 string `mapstructure:"secret"`
+	RecordingsPollInterval string `mapstructure:"recordings_poll_interval"`
 }
 
 // RDB represents redis database configuration mapping

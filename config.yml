@@ -1,6 +1,7 @@
 ---
 bigbluebutton:
   secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU
+  recordings_poll_interval: 1m
 admin:
   api_key: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R
 port: 8090
