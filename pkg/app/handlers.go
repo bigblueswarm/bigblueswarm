@@ -50,7 +50,7 @@ func missingMeetingIDParameter(c *gin.Context) {
 }
 
 func (s *Server) retrieveBBBBInstanceFromMeetingID(meetingID string) (api.BigBlueButtonInstance, error) {
-	host, err := s.SessionManager.Get(meetingID)
+	host, err := s.Mapper.Get(MeetingMapKey(meetingID))
 	if err != nil {
 		return api.BigBlueButtonInstance{}, fmt.Errorf("SessionManager failed to retrieve session: %s", err.Error())
 	}
@@ -105,7 +105,7 @@ func (s *Server) Create(c *gin.Context) {
 		return
 	}
 
-	addErr := s.SessionManager.Add(apiResponse.MeetingID, instance.URL)
+	addErr := s.Mapper.Add(MeetingMapKey(apiResponse.MeetingID), instance.URL)
 	if addErr != nil {
 		log.Error("SessionManager failed to add new session", addErr)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -158,7 +158,7 @@ func (s *Server) Join(c *gin.Context) {
 func (s *Server) End(c *gin.Context) {
 	endProcess := func() error {
 		meetingID, _ := c.GetQuery("meetingID")
-		removeErr := s.SessionManager.Remove(meetingID)
+		removeErr := s.Mapper.Remove(MeetingMapKey(meetingID))
 		if removeErr != nil {
 			return fmt.Errorf("SessionManager failed to remove session %s: %s", meetingID, removeErr)
 		}

@@ -36,7 +36,7 @@ var (
 
 func doGenericInitialization() *Server {
 	server := NewServer(&config.Config{})
-	server.SessionManager = sessionManager
+	server.Mapper = mapper
 	server.InstanceManager = instanceManager
 	server.Balancer = &AppMock.Balancer{}
 	restclient.Client = &RestClientMock.RestClient{}
@@ -266,7 +266,7 @@ func TestCreate(t *testing.T) {
 						Body:       ioutil.NopCloser(bytes.NewReader(response)),
 					}, nil
 				}
-				redisMock.ExpectSet(cacheKey(meetingID), instance, 0).SetErr(errors.New("redis error"))
+				redisMock.ExpectSet(MeetingMapKey(meetingID), instance, 0).SetErr(errors.New("redis error"))
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -307,7 +307,7 @@ func TestCreate(t *testing.T) {
 						Body:       ioutil.NopCloser(bytes.NewReader(response)),
 					}, nil
 				}
-				redisMock.ExpectSet(cacheKey(meetingID), instance, 0).SetVal(meetingID)
+				redisMock.ExpectSet(MeetingMapKey(meetingID), instance, 0).SetVal(meetingID)
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				response := unMarshallCreateResponse(w.Body.Bytes())
@@ -356,7 +356,7 @@ func TestJoin(t *testing.T) {
 			Name: "Providing a meeting id that does not exists should return a not found error",
 			Mock: func() {
 				test.SetRequestParams(c, params)
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal("")
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal("")
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
 					Params: params,
@@ -376,7 +376,7 @@ func TestJoin(t *testing.T) {
 			Name: "Providing a meeting id that does not match an instance should return a not found error",
 			Mock: func() {
 				test.SetRequestParams(c, params)
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal(instance)
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal(instance)
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal("")
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
@@ -397,7 +397,7 @@ func TestJoin(t *testing.T) {
 			Name: "A valid request should redirect to the meeting url",
 			Mock: func() {
 				test.SetRequestParams(c, params)
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal(instance)
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal(instance)
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
@@ -415,7 +415,7 @@ func TestJoin(t *testing.T) {
 			Name: "An error return by BigBlueButton instance while calling join api with `redirect=false` parameter set should return an internal server error status code",
 			Mock: func() {
 				test.SetRequestParams(c, fmt.Sprintf("%s&redirect=false", params))
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal(instance)
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal(instance)
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
@@ -435,7 +435,7 @@ func TestJoin(t *testing.T) {
 			Name: "Calling join api with `redirect=false` parameter set should return a valid JoinRedirectResponse",
 			Mock: func() {
 				test.SetRequestParams(c, fmt.Sprintf("%s&redirect=false", params))
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal(instance)
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal(instance)
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
@@ -497,7 +497,7 @@ func TestEnd(t *testing.T) {
 			Name: "An error thrown by SessionManager removing session should return an http interal server error",
 			Mock: func() {
 				test.SetRequestParams(c, params)
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal(instance)
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal(instance)
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
@@ -505,7 +505,7 @@ func TestEnd(t *testing.T) {
 					Action: api.IsMeetingRunning,
 				}
 				c.Set("api_ctx", checksum)
-				redisMock.ExpectDel(cacheKey(meetingID)).SetErr(errors.New("error"))
+				redisMock.ExpectDel(MeetingMapKey(meetingID)).SetErr(errors.New("error"))
 				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
 					endResponse := &api.EndResponse{
 						Response: api.Response{
@@ -532,7 +532,7 @@ func TestEnd(t *testing.T) {
 			Name: "A valid end call should return a success response",
 			Mock: func() {
 				test.SetRequestParams(c, params)
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal(instance)
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal(instance)
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
@@ -540,7 +540,7 @@ func TestEnd(t *testing.T) {
 					Action: api.IsMeetingRunning,
 				}
 				c.Set("api_ctx", checksum)
-				redisMock.ExpectDel(cacheKey(meetingID)).SetVal(1)
+				redisMock.ExpectDel(MeetingMapKey(meetingID)).SetVal(1)
 				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
 					endResponse := &api.EndResponse{
 						Response: api.Response{
@@ -603,7 +603,7 @@ func TestIsMeetingRunning(t *testing.T) {
 			Name: "Providing a meeting id that does not exists should return a not found error",
 			Mock: func() {
 				test.SetRequestParams(c, params)
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal("")
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal("")
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
 					Params: params,
@@ -623,7 +623,7 @@ func TestIsMeetingRunning(t *testing.T) {
 			Name: "Providing a meeting id that does not match an instance should return a not found error",
 			Mock: func() {
 				test.SetRequestParams(c, params)
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal(instance)
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal(instance)
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal("")
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
@@ -644,7 +644,7 @@ func TestIsMeetingRunning(t *testing.T) {
 			Name: "An error thrown by remote bigbluebutton instance should return an http internal error status",
 			Mock: func() {
 				test.SetRequestParams(c, params)
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal(instance)
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal(instance)
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
@@ -664,7 +664,7 @@ func TestIsMeetingRunning(t *testing.T) {
 			Name: "A valid request should return a valid response",
 			Mock: func() {
 				test.SetRequestParams(c, params)
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal(instance)
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal(instance)
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
@@ -723,7 +723,7 @@ func TestGetMeetingInfo(t *testing.T) {
 			Name: "A valid end call should return a success response",
 			Mock: func() {
 				test.SetRequestParams(c, params)
-				redisMock.ExpectGet(cacheKey(meetingID)).SetVal(instance)
+				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal(instance)
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
