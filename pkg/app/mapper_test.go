@@ -128,3 +128,49 @@ func TestRemove(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteAll(t *testing.T) {
+	tests := []test.Test{
+		{
+			Name: "An error thrown by redis keys method should be returned",
+			Mock: func() {
+				mock := redisMock.ExpectKeys(RecodingPattern())
+				mock.SetErr(errors.New("redis error"))
+				mock.SetVal([]string{})
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			Name: "An error thrown by redis del method should be returned",
+			Mock: func() {
+				mock := redisMock.ExpectKeys(RecodingPattern())
+				mock.SetVal([]string{RecordingMapKey(id)})
+				redisMock.ExpectDel(RecordingMapKey(id)).SetErr(errors.New("redis error"))
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			Name: "No error should be returned all keys are deleted",
+			Mock: func() {
+				mock := redisMock.ExpectKeys(RecodingPattern())
+				mock.SetVal([]string{RecordingMapKey(id)})
+				redisMock.ExpectDel(RecordingMapKey(id)).SetVal(1)
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Nil(t, err)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Mock()
+			err := mapper.DeleteAll(RecodingPattern())
+			test.Validator(t, nil, err)
+		})
+	}
+}

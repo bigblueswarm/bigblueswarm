@@ -40,6 +40,7 @@ func NewServer(config *config.Config) *Server {
 // Run launches the server
 func (s *Server) Run() error {
 	s.initRoutes()
+	go s.launchRecordingPoller()
 	err := s.Router.Run(fmt.Sprintf(":%d", s.Config.Port))
 
 	if err != nil {
