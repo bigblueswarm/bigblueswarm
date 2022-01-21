@@ -17,7 +17,7 @@ type Server struct {
 	Router          *gin.Engine
 	Config          *config.Config
 	InstanceManager admin.InstanceManager
-	SessionManager  SessionManager
+	Mapper          Mapper
 	Balancer        Balancer
 }
 
@@ -32,7 +32,7 @@ func NewServer(config *config.Config) *Server {
 		Router:          gin.Default(),
 		Config:          config,
 		InstanceManager: admin.NewInstanceManager(*redisClient),
-		SessionManager:  NewSessionManager(*redisClient),
+		Mapper:          NewMapper(*redisClient),
 		Balancer:        NewBalancer(influxClient),
 	}
 }

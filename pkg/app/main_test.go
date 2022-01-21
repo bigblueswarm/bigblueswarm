@@ -14,7 +14,7 @@ import (
 var (
 	redisMock       redismock.ClientMock
 	redisClient     *redis.Client
-	sessionManager  SessionManager
+	mapper          Mapper
 	instanceManager admin.InstanceManager
 )
 
@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 	client, rMock := redismock.NewClientMock()
 	redisClient = client
 	redisMock = rMock
-	sessionManager = NewSessionManager(*redisClient)
+	mapper = NewMapper(*redisClient)
 	instanceManager = admin.NewInstanceManager(*redisClient)
 
 	status := m.Run()
