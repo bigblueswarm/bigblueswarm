@@ -13,6 +13,7 @@ type Mapper interface {
 	Add(key string, host string) error
 	Get(key string) (string, error)
 	Remove(key string) error
+	DeleteAll(pattern string) error
 }
 
 // RedisMapper internally manage remote bigbluebutton session
@@ -37,6 +38,11 @@ func RecordingMapKey(id string) string {
 	return "recording:" + id
 }
 
+// RecodingPattern is the pattern used to retrieve all the recordings
+func RecodingPattern() string {
+	return "recording:*"
+}
+
 // Add persist the session in the redis database
 func (m *RedisMapper) Add(key string, host string) error {
 	_, err := m.RDB.Set(context.Background(), key, host, 0).Result()
@@ -56,4 +62,21 @@ func (m *RedisMapper) Remove(key string) error {
 	_, err := m.RDB.Del(context.Background(), key).Result()
 
 	return utils.ComputeErr(err)
+}
+
+// DeleteAll delete all keys matching the pattern
+func (m *RedisMapper) DeleteAll(pattern string) error {
+	keys, err := m.RDB.Keys(context.Background(), pattern).Result()
+	if utils.ComputeErr(err) != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		_, err := m.RDB.Del(context.Background(), key).Result()
+		if utils.ComputeErr(err) != nil {
+			return err
+		}
+	}
+
+	return nil
 }

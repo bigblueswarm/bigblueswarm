@@ -13,10 +13,10 @@ import (
 	"github.com/SLedunois/b3lb/pkg/admin"
 	"github.com/SLedunois/b3lb/pkg/api"
 
+	AppMock "github.com/SLedunois/b3lb/pkg/app/mock"
 	RestClientMock "github.com/SLedunois/b3lb/pkg/restclient/mock"
 
 	"github.com/SLedunois/b3lb/internal/test"
-	AppMock "github.com/SLedunois/b3lb/pkg/app/mock"
 	"github.com/SLedunois/b3lb/pkg/config"
 	"github.com/SLedunois/b3lb/pkg/restclient"
 	log "github.com/sirupsen/logrus"
