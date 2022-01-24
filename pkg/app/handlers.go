@@ -49,6 +49,11 @@ func missingMeetingIDParameter(c *gin.Context) {
 	c.XML(http.StatusOK, api.CreateError(api.MessageKeys().ValidationError, api.Messages().EmptyMeetingID))
 }
 
+func missingRecordIDParameter(c *gin.Context) {
+	log.Error("Missing recordID parameter")
+	c.XML(http.StatusOK, api.CreateError(api.MessageKeys().MissingRecordIDParameter, api.Messages().MissingRecordIDParameter))
+}
+
 func (s *Server) retrieveBBBBInstanceFromMeetingID(meetingID string) (api.BigBlueButtonInstance, error) {
 	host, err := s.Mapper.Get(MeetingMapKey(meetingID))
 	if err != nil {
@@ -260,6 +265,39 @@ func (s *Server) GetRecordings(c *gin.Context) {
 
 	if len(response.Recordings) == 0 {
 		c.XML(http.StatusOK, emptyRecordingsResponse)
+		return
+	}
+
+	c.XML(http.StatusOK, response)
+}
+
+// UpdateRecordings handler update recordings for provided record identifier. See https://docs.bigbluebutton.org/dev/api.html#updaterecordings
+func (s *Server) UpdateRecordings(c *gin.Context) {
+	ctx := getAPIContext(c)
+	recordID, exists := c.GetQuery("recordID")
+	if !exists {
+		missingRecordIDParameter(c)
+		return
+	}
+
+	instanceURL, err := s.Mapper.Get(RecordingMapKey(recordID))
+	if err != nil {
+		log.Errorln(fmt.Sprintf("Failed to retrieve instance for recording %s", recordID), err)
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
+		return
+	}
+
+	instance, err := s.InstanceManager.Get(instanceURL)
+	if err != nil {
+		log.Errorln(fmt.Sprintf("Failed to retrieve instance for instance url %s", recordID), err)
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
+		return
+	}
+
+	response, err := instance.UpdateRecordings(ctx.Params)
+	if err != nil {
+		log.Errorln(fmt.Sprintf("Instance %s failed to update recordings.", instance.URL), err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 

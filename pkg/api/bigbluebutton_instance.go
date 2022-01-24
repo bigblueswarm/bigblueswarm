@@ -81,6 +81,8 @@ func actionMapper(action string) reflect.Type {
 		return reflect.TypeOf(GetMeetingsResponse{})
 	case GetRecordings:
 		return reflect.TypeOf(GetRecordingsResponse{})
+	case UpdateRecordings:
+		return reflect.TypeOf(UpdateRecordingsResponse{})
 	default:
 		return nil
 	}
@@ -186,4 +188,19 @@ func (i *BigBlueButtonInstance) GetRecordings(params string) (*GetRecordingsResp
 	}
 
 	return nil, errors.New("failed to cast api response to GetRecordingsResponse")
+}
+
+// UpdateRecordings perform a update recordings api call on the remote BigBlueButton instance
+func (i *BigBlueButtonInstance) UpdateRecordings(params string) (*UpdateRecordingsResponse, error) {
+	response, err := i.api(UpdateRecordings, params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if recordings, ok := response.(*UpdateRecordingsResponse); ok {
+		return recordings, nil
+	}
+
+	return nil, errors.New("failed to cast api response to UpdateRecordingsResponse")
 }

@@ -156,3 +156,10 @@ type GetRecordingsResponse struct {
 	Response
 	Recordings []Recording `xml:"recordings>recording"`
 }
+
+// UpdateRecordingsResponse represents the Bigbluebutton updateRecordings API response type
+type UpdateRecordingsResponse struct {
+	XMLName    xml.Name `xml:"response"`
+	ReturnCode string   `xml:"returncode"`
+	Updated    bool     `xml:"updated"`
+}

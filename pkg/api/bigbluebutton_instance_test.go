@@ -294,3 +294,25 @@ func TestGetRecordings(t *testing.T) {
 
 	executeTests(t, "GetRecordings", tests)
 }
+
+func TestUpdateRecordings(t *testing.T) {
+	validResponse := &UpdateRecordingsResponse{
+		ReturnCode: ReturnCodes().Success,
+		Updated:    true,
+	}
+
+	customValidator := func(t *testing.T, response interface{}) {
+		recordings, ok := response.(*UpdateRecordingsResponse)
+		if !ok {
+			t.Error("Response is not a UpdateRecordingsResponse")
+			return
+		}
+
+		assert.Equal(t, recordings.ReturnCode, ReturnCodes().Success)
+		assert.Equal(t, recordings.Updated, true)
+	}
+
+	tests := getTests("UpdateRecordings", true, "recordID=recording-id", validResponse, customValidator)
+
+	executeTests(t, "UpdateRecordings", tests)
+}

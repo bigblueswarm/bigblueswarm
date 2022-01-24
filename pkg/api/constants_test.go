@@ -17,6 +17,7 @@ func TestMessageKeys(t *testing.T) {
 	assert.Equal(t, "notFound", MessageKeys().NotFound)
 	assert.Equal(t, "sentEndMeetingRequest", MessageKeys().SendEndMeetingRequest)
 	assert.Equal(t, "noRecordings", MessageKeys().NoRecordings)
+	assert.Equal(t, "missingParamRecordID", MessageKeys().MissingRecordIDParameter)
 }
 
 func TestMessages(t *testing.T) {
@@ -27,4 +28,5 @@ func TestMessages(t *testing.T) {
 	assert.Equal(t, "A request to end the meeting was sent. Please wait a few seconds, and then use the getMeetingInfo or isMeetingRunning API calls to verify that it was ended.", Messages().EndMeeting)
 	assert.Equal(t, "Provided moderator password is incorrect", Messages().InvalidModeratorPW)
 	assert.Equal(t, "There are no recordings for the meeting(s).", Messages().NoRecordings)
+	assert.Equal(t, "You must specify a recordID.", Messages().MissingRecordIDParameter)
 }
