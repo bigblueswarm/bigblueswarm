@@ -116,6 +116,15 @@ func unMarshallGetRecordingsResponse(body []byte) api.GetRecordingsResponse {
 	return response
 }
 
+func unMarshallUpdateRecordingsResponse(body []byte) api.UpdateRecordingsResponse {
+	var response api.UpdateRecordingsResponse
+	if err := xml.Unmarshal(body, &response); err != nil {
+		panic(err)
+	}
+
+	return response
+}
+
 func TestHealthCheckRoute(t *testing.T) {
 	// Healthcheck has a single test. The method always returns success and the same response.
 	t.Run("Healtcheck should returns a valid response", func(t *testing.T) {
@@ -999,6 +1008,150 @@ func TestGetRecodings(t *testing.T) {
 			server := doGenericInitialization()
 			test.Mock()
 			server.GetRecordings(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}
+
+func TestUpdateRecordings(t *testing.T) {
+	tests := []test.Test{
+		{
+			Name: "A missing recordID parameter should return a missing parameter response",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "",
+					Secret: test.DefaultSecret(),
+					Action: api.UpdateRecordings,
+				}
+
+				c.Set("api_ctx", checksum)
+			},
+			Validator: func(t *testing.T, value interface{}, _ error) {
+				err := unMarshallError(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Failed, err.ReturnCode)
+				assert.Equal(t, api.MessageKeys().MissingRecordIDParameter, err.MessageKey)
+				assert.Equal(t, api.Messages().MissingRecordIDParameter, err.Message)
+			},
+		},
+		{
+			Name: "An error returned by the mapper should return a failed response",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordinID=record-id",
+					Secret: test.DefaultSecret(),
+					Action: api.UpdateRecordings,
+				}
+
+				c.Set("api_ctx", checksum)
+				test.SetRequestParams(c, "recordID=record-id")
+
+				mock := redisMock.ExpectGet(RecordingMapKey("record-id"))
+				mock.SetErr(errors.New("redis error"))
+				mock.SetVal("")
+			},
+			Validator: func(t *testing.T, value interface{}, _ error) {
+				err := unMarshallError(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Failed, err.ReturnCode)
+				assert.Equal(t, api.MessageKeys().NotFound, err.MessageKey)
+				assert.Equal(t, api.Messages().NotFound, err.Message)
+			},
+		},
+		{
+			Name: "An error returned by the instance manager should return a failed response",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordinID=record-id",
+					Secret: test.DefaultSecret(),
+					Action: api.UpdateRecordings,
+				}
+
+				c.Set("api_ctx", checksum)
+				test.SetRequestParams(c, "recordID=record-id")
+
+				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
+				mock := redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton")
+				mock.SetVal("")
+				mock.SetErr(errors.New("redis error"))
+			},
+			Validator: func(t *testing.T, value interface{}, _ error) {
+				err := unMarshallError(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Failed, err.ReturnCode)
+				assert.Equal(t, api.MessageKeys().NotFound, err.MessageKey)
+				assert.Equal(t, api.Messages().NotFound, err.Message)
+			},
+		},
+		{
+			Name: "An error returned by the remote instance should return an internal server error",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordinID=record-id",
+					Secret: test.DefaultSecret(),
+					Action: api.UpdateRecordings,
+				}
+
+				c.Set("api_ctx", checksum)
+				test.SetRequestParams(c, "recordID=record-id")
+
+				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
+				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					return nil, errors.New("http error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, _ error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+		{
+			Name: "A successful update should return a a valid UpdateRecordings response",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordinID=record-id",
+					Secret: test.DefaultSecret(),
+					Action: api.UpdateRecordings,
+				}
+
+				c.Set("api_ctx", checksum)
+				test.SetRequestParams(c, "recordID=record-id")
+
+				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
+				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					recordings := &api.UpdateRecordingsResponse{
+						ReturnCode: api.ReturnCodes().Success,
+						Updated:    true,
+					}
+
+					response, err := xml.Marshal(recordings)
+					if err != nil {
+						panic(err)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewReader(response)),
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, _ error) {
+				response := unMarshallUpdateRecordingsResponse(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+				assert.Equal(t, true, response.Updated)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			server := doGenericInitialization()
+			test.Mock()
+			server.UpdateRecordings(c)
 			test.Validator(t, nil, nil)
 		})
 	}
