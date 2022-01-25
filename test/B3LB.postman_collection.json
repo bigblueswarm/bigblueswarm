@@ -629,7 +629,7 @@
 									"pm.test(\"UpdateRecordings api should return a valid recordID not fond response\", () => {",
 									"    response = xml2Json(responseBody).response",
 									"    pm.expect(response.messageKey).to.eql(\"notFound\")",
-									"    pm.expect(response.message).to.eql(\"A meeting with that ID does not exist\")",
+									"    pm.expect(response.message).to.eql(\"We could not find recordings\")",
 									"})"
 								],
 								"type": "text/javascript"
@@ -640,12 +640,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8090/bigbluebutton/api/updateRecordings?recordID=record-id&checksum=5848076bda7534b0a0c92930ae2b6e4ce842c9b3",
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/updateRecordings?recordID=record-id",
 							"protocol": "http",
 							"host": [
-								"localhost"
+								"{{b3lb_host}}"
 							],
-							"port": "8090",
+							"port": "{{b3lb_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -655,10 +655,54 @@
 								{
 									"key": "recordID",
 									"value": "record-id"
-								},
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete recordings",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DeleteRecordings api should return a 200 - Status OK - code and FAILED return code\", () => {",
+									"    response = xml2Json(responseBody).response",
+									"    pm.expect(response.returncode).to.eql(\"FAILED\")",
+									"    pm.response.to.have.status(200)",
+									"})",
+									"",
+									"pm.test(\"DeleteRecordings api should return a valid recordID not fond response\", () => {",
+									"    response = xml2Json(responseBody).response",
+									"    pm.expect(response.messageKey).to.eql(\"notFound\")",
+									"    pm.expect(response.message).to.eql(\"We could not find recordings\")",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/deleteRecordings?recordID=record-id",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"bigbluebutton",
+								"api",
+								"deleteRecordings"
+							],
+							"query": [
 								{
-									"key": "checksum",
-									"value": "5848076bda7534b0a0c92930ae2b6e4ce842c9b3"
+									"key": "recordID",
+									"value": "record-id"
 								}
 							]
 						}

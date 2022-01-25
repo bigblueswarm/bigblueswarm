@@ -30,8 +30,11 @@ const GetMeetingInfo = "getMeetingInfo"
 // GetRecordings is the sub-endpoint for getting a list of recordings
 const GetRecordings = "getRecordings"
 
-// UpdateRecordings returns a struct containing the api update recordings
+// UpdateRecordings is the sub-endpoint for updating a recording
 const UpdateRecordings = "updateRecordings"
+
+// DeleteRecordings is the sub-endpoint for deleting a recording
+const DeleteRecordings = "deleteRecordings"
 
 // Codes represents the api return code
 type Codes struct {
@@ -79,6 +82,7 @@ type MessageValues struct {
 	InvalidModeratorPW       string
 	NoRecordings             string
 	MissingRecordIDParameter string
+	RecordingNotFound        string
 }
 
 // Messages returns a struct containing the api messages
@@ -92,5 +96,6 @@ func Messages() *MessageValues {
 		InvalidModeratorPW:       "Provided moderator password is incorrect",
 		NoRecordings:             "There are no recordings for the meeting(s).",
 		MissingRecordIDParameter: "You must specify a recordID.",
+		RecordingNotFound:        "We could not find recordings",
 	}
 }
