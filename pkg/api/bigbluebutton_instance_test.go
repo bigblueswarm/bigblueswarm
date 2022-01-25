@@ -316,3 +316,25 @@ func TestUpdateRecordings(t *testing.T) {
 
 	executeTests(t, "UpdateRecordings", tests)
 }
+
+func TestDeleteRecordings(t *testing.T) {
+	validResponse := &DeleteRecordingsResponse{
+		ReturnCode: ReturnCodes().Success,
+		Deleted:    true,
+	}
+
+	customValidator := func(t *testing.T, response interface{}) {
+		recordings, ok := response.(*DeleteRecordingsResponse)
+		if !ok {
+			t.Error("Response is not a DeleteRecordingsRespomse")
+			return
+		}
+
+		assert.Equal(t, recordings.ReturnCode, ReturnCodes().Success)
+		assert.Equal(t, recordings.Deleted, true)
+	}
+
+	tests := getTests("DeleteRecordings", true, "recordID=recording-id", validResponse, customValidator)
+
+	executeTests(t, "DeleteRecordings", tests)
+}

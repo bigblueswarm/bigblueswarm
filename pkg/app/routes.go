@@ -75,6 +75,11 @@ func (s *Server) Routes() *[]api.EndpointGroup {
 							Handler: s.UpdateRecordings,
 							Path:    api.Path(api.UpdateRecordings),
 						},
+						api.Endpoint{
+							Method:  http.MethodGet,
+							Handler: s.DeleteRecordings,
+							Path:    api.Path(api.DeleteRecordings),
+						},
 					},
 				},
 			},

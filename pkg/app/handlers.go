@@ -54,8 +54,8 @@ func missingRecordIDParameter(c *gin.Context) {
 	c.XML(http.StatusOK, api.CreateError(api.MessageKeys().MissingRecordIDParameter, api.Messages().MissingRecordIDParameter))
 }
 
-func (s *Server) retrieveBBBBInstanceFromMeetingID(meetingID string) (api.BigBlueButtonInstance, error) {
-	host, err := s.Mapper.Get(MeetingMapKey(meetingID))
+func (s *Server) retrieveBBBBInstanceFromKey(key string) (api.BigBlueButtonInstance, error) {
+	host, err := s.Mapper.Get(key)
 	if err != nil {
 		return api.BigBlueButtonInstance{}, fmt.Errorf("SessionManager failed to retrieve session: %s", err.Error())
 	}
@@ -131,7 +131,7 @@ func (s *Server) Join(c *gin.Context) {
 
 	redirect, redirectExists := c.GetQuery("redirect")
 
-	instance, err := s.retrieveBBBBInstanceFromMeetingID(meetingID)
+	instance, err := s.retrieveBBBBInstanceFromKey(MeetingMapKey(meetingID))
 	if err != nil {
 		log.Error(err)
 		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
@@ -174,6 +174,55 @@ func (s *Server) End(c *gin.Context) {
 	s.proxy(c, api.End, endProcess)
 }
 
+func (s *Server) proxyRecordings(c *gin.Context, action string, endProcess func(response interface{}) error) {
+	ctx := getAPIContext(c)
+	recordID, exists := c.GetQuery("recordID")
+	if !exists {
+		missingRecordIDParameter(c)
+		return
+	}
+
+	instance, err := s.retrieveBBBBInstanceFromKey(RecordingMapKey(recordID))
+	if err != nil {
+		log.Errorln(fmt.Sprintf("Failed to retrieve instance for instance url %s", recordID), err)
+		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().RecordingNotFound))
+		return
+	}
+
+	response, mErr := callInstanceMethod(ctx, instance, action)
+	if mErr != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if endProcess != nil {
+		err := endProcess(response)
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	c.XML(http.StatusOK, response)
+}
+
+func callInstanceMethod(ctx *api.Checksum, instance api.BigBlueButtonInstance, action string) (interface{}, interface{}) {
+	methodName := strings.Title(action)
+	value := reflect.ValueOf(&instance)
+	if value.IsNil() {
+		return nil, errors.New("failed to execute reflect on instance")
+	}
+
+	method := value.MethodByName(methodName)
+	if method.IsNil() {
+		return nil, fmt.Errorf("failed to retrieve %s method on bigbluebutton instance", methodName)
+	}
+
+	values := method.Call([]reflect.Value{reflect.ValueOf(ctx.Params)})
+	return values[0].Interface(), values[1].Interface()
+}
+
 func (s *Server) proxy(c *gin.Context, action string, endProcess func() error) {
 	ctx := getAPIContext(c)
 	meetingID, exists := c.GetQuery("meetingID")
@@ -182,27 +231,16 @@ func (s *Server) proxy(c *gin.Context, action string, endProcess func() error) {
 		return
 	}
 
-	instance, err := s.retrieveBBBBInstanceFromMeetingID(meetingID)
+	instance, err := s.retrieveBBBBInstanceFromKey(MeetingMapKey(meetingID))
 	if err != nil {
 		log.Error(err)
 		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
 		return
 	}
 
-	methodName := strings.Title(action)
-	method := reflect.ValueOf(&instance).MethodByName(methodName)
-	if method.IsNil() {
-		log.Errorf("Failed to retrieve %s method on bigbluebutton instance", methodName)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	values := method.Call([]reflect.Value{reflect.ValueOf(ctx.Params)})
-	response := values[0].Interface()
-	responseErr := values[1].Interface()
-
-	if responseErr != nil {
-		log.Errorf("An error occurred while calling %s method on remote instance", action)
+	response, mErr := callInstanceMethod(ctx, instance, action)
+	if mErr != nil {
+		log.Error(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -273,33 +311,19 @@ func (s *Server) GetRecordings(c *gin.Context) {
 
 // UpdateRecordings handler update recordings for provided record identifier. See https://docs.bigbluebutton.org/dev/api.html#updaterecordings
 func (s *Server) UpdateRecordings(c *gin.Context) {
-	ctx := getAPIContext(c)
-	recordID, exists := c.GetQuery("recordID")
-	if !exists {
-		missingRecordIDParameter(c)
-		return
+	s.proxyRecordings(c, api.UpdateRecordings, nil)
+}
+
+// DeleteRecordings handler delete a single recording for provided record identifier. See https://docs.bigbluebutton.org/dev/api.html#deleterecordings
+func (s *Server) DeleteRecordings(c *gin.Context) {
+	endProcess := func(response interface{}) error {
+		if deletion, ok := response.(*api.DeleteRecordingsResponse); ok && deletion.Deleted {
+			recordID, _ := c.GetQuery("recordID")
+			return s.Mapper.Remove(RecordingMapKey(recordID))
+		}
+
+		return nil
 	}
 
-	instanceURL, err := s.Mapper.Get(RecordingMapKey(recordID))
-	if err != nil {
-		log.Errorln(fmt.Sprintf("Failed to retrieve instance for recording %s", recordID), err)
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
-		return
-	}
-
-	instance, err := s.InstanceManager.Get(instanceURL)
-	if err != nil {
-		log.Errorln(fmt.Sprintf("Failed to retrieve instance for instance url %s", recordID), err)
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
-		return
-	}
-
-	response, err := instance.UpdateRecordings(ctx.Params)
-	if err != nil {
-		log.Errorln(fmt.Sprintf("Instance %s failed to update recordings.", instance.URL), err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.XML(http.StatusOK, response)
+	s.proxyRecordings(c, api.DeleteRecordings, endProcess)
 }

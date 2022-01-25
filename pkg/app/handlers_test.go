@@ -125,6 +125,15 @@ func unMarshallUpdateRecordingsResponse(body []byte) api.UpdateRecordingsRespons
 	return response
 }
 
+func unMarshallDeleteRecordingsResponse(body []byte) api.DeleteRecordingsResponse {
+	var response api.DeleteRecordingsResponse
+	if err := xml.Unmarshal(body, &response); err != nil {
+		panic(err)
+	}
+
+	return response
+}
+
 func TestHealthCheckRoute(t *testing.T) {
 	// Healthcheck has a single test. The method always returns success and the same response.
 	t.Run("Healtcheck should returns a valid response", func(t *testing.T) {
@@ -1055,7 +1064,7 @@ func TestUpdateRecordings(t *testing.T) {
 				assert.Equal(t, http.StatusOK, w.Code)
 				assert.Equal(t, api.ReturnCodes().Failed, err.ReturnCode)
 				assert.Equal(t, api.MessageKeys().NotFound, err.MessageKey)
-				assert.Equal(t, api.Messages().NotFound, err.Message)
+				assert.Equal(t, api.Messages().RecordingNotFound, err.Message)
 			},
 		},
 		{
@@ -1080,7 +1089,7 @@ func TestUpdateRecordings(t *testing.T) {
 				assert.Equal(t, http.StatusOK, w.Code)
 				assert.Equal(t, api.ReturnCodes().Failed, err.ReturnCode)
 				assert.Equal(t, api.MessageKeys().NotFound, err.MessageKey)
-				assert.Equal(t, api.Messages().NotFound, err.Message)
+				assert.Equal(t, api.Messages().RecordingNotFound, err.Message)
 			},
 		},
 		{
@@ -1152,6 +1161,139 @@ func TestUpdateRecordings(t *testing.T) {
 			server := doGenericInitialization()
 			test.Mock()
 			server.UpdateRecordings(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}
+
+func TestDeleteRecordings(t *testing.T) {
+	// Because the DeleteRecordings uses the proxyRecordings method that is already tested by UpdateRecording,
+	// DeleteRecordings test will only test the end process method and a valid test case
+	tests := []test.Test{
+		{
+			Name: "A valid request with deleted=false should not delete the recording",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordinID=record-id",
+					Secret: test.DefaultSecret(),
+					Action: api.DeleteRecordings,
+				}
+
+				c.Set("api_ctx", checksum)
+				test.SetRequestParams(c, "recordID=record-id")
+
+				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
+				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					recordings := &api.DeleteRecordingsResponse{
+						ReturnCode: api.ReturnCodes().Success,
+						Deleted:    false,
+					}
+
+					response, err := xml.Marshal(recordings)
+					if err != nil {
+						panic(err)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewReader(response)),
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, _ error) {
+				response := unMarshallDeleteRecordingsResponse(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+				assert.Equal(t, false, response.Deleted)
+			},
+		},
+		{
+			Name: "An error returned by the mapper when deleting the recordings should returns an internal server error",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordinID=record-id",
+					Secret: test.DefaultSecret(),
+					Action: api.DeleteRecordings,
+				}
+
+				c.Set("api_ctx", checksum)
+				test.SetRequestParams(c, "recordID=record-id")
+
+				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
+				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					recordings := &api.DeleteRecordingsResponse{
+						ReturnCode: api.ReturnCodes().Success,
+						Deleted:    true,
+					}
+
+					response, err := xml.Marshal(recordings)
+					if err != nil {
+						panic(err)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewReader(response)),
+					}, nil
+				}
+				mock := redisMock.ExpectDel(RecordingMapKey("record-id"))
+				mock.SetErr(errors.New("redis error"))
+				mock.SetVal(0)
+			},
+			Validator: func(t *testing.T, value interface{}, _ error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+		{
+			Name: "A valid request should return an http 200 code and a valid response",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordinID=record-id",
+					Secret: test.DefaultSecret(),
+					Action: api.DeleteRecordings,
+				}
+
+				c.Set("api_ctx", checksum)
+				test.SetRequestParams(c, "recordID=record-id")
+
+				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
+				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					recordings := &api.DeleteRecordingsResponse{
+						ReturnCode: api.ReturnCodes().Success,
+						Deleted:    true,
+					}
+
+					response, err := xml.Marshal(recordings)
+					if err != nil {
+						panic(err)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewReader(response)),
+					}, nil
+				}
+				redisMock.ExpectDel(RecordingMapKey("record-id")).SetVal(1)
+			},
+			Validator: func(t *testing.T, value interface{}, _ error) {
+				response := unMarshallDeleteRecordingsResponse(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+				assert.Equal(t, true, response.Deleted)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			server := doGenericInitialization()
+			test.Mock()
+			server.DeleteRecordings(c)
 			test.Validator(t, nil, nil)
 		})
 	}
