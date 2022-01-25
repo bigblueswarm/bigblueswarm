@@ -149,6 +149,9 @@ type Recording struct {
 	MetaData          struct {
 		Inner []byte `xml:",innerxml"`
 	} `xml:"metadata"`
+	Playback struct {
+		Inner []byte `xml:",innerxml"`
+	}
 }
 
 // GetRecordingsResponse represents the Bigbluebutton getRecordings API response type
