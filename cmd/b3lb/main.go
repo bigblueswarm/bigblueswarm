@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const version = "1.1.0"
+const version = "1.2.0-SNAPSHOT"
 
 func main() {
 	initLog()
