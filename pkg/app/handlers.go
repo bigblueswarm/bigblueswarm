@@ -327,3 +327,8 @@ func (s *Server) DeleteRecordings(c *gin.Context) {
 
 	s.proxyRecordings(c, api.DeleteRecordings, endProcess)
 }
+
+// PublishRecordings handler publish a single recording for provided record identifier. See https://docs.bigbluebutton.org/dev/api.html#publishrecordings
+func (s *Server) PublishRecordings(c *gin.Context) {
+	s.proxyRecordings(c, api.PublishRecordings, nil)
+}

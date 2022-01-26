@@ -36,6 +36,9 @@ const UpdateRecordings = "updateRecordings"
 // DeleteRecordings is the sub-endpoint for deleting a recording
 const DeleteRecordings = "deleteRecordings"
 
+// PublishRecordings is the sub-endpoint for publishing a recording
+const PublishRecordings = "publishRecordings"
+
 // Codes represents the api return code
 type Codes struct {
 	Success string

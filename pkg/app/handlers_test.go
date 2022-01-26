@@ -134,6 +134,15 @@ func unMarshallDeleteRecordingsResponse(body []byte) api.DeleteRecordingsRespons
 	return response
 }
 
+func unMarshallPublishRecordingsResponse(body []byte) api.PublishRecordingsResponse {
+	var response api.PublishRecordingsResponse
+	if err := xml.Unmarshal(body, &response); err != nil {
+		panic(err)
+	}
+
+	return response
+}
+
 func TestHealthCheckRoute(t *testing.T) {
 	// Healthcheck has a single test. The method always returns success and the same response.
 	t.Run("Healtcheck should returns a valid response", func(t *testing.T) {
@@ -1294,6 +1303,62 @@ func TestDeleteRecordings(t *testing.T) {
 			server := doGenericInitialization()
 			test.Mock()
 			server.DeleteRecordings(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}
+
+func TestPublishRecordings(t *testing.T) {
+	// Because PublishRecordings only use proxyRecordings method
+	// we test the success scenario
+	tests := []test.Test{
+		{
+			Name: "A valid request should return an http 200 code and a valid response",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordinID=record-id&published=true",
+					Secret: test.DefaultSecret(),
+					Action: api.PublishRecordings,
+				}
+
+				c.Set("api_ctx", checksum)
+				test.SetRequestParams(c, "recordID=record-id&published=true")
+
+				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
+				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					recordings := &api.PublishRecordingsResponse{
+						ReturnCode: api.ReturnCodes().Success,
+						Published:  true,
+					}
+
+					response, err := xml.Marshal(recordings)
+					if err != nil {
+						panic(err)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewReader(response)),
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, _ error) {
+				response := unMarshallPublishRecordingsResponse(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
+				assert.Equal(t, true, response.Published)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			server := doGenericInitialization()
+			test.Mock()
+			server.PublishRecordings(c)
 			test.Validator(t, nil, nil)
 		})
 	}

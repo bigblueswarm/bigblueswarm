@@ -173,3 +173,10 @@ type DeleteRecordingsResponse struct {
 	ReturnCode string   `xml:"returncode"`
 	Deleted    bool     `xml:"deleted"`
 }
+
+// PublishRecordingsResponse represents the Bigbluebutton publishRecordings API response type
+type PublishRecordingsResponse struct {
+	XMLName    xml.Name `xml:"response"`
+	ReturnCode string   `xml:"returncode"`
+	Published  bool     `xml:"published"`
+}
