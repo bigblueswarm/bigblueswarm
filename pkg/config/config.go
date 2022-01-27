@@ -31,13 +31,19 @@ type AdminConfig struct {
 	APIKey string `mapstructure:"api_key"`
 }
 
+// BalancerConfig represents the balancer configuration
+type BalancerConfig struct {
+	MetricsRange string `mapstructure:"metrics_range"`
+}
+
 // Config represents main configuration mapping
 type Config struct {
-	BigBlueButton BigBlueButton `mapstructure:"bigbluebutton"`
-	Admin         AdminConfig   `mapstructure:"admin"`
-	Port          int           `mapstructure:"port"`
-	RDB           RDB           `mapstructure:"redis"`
-	IDB           IDB           `mapstructure:"influxdb"`
+	BigBlueButton BigBlueButton  `mapstructure:"bigbluebutton"`
+	Admin         AdminConfig    `mapstructure:"admin"`
+	Balancer      BalancerConfig `mapstructure:"balancer"`
+	Port          int            `mapstructure:"port"`
+	RDB           RDB            `mapstructure:"redis"`
+	IDB           IDB            `mapstructure:"influxdb"`
 }
 
 // Load the configuration from the given path

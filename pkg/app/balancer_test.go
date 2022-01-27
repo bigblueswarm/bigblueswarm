@@ -105,6 +105,9 @@ func TestProcess(t *testing.T) {
 				Address: server.URL,
 			},
 		}),
+		Config: &config.BalancerConfig{
+			MetricsRange: "-5m",
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
