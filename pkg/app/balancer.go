@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/SLedunois/b3lb/pkg/config"
 	redisApi "github.com/influxdata/influxdb-client-go/v2/api"
 	log "github.com/sirupsen/logrus"
 )
@@ -17,12 +18,14 @@ type Balancer interface {
 // InfluxDBBalancer is the InfluxDB implementation of Balancer
 type InfluxDBBalancer struct {
 	Client redisApi.QueryAPI
+	Config *config.BalancerConfig
 }
 
 // NewBalancer creates a new Balancer object
-func NewBalancer(idb redisApi.QueryAPI) Balancer {
+func NewBalancer(idb redisApi.QueryAPI, config *config.BalancerConfig) Balancer {
 	return &InfluxDBBalancer{
 		Client: idb,
+		Config: config,
 	}
 }
 
@@ -43,7 +46,7 @@ func (b *InfluxDBBalancer) formatInstancesFilter(instances []string) string {
 // Process compute data to find a bigbluebutton server
 func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
 	req := fmt.Sprintf(`from(bucket: "bucket")
-	|> range(start: -5m)
+	|> range(start: %s)
 	|> filter(fn: (r) => r["_measurement"] == "cpu" or r["_measurement"] == "mem")
 	|> filter(fn: (r) => r["_field"] == "usage_system" or r["_field"] == "used_percent")
 	|> filter(fn: (r) => r["cpu"] == "cpu-total" or r["_measurement"] == "mem")
@@ -51,7 +54,7 @@ func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
 	|> group(columns: ["b3lb_host"])
 	|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
 	|> map(fn: (r) => ({ r with _value: r["usage_system"] + r["used_percent"] }))
-	|> lowestAverage(n: 1, column: "_value", groupColumns: ["b3lb_host", "_time"])`, b.formatInstancesFilter(instances))
+	|> lowestAverage(n: 1, column: "_value", groupColumns: ["b3lb_host", "_time"])`, b.Config.MetricsRange, b.formatInstancesFilter(instances))
 	result, err := b.Client.Query(context.Background(), req)
 	if err != nil || result.Err() != nil {
 		log.Error("Failed to find a valid server", err)
