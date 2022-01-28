@@ -30,4 +30,5 @@ func TestMessages(t *testing.T) {
 	assert.Equal(t, "There are no recordings for the meeting(s).", Messages().NoRecordings)
 	assert.Equal(t, "You must specify a recordID.", Messages().MissingRecordIDParameter)
 	assert.Equal(t, "We could not find recordings", Messages().RecordingNotFound)
+	assert.Equal(t, "No recording found for record-id", Messages().RecordingTextTrackNotFound)
 }

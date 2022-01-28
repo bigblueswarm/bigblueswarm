@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
@@ -25,6 +26,15 @@ type test struct {
 	CustomValidator func(t *testing.T, response interface{})
 }
 
+func marshall(action string, value interface{}) ([]byte, error) {
+	switch action {
+	case "GetRecordingTextTracks":
+		return json.Marshal(value)
+	default:
+		return xml.Marshal(value)
+	}
+}
+
 func getTests(action string, hasParams bool, params string, validResponse interface{}, customValidator func(*testing.T, interface{})) []test {
 	return []test{
 		{
@@ -34,7 +44,7 @@ func getTests(action string, hasParams bool, params string, validResponse interf
 			ExpectedError:   false,
 			CustomValidator: customValidator,
 			MockFunction: func(req *http.Request) (*http.Response, error) {
-				response, err := xml.Marshal(validResponse)
+				response, err := marshall(action, validResponse)
 
 				if err != nil {
 					panic(err)
@@ -64,18 +74,6 @@ func getTests(action string, hasParams bool, params string, validResponse interf
 			ExpectedError: true,
 			MockFunction: func(req *http.Request) (*http.Response, error) {
 				return nil, fmt.Errorf("Unexpected error")
-			},
-		},
-		{
-			Name:          fmt.Sprintf("%s should return an error if remote instance response is not a valid XML", action),
-			Params:        params,
-			HasParams:     hasParams,
-			ExpectedError: true,
-			MockFunction: func(req *http.Request) (*http.Response, error) {
-				return &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte(`{"id": "123"}`))),
-				}, nil
 			},
 		},
 	}
@@ -359,4 +357,41 @@ func TestPublishRecordings(t *testing.T) {
 	tests := getTests("PublishRecordings", true, "recordID=recording-id&published=true", validResponse, customValidator)
 
 	executeTests(t, "PublishRecordings", tests)
+}
+
+func TestGetRecordingsTextTracks(t *testing.T) {
+	validResponse := &GetRecordingsTextTracksResponse{
+		Response: RecordingsTextTrackResponseType{
+			ReturnCode: ReturnCodes().Success,
+			Tracks: []Track{
+				{
+					Href:   "http://localhost/client/api/v1/recordings/recording-id/texttracks/track-id",
+					Kind:   "subtitles",
+					Lang:   "en",
+					Label:  "English",
+					Source: "upload",
+				},
+			},
+		},
+	}
+
+	customValidator := func(t *testing.T, response interface{}) {
+		tracks, ok := response.(*GetRecordingsTextTracksResponse)
+		if !ok {
+			t.Error("Response is not a GetRecordingsTextTracksResponse")
+			return
+		}
+
+		assert.Equal(t, tracks.Response.ReturnCode, ReturnCodes().Success)
+		assert.Equal(t, len(tracks.Response.Tracks), 1)
+		assert.Equal(t, tracks.Response.Tracks[0].Href, "http://localhost/client/api/v1/recordings/recording-id/texttracks/track-id")
+		assert.Equal(t, tracks.Response.Tracks[0].Kind, "subtitles")
+		assert.Equal(t, tracks.Response.Tracks[0].Lang, "en")
+		assert.Equal(t, tracks.Response.Tracks[0].Label, "English")
+		assert.Equal(t, tracks.Response.Tracks[0].Source, "upload")
+	}
+
+	tests := getTests("GetRecordingTextTracks", true, "recordID=recording-id", validResponse, customValidator)
+
+	executeTests(t, "GetRecordingTextTracks", tests)
 }

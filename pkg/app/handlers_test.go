@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -137,6 +138,15 @@ func unMarshallDeleteRecordingsResponse(body []byte) api.DeleteRecordingsRespons
 func unMarshallPublishRecordingsResponse(body []byte) api.PublishRecordingsResponse {
 	var response api.PublishRecordingsResponse
 	if err := xml.Unmarshal(body, &response); err != nil {
+		panic(err)
+	}
+
+	return response
+}
+
+func unMarshallGetrecordingsTextTracksResponse(body []byte) api.GetRecordingsTextTracksResponse {
+	var response api.GetRecordingsTextTracksResponse
+	if err := json.Unmarshal(body, &response); err != nil {
 		panic(err)
 	}
 
@@ -1359,6 +1369,77 @@ func TestPublishRecordings(t *testing.T) {
 			server := doGenericInitialization()
 			test.Mock()
 			server.PublishRecordings(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}
+
+func TestGetRecordingsTextTracks(t *testing.T) {
+	// Because GetRecordingsTextTracks only use proxyRecordings method
+	// we test the success scenario
+	tests := []test.Test{
+		{
+			Name: "A valid request should return an http 200 code and a valid response",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordinID=record-id",
+					Secret: test.DefaultSecret(),
+					Action: api.GetRecordingsTextTracks,
+				}
+
+				c.Set("api_ctx", checksum)
+				test.SetRequestParams(c, "recordID=record-id")
+
+				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
+				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
+				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					tracks := &api.GetRecordingsTextTracksResponse{
+						Response: api.RecordingsTextTrackResponseType{
+							ReturnCode: api.ReturnCodes().Success,
+							Tracks: []api.Track{
+								{
+									Href:   "http://localhost/client/api/v1/recordings/recording-id/texttracks/track-id",
+									Kind:   "subtitles",
+									Lang:   "en",
+									Label:  "English",
+									Source: "upload",
+								},
+							},
+						},
+					}
+
+					response, err := json.Marshal(tracks)
+					if err != nil {
+						panic(err)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(bytes.NewReader(response)),
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, _ error) {
+				tracks := unMarshallGetrecordingsTextTracksResponse(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.ReturnCodes().Success, tracks.Response.ReturnCode)
+				assert.Equal(t, len(tracks.Response.Tracks), 1)
+				assert.Equal(t, tracks.Response.Tracks[0].Href, "http://localhost/client/api/v1/recordings/recording-id/texttracks/track-id")
+				assert.Equal(t, tracks.Response.Tracks[0].Kind, "subtitles")
+				assert.Equal(t, tracks.Response.Tracks[0].Lang, "en")
+				assert.Equal(t, tracks.Response.Tracks[0].Label, "English")
+				assert.Equal(t, tracks.Response.Tracks[0].Source, "upload")
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			server := doGenericInitialization()
+			test.Mock()
+			server.GetRecordingsTextTracks(c)
 			test.Validator(t, nil, nil)
 		})
 	}
