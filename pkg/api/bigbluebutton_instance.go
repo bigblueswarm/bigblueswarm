@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -45,6 +46,15 @@ func (i *BigBlueButtonInstance) callAPI(params string, checksum *Checksum) ([]by
 	return ioutil.ReadAll(resp.Body)
 }
 
+func unMarshall(action string, body []byte, result *interface{}) error {
+	switch action {
+	case GetRecordingsTextTracks:
+		return json.Unmarshal(body, result)
+	default:
+		return xml.Unmarshal(body, result)
+	}
+}
+
 func (i *BigBlueButtonInstance) api(action string, params string) (interface{}, error) {
 	checksum := CreateChecksum(i.Secret, action, params)
 
@@ -56,8 +66,8 @@ func (i *BigBlueButtonInstance) api(action string, params string) (interface{}, 
 	}
 
 	dataType := actionMapper(action)
-	result := reflect.New(dataType).Interface().(interface{})
-	if err := xml.Unmarshal(body, &result); err != nil {
+	result := reflect.New(dataType).Interface()
+	if err := unMarshall(action, body, &result); err != nil {
 		log.Error(fmt.Sprintf("Failed to unmarshal %s api call body content", action), err)
 		return nil, err
 	}
@@ -87,6 +97,8 @@ func actionMapper(action string) reflect.Type {
 		return reflect.TypeOf(DeleteRecordingsResponse{})
 	case PublishRecordings:
 		return reflect.TypeOf(PublishRecordingsResponse{})
+	case GetRecordingsTextTracks:
+		return reflect.TypeOf(GetRecordingsTextTracksResponse{})
 	default:
 		return nil
 	}
@@ -237,4 +249,19 @@ func (i *BigBlueButtonInstance) PublishRecordings(params string) (*PublishRecord
 	}
 
 	return nil, errors.New("failed to cast api response to PublishRecordingsResponse")
+}
+
+// GetRecordingTextTracks perform a get recording text tracks api call on the remote BigBlueButton instance
+func (i *BigBlueButtonInstance) GetRecordingTextTracks(params string) (*GetRecordingsTextTracksResponse, error) {
+	response, err := i.api(GetRecordingsTextTracks, params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tracks, ok := response.(*GetRecordingsTextTracksResponse); ok {
+		return tracks, nil
+	}
+
+	return nil, errors.New("failed to cast api response to GetRecordingsTextTracksResponse")
 }

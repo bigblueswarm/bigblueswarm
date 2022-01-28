@@ -85,6 +85,11 @@ func (s *Server) Routes() *[]api.EndpointGroup {
 							Handler: s.PublishRecordings,
 							Path:    api.Path(api.PublishRecordings),
 						},
+						api.Endpoint{
+							Method:  http.MethodGet,
+							Handler: s.GetRecordingsTextTracks,
+							Path:    api.Path(api.GetRecordingsTextTracks),
+						},
 					},
 				},
 			},

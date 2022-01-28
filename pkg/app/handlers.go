@@ -174,6 +174,24 @@ func (s *Server) End(c *gin.Context) {
 	s.proxy(c, api.End, endProcess)
 }
 
+func errorMessage(action string) interface{} {
+	switch action {
+	case api.GetRecordingsTextTracks:
+		return api.CreateJSONError(api.MessageKeys().NoRecordings, api.Messages().RecordingTextTrackNotFound)
+	default:
+		return api.CreateError(api.MessageKeys().NotFound, api.Messages().RecordingNotFound)
+	}
+}
+
+func ginMethod(action string, c *gin.Context) func(code int, obj interface{}) {
+	switch action {
+	case api.GetRecordingsTextTracks:
+		return c.JSON
+	default:
+		return c.XML
+	}
+}
+
 func (s *Server) proxyRecordings(c *gin.Context, action string, endProcess func(response interface{}) error) {
 	ctx := getAPIContext(c)
 	recordID, exists := c.GetQuery("recordID")
@@ -185,7 +203,7 @@ func (s *Server) proxyRecordings(c *gin.Context, action string, endProcess func(
 	instance, err := s.retrieveBBBBInstanceFromKey(RecordingMapKey(recordID))
 	if err != nil {
 		log.Errorln(fmt.Sprintf("Failed to retrieve instance for instance url %s", recordID), err)
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().RecordingNotFound))
+		ginMethod(action, c)(http.StatusOK, errorMessage(action))
 		return
 	}
 
@@ -204,7 +222,7 @@ func (s *Server) proxyRecordings(c *gin.Context, action string, endProcess func(
 		}
 	}
 
-	c.XML(http.StatusOK, response)
+	ginMethod(action, c)(http.StatusOK, response)
 }
 
 func callInstanceMethod(ctx *api.Checksum, instance api.BigBlueButtonInstance, action string) (interface{}, interface{}) {
@@ -234,7 +252,7 @@ func (s *Server) proxy(c *gin.Context, action string, endProcess func() error) {
 	instance, err := s.retrieveBBBBInstanceFromKey(MeetingMapKey(meetingID))
 	if err != nil {
 		log.Error(err)
-		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
+		ginMethod(action, c)(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
 		return
 	}
 
@@ -253,7 +271,7 @@ func (s *Server) proxy(c *gin.Context, action string, endProcess func() error) {
 		}
 	}
 
-	c.XML(http.StatusOK, response)
+	ginMethod(action, c)(http.StatusOK, response)
 }
 
 // IsMeetingRunning handler check if provided session is running. See https://docs.bigbluebutton.org/dev/api.html#ismeetingrunning
@@ -331,4 +349,9 @@ func (s *Server) DeleteRecordings(c *gin.Context) {
 // PublishRecordings handler publish a single recording for provided record identifier. See https://docs.bigbluebutton.org/dev/api.html#publishrecordings
 func (s *Server) PublishRecordings(c *gin.Context) {
 	s.proxyRecordings(c, api.PublishRecordings, nil)
+}
+
+// GetRecordingsTextTracks handler retrieve  list of the caption/subtitle tracks for a recording. See https://docs.bigbluebutton.org/dev/api.html#getrecordingstexttracks
+func (s *Server) GetRecordingsTextTracks(c *gin.Context) {
+	s.proxyRecordings(c, api.GetRecordingsTextTracks, nil)
 }

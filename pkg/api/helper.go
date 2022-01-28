@@ -24,6 +24,17 @@ func CreateError(key string, message string) *Error {
 	}
 }
 
+// CreateJSONError returns an error response given a message key and message
+func CreateJSONError(key string, message string) *JSONResponse {
+	return &JSONResponse{
+		Response{
+			ReturnCode: "FAILED",
+			MessageKey: key,
+			Message:    message,
+		},
+	}
+}
+
 // CreateChecksum returns a checksum given a secret, action and params
 func CreateChecksum(secret string, action string, params string) *Checksum {
 	return &Checksum{

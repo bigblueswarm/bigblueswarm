@@ -31,10 +31,15 @@ type Error struct {
 
 // Response represents the basic api response
 type Response struct {
-	XMLName    xml.Name `xml:"response"`
-	ReturnCode string   `xml:"returncode"`
-	MessageKey string   `xml:"messageKey"`
-	Message    string   `xml:"message"`
+	XMLName    xml.Name `xml:"response" json:"-"`
+	ReturnCode string   `xml:"returncode" json:"returncode"`
+	MessageKey string   `xml:"messageKey" json:"messageKey"`
+	Message    string   `xml:"message" json:"message"`
+}
+
+// JSONResponse represents the basic api response as json
+type JSONResponse struct {
+	Response Response `json:"response"`
 }
 
 // CreateResponse represents the Bigbluebutton create API response type
@@ -179,4 +184,24 @@ type PublishRecordingsResponse struct {
 	XMLName    xml.Name `xml:"response"`
 	ReturnCode string   `xml:"returncode"`
 	Published  bool     `xml:"published"`
+}
+
+// GetRecordingsTextTracksResponse represents the bigbluebutton GetRecordingsTextTracks API response type
+type GetRecordingsTextTracksResponse struct {
+	Response RecordingsTextTrackResponseType `json:"response"`
+}
+
+// RecordingsTextTrackResponseType represents the inner response type for GetRecordingsTextTracks
+type RecordingsTextTrackResponseType struct {
+	ReturnCode string  `json:"returncode"`
+	Tracks     []Track `json:"tracks"`
+}
+
+// Track represents a text track for a recording
+type Track struct {
+	Href   string `json:"href"`
+	Kind   string `json:"kind"`
+	Label  string `json:"label"`
+	Lang   string `json:"lang"`
+	Source string `json:"source"`
 }

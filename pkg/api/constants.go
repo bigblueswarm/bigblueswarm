@@ -39,6 +39,9 @@ const DeleteRecordings = "deleteRecordings"
 // PublishRecordings is the sub-endpoint for publishing a recording
 const PublishRecordings = "publishRecordings"
 
+// GetRecordingsTextTracks is the sub-endpoint for getting a list of text tracks
+const GetRecordingsTextTracks = "getRecordingTextTracks"
+
 // Codes represents the api return code
 type Codes struct {
 	Success string
@@ -77,28 +80,30 @@ func MessageKeys() *Keys {
 
 // MessageValues represents the api messages
 type MessageValues struct {
-	EmptyMeetingID           string
-	EmptyMeetingName         string
-	DuplicationWarning       string
-	NotFound                 string
-	EndMeeting               string
-	InvalidModeratorPW       string
-	NoRecordings             string
-	MissingRecordIDParameter string
-	RecordingNotFound        string
+	EmptyMeetingID             string
+	EmptyMeetingName           string
+	DuplicationWarning         string
+	NotFound                   string
+	EndMeeting                 string
+	InvalidModeratorPW         string
+	NoRecordings               string
+	MissingRecordIDParameter   string
+	RecordingNotFound          string
+	RecordingTextTrackNotFound string
 }
 
 // Messages returns a struct containing the api messages
 func Messages() *MessageValues {
 	return &MessageValues{
-		EmptyMeetingID:           "You must provide a meeting ID",
-		EmptyMeetingName:         "You must provide a meeting name",
-		DuplicationWarning:       "This conference was already in existence and may currently be in progress.",
-		NotFound:                 "A meeting with that ID does not exist",
-		EndMeeting:               "A request to end the meeting was sent. Please wait a few seconds, and then use the getMeetingInfo or isMeetingRunning API calls to verify that it was ended.",
-		InvalidModeratorPW:       "Provided moderator password is incorrect",
-		NoRecordings:             "There are no recordings for the meeting(s).",
-		MissingRecordIDParameter: "You must specify a recordID.",
-		RecordingNotFound:        "We could not find recordings",
+		EmptyMeetingID:             "You must provide a meeting ID",
+		EmptyMeetingName:           "You must provide a meeting name",
+		DuplicationWarning:         "This conference was already in existence and may currently be in progress.",
+		NotFound:                   "A meeting with that ID does not exist",
+		EndMeeting:                 "A request to end the meeting was sent. Please wait a few seconds, and then use the getMeetingInfo or isMeetingRunning API calls to verify that it was ended.",
+		InvalidModeratorPW:         "Provided moderator password is incorrect",
+		NoRecordings:               "There are no recordings for the meeting(s).",
+		MissingRecordIDParameter:   "You must specify a recordID.",
+		RecordingNotFound:          "We could not find recordings",
+		RecordingTextTrackNotFound: "No recording found for record-id",
 	}
 }
