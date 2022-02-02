@@ -355,3 +355,22 @@ func (s *Server) PublishRecordings(c *gin.Context) {
 func (s *Server) GetRecordingsTextTracks(c *gin.Context) {
 	s.proxyRecordings(c, api.GetRecordingsTextTracks, nil)
 }
+
+// PutRecordingTextTrack handler redirect to the right bigbluebutton instance
+func (s *Server) PutRecordingTextTrack(c *gin.Context) {
+	ctx := getAPIContext(c)
+	recordID, exists := c.GetQuery("recordID")
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusOK, api.CreateJSONError(api.MessageKeys().ParamError, api.Messages().MissingRecordIDParameter))
+		return
+	}
+
+	instance, err := s.retrieveBBBBInstanceFromKey(RecordingMapKey(recordID))
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatusJSON(http.StatusOK, api.CreateJSONError(api.MessageKeys().NoRecordings, api.Messages().RecordingTextTrackNotFound))
+		return
+	}
+
+	instance.Redirect(c, api.PutRecordingTextTrack, ctx.Params)
+}

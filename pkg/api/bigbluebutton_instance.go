@@ -10,6 +10,7 @@ import (
 	"reflect"
 
 	"github.com/SLedunois/b3lb/pkg/restclient"
+	"github.com/gin-gonic/gin"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -264,4 +265,18 @@ func (i *BigBlueButtonInstance) GetRecordingTextTracks(params string) (*GetRecor
 	}
 
 	return nil, errors.New("failed to cast api response to GetRecordingsTextTracksResponse")
+}
+
+// Redirect redirect provided context to instance action
+func (i *BigBlueButtonInstance) Redirect(c *gin.Context, action string, parameters string) {
+	checksum := CreateChecksum(i.Secret, action, parameters)
+	checksumValue, err := checksum.Process()
+	if err != nil {
+		c.XML(http.StatusOK, CreateError(MessageKeys().NotFound, Messages().NotFound))
+		return
+	}
+
+	url := i.URL + "/api/" + action + "?" + checksum.Params + "&checksum=" + checksumValue
+	c.Writer.Header().Set("Location", url)
+	c.AbortWithStatus(http.StatusFound)
 }

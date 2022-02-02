@@ -153,6 +153,15 @@ func unMarshallGetrecordingsTextTracksResponse(body []byte) api.GetRecordingsTex
 	return response
 }
 
+func unMarshallJSONError(body []byte) api.JSONResponse {
+	var response api.JSONResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		panic(err)
+	}
+
+	return response
+}
+
 func TestHealthCheckRoute(t *testing.T) {
 	// Healthcheck has a single test. The method always returns success and the same response.
 	t.Run("Healtcheck should returns a valid response", func(t *testing.T) {
@@ -1440,6 +1449,84 @@ func TestGetRecordingsTextTracks(t *testing.T) {
 			server := doGenericInitialization()
 			test.Mock()
 			server.GetRecordingsTextTracks(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}
+
+func TestPutRecordingTextTrack(t *testing.T) {
+	tests := []test.Test{
+		{
+			Name: "No recording identifier should return a param error",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordinID=record-id",
+					Secret: test.DefaultSecret(),
+					Action: api.GetRecordingsTextTracks,
+				}
+
+				c.Set("api_ctx", checksum)
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				e := unMarshallJSONError(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.MessageKeys().ParamError, e.Response.MessageKey)
+				assert.Equal(t, api.Messages().MissingRecordIDParameter, e.Response.Message)
+			},
+		},
+		{
+			Name: "An error returned by the mapper should return a not found error",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordID=record-id",
+					Secret: test.DefaultSecret(),
+					Action: api.GetRecordingsTextTracks,
+				}
+
+				c.Set("api_ctx", checksum)
+				test.SetRequestParams(c, "recordID=record-id")
+
+				mock := redisMock.ExpectGet(RecordingMapKey("record-id"))
+				mock.SetVal("")
+				mock.SetErr(errors.New("redis error"))
+
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				e := unMarshallJSONError(w.Body.Bytes())
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, api.MessageKeys().NoRecordings, e.Response.MessageKey)
+				assert.Equal(t, api.Messages().RecordingTextTrackNotFound, e.Response.Message)
+			},
+		},
+		{
+			Name: "A valid request should redirect to the right bigbluebutton instance with a valid url",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Params: "recordID=record-id",
+					Secret: test.DefaultSecret(),
+					Action: api.PutRecordingTextTrack,
+				}
+
+				c.Set("api_ctx", checksum)
+				test.SetRequestParams(c, "recordID=record-id")
+
+				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost/bigbluebutton")
+				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost/bigbluebutton").SetVal(test.DefaultSecret())
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusFound, w.Code)
+				assert.Equal(t, "http://localhost/bigbluebutton/api/putRecordingTextTrack?recordID=record-id&checksum=d770e21b9c3077df658f9162a95d1a11cb35854a", c.Writer.Header().Get("Location"))
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			server := doGenericInitialization()
+			test.Mock()
+			server.PutRecordingTextTrack(c)
 			test.Validator(t, nil, nil)
 		})
 	}

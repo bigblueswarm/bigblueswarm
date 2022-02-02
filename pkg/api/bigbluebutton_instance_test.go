@@ -7,10 +7,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 
+	TestUtil "github.com/SLedunois/b3lb/internal/test"
 	"github.com/SLedunois/b3lb/pkg/restclient/mock"
+	"github.com/gin-gonic/gin"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -394,4 +397,35 @@ func TestGetRecordingsTextTracks(t *testing.T) {
 	tests := getTests("GetRecordingTextTracks", true, "recordID=recording-id", validResponse, customValidator)
 
 	executeTests(t, "GetRecordingTextTracks", tests)
+}
+
+func TestRedirect(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	baseURL := "http://localhost/bigbluebutton"
+	parameters := "meetingID=meeting-id"
+
+	tests := []TestUtil.Test{
+		{
+			Name: "Redirect should end with a 302 status code",
+			Mock: func() {},
+			Validator: func(t *testing.T, response interface{}, err error) {
+				assert.Equal(t, http.StatusFound, w.Code)
+				assert.Equal(t, baseURL+"/api/"+GetMeetingInfo+"?"+parameters+"&checksum=606d824c6e7faeb58108561bbb1df8a3153be6e4", w.Header().Get("Location"))
+			},
+		},
+	}
+
+	instance := &BigBlueButtonInstance{
+		URL:    baseURL,
+		Secret: TestUtil.DefaultSecret(),
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Mock()
+			instance.Redirect(c, GetMeetingInfo, parameters)
+			test.Validator(t, nil, nil)
+		})
+	}
 }
