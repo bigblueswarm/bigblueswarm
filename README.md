@@ -143,6 +143,8 @@ bigbluebutton:
   secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU # Your B3LB secret. It works like a BigBlueButton secret.
 admin:
   api_key: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R # Admin API key. Used to call admin rest endpoints
+balancer:
+  metrics_range: -5m # metrics range used by balancer to compute the next bigbluebutton instance
 port: 8090 # B3LB port
 redis: # Redis configuration
   address:
