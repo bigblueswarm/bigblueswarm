@@ -42,6 +42,9 @@ const PublishRecordings = "publishRecordings"
 // GetRecordingsTextTracks is the sub-endpoint for getting a list of text tracks
 const GetRecordingsTextTracks = "getRecordingTextTracks"
 
+// PutRecordingTextTrack is the sub-endpoint for putting a text track
+const PutRecordingTextTrack = "putRecordingTextTrack"
+
 // Codes represents the api return code
 type Codes struct {
 	Success string
@@ -64,6 +67,7 @@ type Keys struct {
 	SendEndMeetingRequest    string
 	NoRecordings             string
 	MissingRecordIDParameter string
+	ParamError               string
 }
 
 // MessageKeys return a struct containing the api message keys
@@ -75,6 +79,7 @@ func MessageKeys() *Keys {
 		SendEndMeetingRequest:    "sentEndMeetingRequest",
 		NoRecordings:             "noRecordings",
 		MissingRecordIDParameter: "missingParamRecordID",
+		ParamError:               "paramError",
 	}
 }
 
@@ -90,6 +95,7 @@ type MessageValues struct {
 	MissingRecordIDParameter   string
 	RecordingNotFound          string
 	RecordingTextTrackNotFound string
+	MissingParamRecordID       string
 }
 
 // Messages returns a struct containing the api messages
@@ -104,6 +110,7 @@ func Messages() *MessageValues {
 		NoRecordings:               "There are no recordings for the meeting(s).",
 		MissingRecordIDParameter:   "You must specify a recordID.",
 		RecordingNotFound:          "We could not find recordings",
-		RecordingTextTrackNotFound: "No recording found for record-id",
+		RecordingTextTrackNotFound: "No recording was found for record-id",
+		MissingParamRecordID:       "Missing param recordID.",
 	}
 }
