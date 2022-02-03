@@ -41,8 +41,8 @@ usage() {
 
 set_influxdb_token() {
   log "Setting up InfluxDB token"
-  docker exec bbb1 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost/bigbluebutton' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
-  docker exec bbb2 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost:8080/bigbluebutton' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
+  docker exec bbb1 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost/bigbluebutton\nBBB_SECRET=0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
+  docker exec bbb2 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost:8080/bigbluebutton\nBBB_SECRET=0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
   log "Done ${GREEN}$(dash)${ENDCOLOR}"
 }
 
