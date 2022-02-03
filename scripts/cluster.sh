@@ -54,6 +54,12 @@ init_cluster() {
   set_influxdb_token "$TOKEN"
 }
 
+start_grafana() {
+  log "Starting BigBlueButton cluster including grafana"
+  docker-compose -f "$(dirname "$0")/docker-compose.yml" -f "$(dirname "$0")/docker-compose.grafana.yml" up -d
+  log "Started ${GREEN}$(dash)${ENDCOLOR}"
+}
+
 for param in "$@"
 do
   case $param in
@@ -65,6 +71,9 @@ do
       ;;
     -i | --init | --init-cluster)
       init_cluster
+      ;;
+    -g | --grafana)
+      start_grafana
       ;;
     -t | --set-token)
       set_influxdb_token "$TOKEN"
