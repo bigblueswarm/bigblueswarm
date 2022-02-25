@@ -29,6 +29,7 @@ type IDB struct {
 // AdminConfig represents the admin configuration
 type AdminConfig struct {
 	APIKey string `mapstructure:"api_key"`
+	URL    string `mapstructure:"url"`
 }
 
 // BalancerConfig represents the balancer configuration
