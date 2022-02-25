@@ -24,7 +24,5 @@ func TestMain(m *testing.M) {
 	Init()
 
 	status := m.Run()
-
-	server.Close()
 	os.Exit(status)
 }
