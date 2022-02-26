@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -15,6 +16,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
+
+func toBBBInstanceArray(body []byte) []api.BigBlueButtonInstance {
+	instances := []api.BigBlueButtonInstance{}
+	json.Unmarshal(body, &instances)
+	return instances
+}
 
 func TestAddInstance(t *testing.T) {
 	var w *httptest.ResponseRecorder
@@ -115,19 +122,25 @@ func TestListInstances(t *testing.T) {
 		{
 			Name: "List should returns a list containg a single bigbluebutton instance",
 			Mock: func() {
-				mock.ListFunc = func() ([]string, error) {
-					return []string{url}, nil
+				mock.ListInstancesFunc = func() ([]api.BigBlueButtonInstance, error) {
+					return []api.BigBlueButtonInstance{
+						{
+							URL:    url,
+							Secret: test.DefaultSecret(),
+						},
+					}, nil
 				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusOK, w.Code)
-				assert.Equal(t, test.StringToJSONArray(w.Body.String())[0], url)
+				assert.Equal(t, toBBBInstanceArray(w.Body.Bytes())[0].URL, url)
+				assert.Equal(t, toBBBInstanceArray(w.Body.Bytes())[0].Secret, test.DefaultSecret())
 			},
 		},
 		{
 			Name: "List should return an internal server error if instance manager returns an error",
 			Mock: func() {
-				mock.ListFunc = func() ([]string, error) {
+				mock.ListInstancesFunc = func() ([]api.BigBlueButtonInstance, error) {
 					return nil, errors.New("unexpected error")
 				}
 			},
