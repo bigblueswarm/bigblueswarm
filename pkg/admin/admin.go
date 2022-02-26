@@ -56,7 +56,7 @@ func (a *Admin) AddInstance(c *gin.Context) {
 
 // ListInstances returns Bigbluebutton instance list
 func (a *Admin) ListInstances(c *gin.Context) {
-	instances, err := a.InstanceManager.List()
+	instances, err := a.InstanceManager.ListInstances()
 	if err != nil {
 		log.Error("Failed to list instances", err)
 		c.AbortWithStatus(http.StatusInternalServerError)

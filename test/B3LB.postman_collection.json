@@ -79,7 +79,8 @@
 									"pm.test(\"Listing instance should returns an array containing previous inserted instance\", () => {",
 									"    const response = pm.response.json()",
 									"    pm.expect(response.length).to.eql(1)",
-									"    pm.expect(response[0]).to.eql(pm.environment.get(\"instance_url\"))",
+									"    pm.expect(response[0].url).to.eql(pm.environment.get(\"instance_url\"))",
+									"    pm.expect(response[0].secret).to.eql(pm.environment.get(\"instance_secret\"))",
 									"})"
 								],
 								"type": "text/javascript"
