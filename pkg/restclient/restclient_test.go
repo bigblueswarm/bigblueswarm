@@ -126,7 +126,7 @@ func TestPost(t *testing.T) {
 				assert.Equal(t, http.MethodPost, req.Method)
 			},
 			PerformRequest: func(s *httptest.Server) {
-				Post(fmt.Sprintf("%s/test_post", s.URL))
+				Post(fmt.Sprintf("%s/test_post", s.URL), nil)
 			},
 		},
 		{
@@ -137,7 +137,7 @@ func TestPost(t *testing.T) {
 				assert.Equal(t, "/test_post", req.RequestURI)
 			},
 			PerformRequest: func(s *httptest.Server) {
-				Post(fmt.Sprintf("%s/test_post", s.URL))
+				Post(fmt.Sprintf("%s/test_post", s.URL), nil)
 			},
 		},
 	}
@@ -164,7 +164,7 @@ func TestPostWithHeaders(t *testing.T) {
 				assert.Equal(t, http.MethodPost, req.Method)
 			},
 			PerformRequest: func(s *httptest.Server) {
-				PostWithHeaders(fmt.Sprintf("%s/test_get_with_headers", s.URL), map[string]string{})
+				PostWithHeaders(fmt.Sprintf("%s/test_get_with_headers", s.URL), map[string]string{}, nil)
 			},
 		},
 		{
@@ -175,7 +175,7 @@ func TestPostWithHeaders(t *testing.T) {
 				assert.Equal(t, "/test_post_with_headers", req.RequestURI)
 			},
 			PerformRequest: func(s *httptest.Server) {
-				PostWithHeaders(fmt.Sprintf("%s/test_post_with_headers", s.URL), map[string]string{})
+				PostWithHeaders(fmt.Sprintf("%s/test_post_with_headers", s.URL), map[string]string{}, nil)
 			},
 		},
 		{
@@ -186,7 +186,7 @@ func TestPostWithHeaders(t *testing.T) {
 				assert.Equal(t, 3, len(req.Header))
 			},
 			PerformRequest: func(s *httptest.Server) {
-				PostWithHeaders(fmt.Sprintf("%s/test_post_with_headers", s.URL), map[string]string{})
+				PostWithHeaders(fmt.Sprintf("%s/test_post_with_headers", s.URL), map[string]string{}, nil)
 			},
 		},
 		{
@@ -199,7 +199,7 @@ func TestPostWithHeaders(t *testing.T) {
 			PerformRequest: func(s *httptest.Server) {
 				PostWithHeaders(fmt.Sprintf("%s/test_post_with_headers", s.URL), map[string]string{
 					"test_header": "test_value",
-				})
+				}, nil)
 			},
 		},
 	}
