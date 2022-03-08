@@ -49,7 +49,7 @@ start() {
     log "Setting up cluster configuration"
     sh -c "./$CLUSTER_SCRIPT -i"
     log "Starting B3LB artifact $VERSION"
-    nohup ./$(dirname "$0")/../bin/b3lb-$VERSION &
+    nohup ./$(dirname "$0")/../bin/b3lb-$VERSION --config config.yml &
     echo $! > "$(dirname "$0")"/../bin/b3lb.pid
     sleep 15s
     end

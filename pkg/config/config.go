@@ -1,6 +1,10 @@
 package config
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yaml"
 )
@@ -45,6 +49,28 @@ type Config struct {
 	Port          int            `mapstructure:"port"`
 	RDB           RDB            `mapstructure:"redis"`
 	IDB           IDB            `mapstructure:"influxdb"`
+}
+
+const defaultConfigFileName = ".b3lb.yaml"
+
+// DefaultConfigPath return the default config path file
+func DefaultConfigPath() string {
+	return fmt.Sprintf("$HOME/%s", defaultConfigFileName)
+}
+
+// FormalizeConfigPath formalize config path. If config path is the default config path (home directory),
+// it returns a computed path
+func FormalizeConfigPath(path string) (string, error) {
+	if path == DefaultConfigPath() {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+
+		path = filepath.Join(homeDir, defaultConfigFileName)
+	}
+
+	return path, nil
 }
 
 // Load the configuration from the given path
