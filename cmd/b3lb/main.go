@@ -14,7 +14,12 @@ const version = "1.4.0-SNAPSHOT"
 
 func main() {
 	initLog()
-	conf, err := config.Load(configPath())
+	configPath, err := config.FormalizeConfigPath(configPath())
+	if err != nil {
+		panic(fmt.Errorf("unable to parse configuration: %s", err.Error()))
+	}
+
+	conf, err := config.Load(configPath)
 
 	if err != nil {
 		panic(fmt.Sprintf("Unable to load configuration: %s \n", err))
@@ -35,7 +40,7 @@ func initLog() {
 func configPath() string {
 	var configPath string
 
-	flag.StringVar(&configPath, "config", "config.yml", "Config file path")
+	flag.StringVar(&configPath, "config", config.DefaultConfigPath(), "Config file path")
 	flag.Parse()
 
 	return configPath
