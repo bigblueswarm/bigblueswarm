@@ -4,6 +4,8 @@ bigbluebutton:
   recordings_poll_interval: 1m
 balancer:
   metrics_range: -5m
+  cpu_limit: 99
+  mem_limit: 99
 admin:
   api_key: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R
 port: 8090

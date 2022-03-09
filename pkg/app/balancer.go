@@ -45,25 +45,55 @@ func (b *InfluxDBBalancer) formatInstancesFilter(instances []string) string {
 
 // Process compute data to find a bigbluebutton server
 func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
-	req := fmt.Sprintf(`from(bucket: "bucket")
-	|> range(start: %s)
-	|> filter(fn: (r) => r["_measurement"] == "cpu" or r["_measurement"] == "mem")
-	|> filter(fn: (r) => r["_field"] == "usage_system" or r["_field"] == "used_percent")
-	|> filter(fn: (r) => r["cpu"] == "cpu-total" or r["_measurement"] == "mem")
-	|> filter(fn: (r) => %s)
-	|> group(columns: ["b3lb_host"])
-	|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-	|> map(fn: (r) => ({ r with _value: r["usage_system"] + r["used_percent"] }))
-	|> lowestAverage(n: 1, column: "_value", groupColumns: ["b3lb_host", "_time"])`, b.Config.MetricsRange, b.formatInstancesFilter(instances))
+	req := fmt.Sprintf(`
+	cpuFilter = from(bucket: "bucket")
+		|> range(start: %s)
+		|> filter(fn: (r) => r["_measurement"] == "cpu" and r["_field"] == "usage_system" and r["cpu"] == "cpu-total")
+		|> filter(fn: (r) => %s)
+		|> group(columns: ["b3lb_host"])
+		|> mean(column: "_value")
+		|> yield(name: "cpu")
+  
+	memFilter = from(bucket: "bucket")
+		|> range(start: %s)
+		|> filter(fn: (r) => r["_measurement"] == "mem" and r["_field"] == "used_percent")
+		|> filter(fn: (r) => %s)
+		|> group(columns: ["b3lb_host"])
+		|> mean(column: "_value")
+		|> yield(name: "mem")
+	
+	join(
+		tables: {mem: memFilter, cpu: cpuFilter},
+		on: ["b3lb_host", "_start", "_stop"],
+	)
+	|> filter(fn: (r) => r["_value_cpu"] <= %d and r["_value_mem"] <= %d)
+	|> map(fn: (r) => ({ r with _value: r["_value_cpu"] + r["_value_mem"] }))
+	|> lowestAverage(n: 1, column: "_value", groupColumns: ["b3lb_host", "_time"])
+	|> yield(name: "balancer")
+	`,
+		b.Config.MetricsRange,
+		b.formatInstancesFilter(instances),
+		b.Config.MetricsRange,
+		b.formatInstancesFilter(instances),
+		b.Config.CPULimit,
+		b.Config.MemLimit,
+	)
 	result, err := b.Client.Query(context.Background(), req)
 	if err != nil || result.Err() != nil {
 		log.Error("Failed to find a valid server", err)
 		return "", err
 	}
 
-	if result.Next() {
-		return fmt.Sprintf("%v", result.Record().ValueByKey("b3lb_host")), nil
+	return extractBalancerResult(result), nil
+}
+
+func extractBalancerResult(result *redisApi.QueryTableResult) string {
+	instance := ""
+	for result.Next() {
+		if result.Record().Result() == "balancer" {
+			return result.Record().ValueByKey("b3lb_host").(string)
+		}
 	}
 
-	return "", nil
+	return instance
 }

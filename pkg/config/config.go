@@ -39,6 +39,19 @@ type AdminConfig struct {
 // BalancerConfig represents the balancer configuration
 type BalancerConfig struct {
 	MetricsRange string `mapstructure:"metrics_range"`
+	CPULimit     int    `mapstructure:"cpu_limit"`
+	MemLimit     int    `mapstructure:"mem_limit"`
+}
+
+// SetDefaultValues initialize BalancerConfig default values
+func (bc *BalancerConfig) SetDefaultValues() {
+	if bc.CPULimit == 0 {
+		bc.CPULimit = 100
+	}
+
+	if bc.MemLimit == 0 {
+		bc.MemLimit = 100
+	}
 }
 
 // Config represents main configuration mapping
@@ -91,6 +104,8 @@ func Load(path string) (*Config, error) {
 	if conf.Port == 0 {
 		conf.Port = 8080
 	}
+
+	conf.Balancer.SetDefaultValues()
 
 	return conf, nil
 }

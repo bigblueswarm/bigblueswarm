@@ -145,6 +145,8 @@ admin:
   api_key: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R # Admin API key. Used to call admin rest endpoints
 balancer:
   metrics_range: -5m # metrics range used by balancer to compute the next bigbluebutton instance
+  cpu_limit: 100 # max cpu % average in range (metrics_range configuration). If the metric is higher than the configuration, the bigbluebutton instance could not be balanced
+  mem_limit: 100 # max memory % average in range (metrics_range configuration). If the metric is higher than the configuration, the bigbluebutton instance could not be balanced
 port: 8090 # B3LB port
 redis: # Redis configuration
   address:
