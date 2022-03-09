@@ -90,7 +90,7 @@ func TestProcess(t *testing.T) {
 #group,false,false,false,false,false
 #default,_result,,,,
 ,result,table,_time,b3lb_host,_value
-,,0,2022-01-10T16:57:30Z,http://localhost:8080,`
+,balancer,0,2022-01-10T16:57:30Z,http://localhost:8080,`
 			},
 			Validator: func(t *testing.T, result interface{}, err error) {
 				assert.Nil(t, err)
