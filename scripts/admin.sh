@@ -10,6 +10,7 @@ usage() {
     -l, --list           Call admin list api. It displays instance list.
     -c, --create         Call admin create api. It prompts to ask the instance url and instance secret to create.
     -d, --delete         Call admin delete api. It prompts to ask the instance url to delete.
+    -s, --status         Call admin status api.
     -h, --help           Display usage
   "
 }
@@ -32,6 +33,10 @@ list() {
     curl -s -G -X GET http://localhost:8090/admin/servers -H "Authorization: $API_KEY" | jq "."
 }
 
+cluster_status() {
+  curl -s -G -X GET http://localhost:8090/admin/cluster/status -H "Authorization: $API_KEY" | jq "."
+}
+
 for param in "$@"
 do
   case $param in
@@ -43,6 +48,9 @@ do
       ;;
     -d | --delete)
       delete
+      ;;
+    -s | --status)
+      cluster_status
       ;;
     -h | --help)
       usage

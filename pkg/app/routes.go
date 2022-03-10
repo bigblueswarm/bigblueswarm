@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Server) initRoutes() {
-	adm := admin.CreateAdmin(s.InstanceManager, &s.Config.Admin)
+	adm := admin.CreateAdmin(s.InstanceManager, s.Balancer, &s.Config.Admin)
 	routes := append(*s.Routes(), *adm.Routes()...)
 	for _, route := range routes {
 		route.Load(s.Router.Group(route.Path))

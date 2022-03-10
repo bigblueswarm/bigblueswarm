@@ -8,10 +8,12 @@ import (
 	"testing"
 
 	"github.com/SLedunois/b3lb/pkg/api"
+	"github.com/SLedunois/b3lb/pkg/balancer"
 	"github.com/SLedunois/b3lb/pkg/config"
 
 	"github.com/SLedunois/b3lb/internal/test"
 	"github.com/SLedunois/b3lb/pkg/admin/mock"
+	bmock "github.com/SLedunois/b3lb/pkg/balancer/mock"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -23,10 +25,16 @@ func toBBBInstanceArray(body []byte) []api.BigBlueButtonInstance {
 	return instances
 }
 
+func toInstanceStatusArray(body []byte) []balancer.InstanceStatus {
+	status := []balancer.InstanceStatus{}
+	json.Unmarshal(body, &status)
+	return status
+}
+
 func TestAddInstance(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&mock.InstanceManager{}, &config.AdminConfig{})
+	admin := CreateAdmin(&mock.InstanceManager{}, &bmock.Balancer{}, &config.AdminConfig{})
 	tests := []test.Test{
 		{
 			Name: "Add should return a bad request if the request body is empty",
@@ -116,7 +124,7 @@ func TestAddInstance(t *testing.T) {
 func TestListInstances(t *testing.T) {
 	url := "http://localhost/bigbluebutton"
 	var w *httptest.ResponseRecorder
-	admin := CreateAdmin(&mock.InstanceManager{}, &config.AdminConfig{})
+	admin := CreateAdmin(&mock.InstanceManager{}, &bmock.Balancer{}, &config.AdminConfig{})
 
 	tests := []test.Test{
 		{
@@ -164,7 +172,7 @@ func TestListInstances(t *testing.T) {
 func TestDeleteInstance(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&mock.InstanceManager{}, &config.AdminConfig{})
+	admin := CreateAdmin(&mock.InstanceManager{}, &bmock.Balancer{}, &config.AdminConfig{})
 	tests := []test.Test{
 		{
 			Name: "Delete should return a bad request status if instance url is not provided",
@@ -235,6 +243,89 @@ func TestDeleteInstance(t *testing.T) {
 			c, _ = gin.CreateTestContext(w)
 			test.Mock()
 			admin.DeleteInstance(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}
+
+func TestClusterStatus(t *testing.T) {
+	var w *httptest.ResponseRecorder
+	var c *gin.Context
+	admin := CreateAdmin(&mock.InstanceManager{}, &bmock.Balancer{}, &config.AdminConfig{})
+
+	host := "http://localhost/bigbluebutton"
+	cpu := 20.01
+	mem := 35.45
+	apiStatus := "Up"
+	activeMeetings := int64(3)
+	activeParticipants := int64(22)
+
+	expectedStatus := []balancer.InstanceStatus{
+		{
+			Host:               host,
+			CPU:                cpu,
+			Mem:                mem,
+			APIStatus:          apiStatus,
+			ActiveMeeting:      int64(activeMeetings),
+			ActiveParticipants: int64(activeParticipants),
+		},
+	}
+
+	tests := []test.Test{
+		{
+			Name: "an error returned by InstanceManager should return a 500 Internal Server Error status code",
+			Mock: func() {
+				mock.ListFunc = func() ([]string, error) {
+					return nil, errors.New("manager error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+		{
+			Name: "an error returned by Balancer should return a 500 Internal Server Error status code",
+			Mock: func() {
+				mock.ListFunc = func() ([]string, error) {
+					return []string{}, nil
+				}
+				bmock.BalancerClusterStatusFunc = func(instances []string) ([]balancer.InstanceStatus, error) {
+					return nil, errors.New("balancer error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+		{
+			Name: "a valid request should return a 200 Status OK and a list of status",
+			Mock: func() {
+				mock.ListFunc = func() ([]string, error) {
+					return []string{}, nil
+				}
+				bmock.BalancerClusterStatusFunc = func(instances []string) ([]balancer.InstanceStatus, error) {
+					return expectedStatus, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusOK, w.Code)
+				status := toInstanceStatusArray(w.Body.Bytes())
+				assert.Equal(t, host, status[0].Host)
+				assert.Equal(t, cpu, status[0].CPU)
+				assert.Equal(t, mem, status[0].Mem)
+				assert.Equal(t, apiStatus, status[0].APIStatus)
+				assert.Equal(t, activeMeetings, int64(status[0].ActiveMeeting))
+				assert.Equal(t, activeParticipants, int64(status[0].ActiveParticipants))
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			test.Mock()
+			admin.ClusterStatus(c)
 			test.Validator(t, nil, nil)
 		})
 	}

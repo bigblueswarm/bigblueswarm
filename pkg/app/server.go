@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/SLedunois/b3lb/pkg/admin"
+	"github.com/SLedunois/b3lb/pkg/balancer"
 
 	"github.com/SLedunois/b3lb/pkg/config"
 	"github.com/SLedunois/b3lb/pkg/restclient"
@@ -18,7 +19,7 @@ type Server struct {
 	Config          *config.Config
 	InstanceManager admin.InstanceManager
 	Mapper          Mapper
-	Balancer        Balancer
+	Balancer        balancer.Balancer
 }
 
 // NewServer creates a new server based on given configuration
@@ -33,7 +34,7 @@ func NewServer(config *config.Config) *Server {
 		Config:          config,
 		InstanceManager: admin.NewInstanceManager(*redisClient),
 		Mapper:          NewMapper(*redisClient),
-		Balancer:        NewBalancer(influxClient, &config.Balancer),
+		Balancer:        balancer.New(influxClient, &config.Balancer),
 	}
 }
 
