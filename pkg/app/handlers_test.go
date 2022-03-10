@@ -14,7 +14,7 @@ import (
 	"github.com/SLedunois/b3lb/pkg/admin"
 	"github.com/SLedunois/b3lb/pkg/api"
 
-	AppMock "github.com/SLedunois/b3lb/pkg/app/mock"
+	BalancerMock "github.com/SLedunois/b3lb/pkg/balancer/mock"
 	RestClientMock "github.com/SLedunois/b3lb/pkg/restclient/mock"
 
 	"github.com/SLedunois/b3lb/internal/test"
@@ -39,7 +39,7 @@ func doGenericInitialization() *Server {
 	server := NewServer(&config.Config{})
 	server.Mapper = mapper
 	server.InstanceManager = instanceManager
-	server.Balancer = &AppMock.Balancer{}
+	server.Balancer = &BalancerMock.Balancer{}
 	restclient.Client = &RestClientMock.RestClient{}
 
 	return server
@@ -226,7 +226,7 @@ func TestCreate(t *testing.T) {
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
 				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
-				AppMock.BalancerProcessFunc = func(instances []string) (string, error) {
+				BalancerMock.BalancerProcessFunc = func(instances []string) (string, error) {
 					return "", errors.New("balancer error")
 				}
 			},
@@ -245,7 +245,7 @@ func TestCreate(t *testing.T) {
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
 				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
-				AppMock.BalancerProcessFunc = func(instances []string) (string, error) {
+				BalancerMock.BalancerProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetErr(errors.New("redis error"))
@@ -265,7 +265,7 @@ func TestCreate(t *testing.T) {
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
 				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
-				AppMock.BalancerProcessFunc = func(instances []string) (string, error) {
+				BalancerMock.BalancerProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
@@ -288,7 +288,7 @@ func TestCreate(t *testing.T) {
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
 				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
-				AppMock.BalancerProcessFunc = func(instances []string) (string, error) {
+				BalancerMock.BalancerProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
@@ -329,7 +329,7 @@ func TestCreate(t *testing.T) {
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
 				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
-				AppMock.BalancerProcessFunc = func(instances []string) (string, error) {
+				BalancerMock.BalancerProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
