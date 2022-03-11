@@ -18,22 +18,24 @@ type Balancer interface {
 
 // InfluxDBBalancer is the InfluxDB implementation of Balancer
 type InfluxDBBalancer struct {
-	Client influxdb.QueryAPI
-	Config *config.BalancerConfig
+	Client    influxdb.QueryAPI
+	Config    *config.BalancerConfig
+	IDBConfig *config.IDB
 }
 
 // New creates a new Balancer object
-func New(idb influxdb.QueryAPI, config *config.BalancerConfig) Balancer {
+func New(idb influxdb.QueryAPI, config *config.BalancerConfig, idbConfig *config.IDB) Balancer {
 	return &InfluxDBBalancer{
-		Client: idb,
-		Config: config,
+		Client:    idb,
+		Config:    config,
+		IDBConfig: idbConfig,
 	}
 }
 
 // Process compute data to find a bigbluebutton server
 func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
 	req := fmt.Sprintf(`
-	cpuFilter = from(bucket: "bucket")
+	cpuFilter = from(bucket: "%s")
 		|> range(start: %s)
 		|> filter(fn: (r) => r["_measurement"] == "cpu" and r["_field"] == "usage_system" and r["cpu"] == "cpu-total")
 		|> filter(fn: (r) => %s)
@@ -41,7 +43,7 @@ func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
 		|> mean(column: "_value")
 		|> yield(name: "cpu")
   
-	memFilter = from(bucket: "bucket")
+	memFilter = from(bucket: "%s")
 		|> range(start: %s)
 		|> filter(fn: (r) => r["_measurement"] == "mem" and r["_field"] == "used_percent")
 		|> filter(fn: (r) => %s)
@@ -58,8 +60,10 @@ func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
 	|> lowestAverage(n: 1, column: "_value", groupColumns: ["b3lb_host", "_time"])
 	|> yield(name: "balancer")
 	`,
+		b.IDBConfig.Bucket,
 		b.Config.MetricsRange,
 		utils.FormatInstancesFilter(instances),
+		b.IDBConfig.Bucket,
 		b.Config.MetricsRange,
 		utils.FormatInstancesFilter(instances),
 		b.Config.CPULimit,
@@ -77,7 +81,7 @@ func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
 // ClusterStatus retrieve the cluster status. It returns a list containing all bbb instance with its status
 func (b *InfluxDBBalancer) ClusterStatus(instances []string) ([]InstanceStatus, error) {
 	req := fmt.Sprintf(`
-	from(bucket: "bucket")
+	from(bucket: "%s")
 		|> range(start: %s)
 		|> filter(fn: (r) => r["_measurement"] == "bigbluebutton_api" or r["_measurement"] == "bigbluebutton_meetings")
 		|> filter(fn: (r) => r["_field"] == "online" or r["_field"] == "active_meetings" or r["_field"] == "participant_count")
@@ -87,7 +91,7 @@ func (b *InfluxDBBalancer) ClusterStatus(instances []string) ([]InstanceStatus, 
 		|> last(column: "_start")
 		|> yield(name: "bbb")
 		
-	from(bucket: "bucket")
+	from(bucket: "%s")
 		|> range(start: %s)
 		|> filter(fn: (r) => r["_measurement"] == "cpu" and r["_field"] == "usage_system" and r["cpu"] == "cpu-total")
 		|> filter(fn: (r) => %s)
@@ -95,7 +99,7 @@ func (b *InfluxDBBalancer) ClusterStatus(instances []string) ([]InstanceStatus, 
 		|> mean()
 		|> yield(name: "cpu")
 	
-	from(bucket: "bucket")
+	from(bucket: "%s")
 		|> range(start: %s)
 		|> filter(fn: (r) => r["_measurement"] == "mem" and r["_field"] == "used_percent")
 		|> filter(fn: (r) => %s)
@@ -103,10 +107,13 @@ func (b *InfluxDBBalancer) ClusterStatus(instances []string) ([]InstanceStatus, 
 		|> mean()
 		|> yield(name: "mem")
 	`,
+		b.IDBConfig.Bucket,
 		b.Config.MetricsRange,
 		utils.FormatInstancesFilter(instances),
+		b.IDBConfig.Bucket,
 		b.Config.MetricsRange,
 		utils.FormatInstancesFilter(instances),
+		b.IDBConfig.Bucket,
 		b.Config.MetricsRange,
 		utils.FormatInstancesFilter(instances),
 	)

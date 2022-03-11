@@ -14,7 +14,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	assert.NotNil(t, New(nil, nil))
+	assert.NotNil(t, New(nil, nil, nil))
 }
 
 func TestProcess(t *testing.T) {
@@ -78,6 +78,9 @@ func TestProcess(t *testing.T) {
 		}),
 		Config: &config.BalancerConfig{
 			MetricsRange: "-5m",
+		},
+		IDBConfig: &config.IDB{
+			Bucket: "bucket",
 		},
 	}
 	for _, test := range tests {
@@ -168,6 +171,9 @@ func TestClusterStatus(t *testing.T) {
 		}),
 		Config: &config.BalancerConfig{
 			MetricsRange: "-5m",
+		},
+		IDBConfig: &config.IDB{
+			Bucket: "bucket",
 		},
 	}
 	for _, test := range tests {

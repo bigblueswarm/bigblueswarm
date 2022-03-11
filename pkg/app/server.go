@@ -34,7 +34,7 @@ func NewServer(config *config.Config) *Server {
 		Config:          config,
 		InstanceManager: admin.NewInstanceManager(*redisClient),
 		Mapper:          NewMapper(*redisClient),
-		Balancer:        balancer.New(influxClient, &config.Balancer),
+		Balancer:        balancer.New(influxClient, &config.Balancer, &config.IDB),
 	}
 }
 
