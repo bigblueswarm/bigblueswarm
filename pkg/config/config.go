@@ -12,7 +12,7 @@ import (
 // BigBlueButton configuration mapping
 type BigBlueButton struct {
 	Secret                 string `mapstructure:"secret"`
-	RecordingsPollInterval string `mapstructure:"recordings_poll_interval"`
+	RecordingsPollInterval string `mapstructure:"recordingsPollInterval"`
 }
 
 // RDB represents redis database configuration mapping
@@ -32,15 +32,15 @@ type IDB struct {
 
 // AdminConfig represents the admin configuration
 type AdminConfig struct {
-	APIKey string `mapstructure:"api_key"`
+	APIKey string `mapstructure:"apiKey"`
 	URL    string `mapstructure:"url"`
 }
 
 // BalancerConfig represents the balancer configuration
 type BalancerConfig struct {
-	MetricsRange string `mapstructure:"metrics_range"`
-	CPULimit     int    `mapstructure:"cpu_limit"`
-	MemLimit     int    `mapstructure:"mem_limit"`
+	MetricsRange string `mapstructure:"metricsRange"`
+	CPULimit     int    `mapstructure:"cpuLimit"`
+	MemLimit     int    `mapstructure:"memLimit"`
 }
 
 // SetDefaultValues initialize BalancerConfig default values

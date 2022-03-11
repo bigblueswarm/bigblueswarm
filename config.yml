@@ -1,13 +1,13 @@
 ---
 bigbluebutton:
   secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU
-  recordings_poll_interval: 1m
+  recordingsPollInterval: 1m
 balancer:
-  metrics_range: -5m
-  cpu_limit: 99
-  mem_limit: 99
+  metricsRange: -5m
+  cpuLimit: 99
+  memLimit: 99
 admin:
-  api_key: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R
+  apiKey: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R
 port: 8090
 redis:
   address: localhost:6379
