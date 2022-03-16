@@ -2,45 +2,46 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
-	"github.com/gookit/config/v2"
-	"github.com/gookit/config/v2/yaml"
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 )
 
 // BigBlueButton configuration mapping
 type BigBlueButton struct {
-	Secret                 string `mapstructure:"secret"`
-	RecordingsPollInterval string `mapstructure:"recordingsPollInterval"`
+	Secret                 string `yaml:"secret"`
+	RecordingsPollInterval string `yaml:"recordingsPollInterval"`
 }
 
 // RDB represents redis database configuration mapping
 type RDB struct {
-	Address  string `mapstructure:"address"`
-	Password string `mapstructure:"password"`
-	DB       int    `mapstructure:"database"`
+	Address  string `yaml:"address"`
+	Password string `yaml:"password"`
+	DB       int    `yaml:"database"`
 }
 
 // IDB represents influxdb database configuration mapping
 type IDB struct {
-	Address      string `mapstructure:"address"`
-	Token        string `mapstructure:"token"`
-	Organization string `mapstructure:"organization"`
-	Bucket       string `mapstructure:"bucket"`
+	Address      string `yaml:"address"`
+	Token        string `yaml:"token"`
+	Organization string `yaml:"organization"`
+	Bucket       string `yaml:"bucket"`
 }
 
 // AdminConfig represents the admin configuration
 type AdminConfig struct {
-	APIKey string `mapstructure:"apiKey"`
-	URL    string `mapstructure:"url"`
+	APIKey string `yaml:"apiKey"`
+	URL    string `yaml:"url"`
 }
 
 // BalancerConfig represents the balancer configuration
 type BalancerConfig struct {
-	MetricsRange string `mapstructure:"metricsRange"`
-	CPULimit     int    `mapstructure:"cpuLimit"`
-	MemLimit     int    `mapstructure:"memLimit"`
+	MetricsRange string `yaml:"metricsRange"`
+	CPULimit     int    `yaml:"cpuLimit"`
+	MemLimit     int    `yaml:"memLimit"`
 }
 
 // SetDefaultValues initialize BalancerConfig default values
@@ -56,12 +57,12 @@ func (bc *BalancerConfig) SetDefaultValues() {
 
 // Config represents main configuration mapping
 type Config struct {
-	BigBlueButton BigBlueButton  `mapstructure:"bigbluebutton"`
-	Admin         AdminConfig    `mapstructure:"admin"`
-	Balancer      BalancerConfig `mapstructure:"balancer"`
-	Port          int            `mapstructure:"port"`
-	RDB           RDB            `mapstructure:"redis"`
-	IDB           IDB            `mapstructure:"influxdb"`
+	BigBlueButton BigBlueButton  `yaml:"bigbluebutton"`
+	Admin         AdminConfig    `yaml:"admin"`
+	Balancer      BalancerConfig `yaml:"balancer"`
+	Port          int            `yaml:"port"`
+	RDB           RDB            `yaml:"redis"`
+	IDB           IDB            `yaml:"influxdb"`
 }
 
 const defaultConfigFileName = ".b3lb.yaml"
@@ -88,18 +89,25 @@ func FormalizeConfigPath(path string) (string, error) {
 
 // Load the configuration from the given path
 func Load(path string) (*Config, error) {
-	config.AddDriver(yaml.Driver)
-	err := config.LoadFiles(path)
-
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Error(fmt.Sprintf("unable to close config file: %s", err))
+		}
+	}()
+
 	conf := &Config{}
 
-	if err := config.BindStruct("", &conf); err != nil {
+	b, err := ioutil.ReadAll(file)
+	if err != nil {
 		return nil, err
 	}
+
+	yaml.Unmarshal(b, &conf)
 
 	if conf.Port == 0 {
 		conf.Port = 8080
