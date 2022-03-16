@@ -1,6 +1,6 @@
 #!/bin/bash
 
-API_KEY=$(grep  -Po "api_key: (.*)" $(dirname "$0")/../config.yml | cut -d: -f2 | xargs)
+API_KEY=$(grep  -Po "apiKey: (.*)" $(dirname "$0")/../config.yml | cut -d: -f2 | xargs)
 
 usage() {
   echo "
