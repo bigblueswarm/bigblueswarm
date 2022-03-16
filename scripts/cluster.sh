@@ -5,6 +5,7 @@ GREEN="\e[32m"
 ENDCOLOR="\e[0m"
 
 TOKEN=$(grep  -Po "token: (.*)" $(dirname "$0")/../config.yml | cut -d: -f2  | xargs)
+SECRET="$(docker exec bbb1 sh -c "bbb-conf --secret" | grep -Po "Secret: (.*)" | cut -d: -f2 | xargs)"
 
 log() {
     echo -e "${YELLOW}[CLUSTER]${ENDCOLOR} $1"
@@ -41,8 +42,8 @@ usage() {
 
 set_influxdb_token() {
   log "Setting up InfluxDB token"
-  docker exec bbb1 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost/bigbluebutton\nBBB_SECRET=0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
-  docker exec bbb2 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost:8080/bigbluebutton\nBBB_SECRET=0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
+  docker exec bbb1 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost/bigbluebutton\nBBB_SECRET=${SECRET}' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
+  docker exec bbb2 sh -c "echo 'INFLUXDB_TOKEN=$1\nB3LB_HOST=http://localhost:8080/bigbluebutton\nBBB_SECRET=${SECRET}' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
   log "Done ${GREEN}$(dash)${ENDCOLOR}"
 }
 
