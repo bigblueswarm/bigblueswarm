@@ -14,10 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build B3LB artifact
-        run: ./scripts/integration_test.sh -b
+        run: make build
       - name: Run integration test cluster
-        run: ./scripts/integration_test.sh -r
+        run: make test.integration.cluster.start test.integration.b3lb.run
       - name: Launch integration tests
-        run: ./scripts/integration_test.sh -l
+        run: make test.integration.launch
       - name: Stop integration test cluster
-        run: ./scripts/integration_test.sh -s
+        run: make test.integration.b3lb.stop cluster.stop test.integration.cluster.remove
