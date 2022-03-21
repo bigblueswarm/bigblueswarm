@@ -10,6 +10,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var conf *Config
+
 // BigBlueButton configuration mapping
 type BigBlueButton struct {
 	Secret                 string `yaml:"secret"`
@@ -100,7 +102,7 @@ func Load(path string) (*Config, error) {
 		}
 	}()
 
-	conf := &Config{}
+	conf = &Config{}
 
 	b, err := ioutil.ReadAll(file)
 	if err != nil {
