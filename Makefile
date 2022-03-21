@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 VERSION = $(shell grep -Po "version = \"(.*)\"" ./cmd/b3lb/main.go | cut -d= -f2 | xargs)
 TOKEN = $(shell grep  -Po "token: (.*)" ./config.yml | cut -d: -f2  | xargs)
-SECRET = "$(shell docker exec bbb1 sh -c "bbb-conf --secret" | grep -Po "Secret: (.*)" | cut -d: -f2 | xargs)"
+SECRET = $(shell docker exec bbb1 sh -c "bbb-conf --secret" | grep -Po "Secret: (.*)" | cut -d: -f2 | xargs)
 
 #help: @ list available tasks on this project
 help:
