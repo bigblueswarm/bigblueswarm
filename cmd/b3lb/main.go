@@ -25,7 +25,7 @@ func main() {
 		panic(fmt.Sprintf("Unable to load configuration: %s \n", err))
 	}
 
-	if err := run(*conf); err != nil {
+	if err := run(conf); err != nil {
 		panic(fmt.Sprintf("Server can't start: %s\n", err))
 	}
 }
@@ -46,9 +46,9 @@ func configPath() string {
 	return configPath
 }
 
-func run(conf config.Config) error {
+func run(conf *config.Config) error {
 	log.Info(fmt.Sprintf("Starting b3lb server version %s", version))
-	err := app.NewServer(&conf).Run()
+	err := app.NewServer(conf).Run()
 
 	if err != nil {
 		return err
