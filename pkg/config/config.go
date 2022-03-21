@@ -57,12 +57,15 @@ func (bc *BalancerConfig) SetDefaultValues() {
 	}
 }
 
+// Port represents the B3LB port configuration
+type Port int
+
 // Config represents main configuration mapping
 type Config struct {
 	BigBlueButton BigBlueButton  `yaml:"bigbluebutton"`
 	Admin         AdminConfig    `yaml:"admin"`
 	Balancer      BalancerConfig `yaml:"balancer"`
-	Port          int            `yaml:"port"`
+	Port          Port           `yaml:"port"`
 	RDB           RDB            `yaml:"redis"`
 	IDB           IDB            `yaml:"influxdb"`
 }
