@@ -44,6 +44,8 @@ func (i *BigBlueButtonInstance) callAPI(params string, checksum *Checksum) ([]by
 		return nil, err
 	}
 
+	defer resp.Body.Close()
+
 	return ioutil.ReadAll(resp.Body)
 }
 
