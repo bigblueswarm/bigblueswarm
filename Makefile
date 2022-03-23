@@ -105,3 +105,7 @@ cluster.telegraf:
 cluster.grafana:
 	@echo "[CLUSTER] starting BigBlueButton cluster including grafana"
 	@docker-compose -f ./scripts/docker-compose.yml -f ./scripts/docker-compose.grafana.yml up -d
+
+#cluster.consul: @ start development cluster using consul coniguration provider
+cluster.consul:
+	@docker-compose -f "./scripts/docker-compose.yml" -f "./scripts/docker-compose.consul.yml" up -d

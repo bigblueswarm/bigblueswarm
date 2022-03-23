@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  consul:
+    container_name: consul
+    image: consul
+    ports:
+      - "8500:8500"
+    command: agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0

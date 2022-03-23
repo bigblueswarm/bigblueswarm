@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch file",
+            "name": "File: launch",
             "type": "go",
             "request": "launch",
             "mode": "debug",
@@ -13,6 +13,17 @@
             "args": [
                 "-config",
                 "/workspaces/b3lb/config.yml"
+            ]
+        },
+        {
+            "name": "Consul: launch",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "cmd/b3lb/main.go",
+            "args": [
+                "-config",
+                "consul:127.0.0.1:8500"
             ]
         }
     ]
