@@ -1,9 +1,9 @@
 package admin
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/SLedunois/b3lb/pkg/api"
 	"github.com/SLedunois/b3lb/pkg/balancer"
 	"github.com/SLedunois/b3lb/pkg/config"
 
@@ -27,36 +27,6 @@ func CreateAdmin(manager InstanceManager, balancer balancer.Balancer, config *co
 	}
 }
 
-// AddInstance insert the body into the database.
-func (a *Admin) AddInstance(c *gin.Context) {
-	instance := &api.BigBlueButtonInstance{}
-	if err := c.ShouldBind(&instance); err != nil || (instance.Secret == "" || instance.URL == "") {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	exists, err := a.InstanceManager.Exists(*instance)
-
-	if err != nil {
-		log.Error("Failed to check if instance already exists", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	if exists {
-		log.Warn("Instance already exists")
-		c.AbortWithStatus(http.StatusConflict)
-		return
-	}
-
-	if err := a.InstanceManager.Add(*instance); err != nil {
-		log.Error("Failed to add new instance", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-	} else {
-		c.JSON(http.StatusCreated, instance)
-	}
-}
-
 // ListInstances returns Bigbluebutton instance list
 func (a *Admin) ListInstances(c *gin.Context) {
 	instances, err := a.InstanceManager.ListInstances()
@@ -67,33 +37,6 @@ func (a *Admin) ListInstances(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, instances)
-}
-
-// DeleteInstance deletes an instance
-func (a *Admin) DeleteInstance(c *gin.Context) {
-	if URL, ok := c.GetQuery("url"); ok {
-		exists, err := a.InstanceManager.Exists(api.BigBlueButtonInstance{URL: URL})
-
-		if err != nil {
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-
-		if !exists {
-			c.AbortWithStatus(http.StatusNotFound)
-			return
-		}
-
-		if err := a.InstanceManager.Remove(URL); err != nil {
-			log.Error("Failed to delete instance", err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-
-		c.AbortWithStatus(http.StatusNoContent)
-	} else {
-		c.AbortWithStatus(http.StatusBadRequest)
-	}
 }
 
 // ClusterStatus send a status for the cluster. It contains all instances with their status
@@ -111,4 +54,23 @@ func (a *Admin) ClusterStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, status)
+}
+
+// SetInstances set all instances. It takes InstanceList object in body
+func (a *Admin) SetInstances(c *gin.Context) {
+	defer c.Request.Body.Close()
+
+	instanceList := &InstanceList{}
+	if err := c.ShouldBindYAML(instanceList); err != nil {
+		e := fmt.Errorf("Body does not bind InstanceList object: %s", err)
+		log.Error(e)
+		c.String(http.StatusBadRequest, e.Error())
+		return
+	}
+
+	if err := a.InstanceManager.SetInstances(instanceList.Instances); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+	} else {
+		c.AbortWithStatus(http.StatusCreated)
+	}
 }

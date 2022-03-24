@@ -168,13 +168,5 @@ Use the admin API to list, add and delete BigBlueButton instance inside B3LB loa
 ```bash
 curl -s -G -X GET http://localhost:8090/admin/servers -H "Authorization: $API_KEY" | jq "."
 ```
-### Add a BigBlueButton instance
-```bash
-curl -s -X POST http://localhost:8090/admin/servers -H "Authorization: $API_KEY" -H 'Content-Type: application/json' -d "{\"url\":\"$INSTANCE_URL\", \"secret\": \"$INSTANCE_SECRET\"}" | jq "."
-```
-### Delete a BigBlueButton instance
-```bash
-curl -G -X DELETE http://localhost:8090/admin/servers -H "Authorization: $API_KEY" --data-urlencode "url=$INSTANCE_URL" | jq "."
-```
 ## Roadmap/
 Checkout [B3LB public roadmap](https://github.com/users/SLedunois/projects/4).

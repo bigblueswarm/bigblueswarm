@@ -9,7 +9,7 @@
 			"name": "Admin",
 			"item": [
 				{
-					"name": "Add an instance",
+					"name": "Add an instance list configuration",
 					"event": [
 						{
 							"listen": "test",
@@ -17,12 +17,6 @@
 								"exec": [
 									"pm.test(\"Adding an instance should return a 201 status code \", () => {",
 									"    pm.response.to.have.status(201)",
-									"})",
-									"",
-									"pm.test(\"Adding an instance should return a valid body\", () => {",
-									"    const response = pm.response.json()",
-									"    pm.expect(response.url).to.eql(pm.environment.get(\"instance_url\"))",
-									"    pm.expect(response.secret).to.eql(pm.environment.get(\"instance_secret\"))",
 									"})"
 								],
 								"type": "text/javascript"
@@ -43,15 +37,15 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"url\": \"{{instance_url}}\",\n    \"secret\": \"{{instance_secret}}\"\n}",
+							"raw": "kind: InstanceList\ninstances:\n  {{instance_url}}: {{instance_secret}}",
 							"options": {
 								"raw": {
-									"language": "json"
+									"language": "text"
 								}
 							}
 						},
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/servers",
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/instances",
 							"protocol": "http",
 							"host": [
 								"{{b3lb_host}}"
@@ -59,7 +53,8 @@
 							"port": "{{b3lb_port}}",
 							"path": [
 								"admin",
-								"servers"
+								"api",
+								"instances"
 							]
 						}
 					},
@@ -163,54 +158,6 @@
 								"admin",
 								"cluster",
 								"status"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete an instance",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Deleting an instance should return a 204 - No Content - status code\", () => {",
-									"    pm.response.to.have.status(204)",
-									"})"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"postman.setNextRequest(null)"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/servers?url={{instance_url}}",
-							"protocol": "http",
-							"host": [
-								"{{b3lb_host}}"
-							],
-							"port": "{{b3lb_port}}",
-							"path": [
-								"admin",
-								"servers"
-							],
-							"query": [
-								{
-									"key": "url",
-									"value": "{{instance_url}}"
-								}
 							]
 						}
 					},
