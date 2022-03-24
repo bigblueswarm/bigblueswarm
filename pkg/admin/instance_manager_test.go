@@ -268,3 +268,52 @@ func TestInstanceManagerListInstances(t *testing.T) {
 		})
 	}
 }
+
+func TestInstanceManagerSetInstances(t *testing.T) {
+	instances := map[string]string{
+		"http://localhost/bigbluebutton": "dummy_secret",
+	}
+
+	tests := []test.Test{
+		{
+			Name: "an error returned by redis while cleaning instances should return an error",
+			Mock: func() {
+				mock := redisMock.ExpectDel(B3LBInstances)
+				mock.SetVal(0)
+				mock.SetErr(errors.New("redis error"))
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.NotNil(t, err)
+			},
+		},
+		{
+			Name: "an error returned by redis while adding a new instance should return an error",
+			Mock: func() {
+				redisMock.ExpectDel(B3LBInstances).SetVal(1)
+				mock := redisMock.ExpectHSet(B3LBInstances, "http://localhost/bigbluebutton", "dummy_secret")
+				mock.SetVal(0)
+				mock.SetErr(errors.New("redis error"))
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.NotNil(t, err)
+			},
+		},
+		{
+			Name: "a valid call should return no error",
+			Mock: func() {
+				redisMock.ExpectDel(B3LBInstances).SetVal(1)
+				redisMock.ExpectHSet(B3LBInstances, "http://localhost/bigbluebutton", "dummy_secret").SetVal(1)
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Nil(t, err)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Mock()
+			test.Validator(t, nil, instanceManager.SetInstances(instances))
+		})
+	}
+}

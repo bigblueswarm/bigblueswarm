@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/SLedunois/b3lb/pkg/api"
 	"github.com/SLedunois/b3lb/pkg/utils"
@@ -13,7 +14,7 @@ import (
 var ctx = context.Background()
 
 // B3LBInstances is the key for the list of instances
-const B3LBInstances = "b3lb_instances"
+const B3LBInstances = "instances:list"
 
 // InstanceManager manager Bigbluebutton instances
 type InstanceManager interface {
@@ -23,6 +24,7 @@ type InstanceManager interface {
 	Add(instance api.BigBlueButtonInstance) error
 	Remove(URL string) error
 	Get(URL string) (api.BigBlueButtonInstance, error)
+	SetInstances(instances map[string]string) error
 }
 
 // RedisInstanceManager is the redis implementation of InstanceManager
@@ -88,4 +90,25 @@ func (m *RedisInstanceManager) ListInstances() ([]api.BigBlueButtonInstance, err
 	}
 
 	return instances, utils.ComputeErr(err)
+}
+
+// SetInstances set instances map
+func (m *RedisInstanceManager) SetInstances(instances map[string]string) error {
+	_, err := m.RDB.Del(ctx, B3LBInstances).Result()
+	if utils.ComputeErr(err) != nil {
+		return fmt.Errorf("failed to clear instances: %s", err)
+	}
+
+	for url, secret := range instances {
+		err := m.Add(api.BigBlueButtonInstance{
+			URL:    url,
+			Secret: secret,
+		})
+
+		if err != nil {
+			return fmt.Errorf("failed to add instance %s (secret %s). Process stopped: %s", url, secret, err)
+		}
+	}
+
+	return nil
 }

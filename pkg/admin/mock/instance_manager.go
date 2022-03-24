@@ -18,6 +18,8 @@ var (
 	GetFunc func(URL string) (api.BigBlueButtonInstance, error)
 	// ListInstancesFunc is the function that will be called when the mock instance manager is used.
 	ListInstancesFunc func() ([]api.BigBlueButtonInstance, error)
+	// SetInstancesFunc is the function that will be called when the mock instance manager is used.
+	SetInstancesFunc func(instances map[string]string) error
 )
 
 // Exists is a mock implementation that returns true if the instance exists.
@@ -48,4 +50,9 @@ func (m *InstanceManager) Get(URL string) (api.BigBlueButtonInstance, error) {
 // ListInstances is a mock implementation that returns all instances.
 func (m *InstanceManager) ListInstances() ([]api.BigBlueButtonInstance, error) {
 	return ListInstancesFunc()
+}
+
+// SetInstances is a mock implementation that set all instances.
+func (m *InstanceManager) SetInstances(instances map[string]string) error {
+	return SetInstancesFunc(instances)
 }

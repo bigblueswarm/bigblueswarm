@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 	router = gin.Default()
 	CreateAdmin(instanceManager, &bmock.Balancer{}, &config.AdminConfig{
 		APIKey: TestUtil.DefaultAPIKey(),
-	}).InitRoutes(router)
+	})
 
 	status := m.Run()
 	if err := redisMock.ExpectationsWereMet(); err != nil {
