@@ -27,6 +27,11 @@ func (a *Admin) Routes() *[]api.EndpointGroup {
 								},
 							},
 						},
+						api.Endpoint{
+							Path:    "/cluster",
+							Method:  http.MethodGet,
+							Handler: a.ClusterStatus,
+						},
 					},
 				},
 				api.EndpointGroup{
@@ -35,16 +40,6 @@ func (a *Admin) Routes() *[]api.EndpointGroup {
 						api.Endpoint{
 							Method:  http.MethodGet,
 							Handler: a.ListInstances,
-						},
-					},
-				},
-				api.EndpointGroup{
-					Path: "/cluster",
-					Endpoints: []interface{}{
-						api.Endpoint{
-							Method:  http.MethodGet,
-							Path:    "/status",
-							Handler: a.ClusterStatus,
 						},
 					},
 				},

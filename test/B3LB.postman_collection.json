@@ -148,7 +148,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/cluster/status",
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/cluster",
 							"protocol": "http",
 							"host": [
 								"{{b3lb_host}}"
@@ -156,8 +156,8 @@
 							"port": "{{b3lb_port}}",
 							"path": [
 								"admin",
-								"cluster",
-								"status"
+								"api",
+								"cluster"
 							]
 						}
 					},
