@@ -13,9 +13,7 @@ import (
 
 	"github.com/SLedunois/b3lb/pkg/admin"
 	"github.com/SLedunois/b3lb/pkg/api"
-
-	BalancerMock "github.com/SLedunois/b3lb/pkg/balancer/mock"
-	RestClientMock "github.com/SLedunois/b3lb/pkg/restclient/mock"
+	"github.com/SLedunois/b3lb/pkg/balancer"
 
 	"github.com/SLedunois/b3lb/internal/test"
 	"github.com/SLedunois/b3lb/pkg/config"
@@ -39,8 +37,8 @@ func doGenericInitialization() *Server {
 	server := NewServer(&config.Config{})
 	server.Mapper = mapper
 	server.InstanceManager = instanceManager
-	server.Balancer = &BalancerMock.Balancer{}
-	restclient.Client = &RestClientMock.RestClient{}
+	server.Balancer = &balancer.Mock{}
+	restclient.Client = &restclient.Mock{}
 
 	return server
 }
@@ -226,7 +224,7 @@ func TestCreate(t *testing.T) {
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
 				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
-				BalancerMock.BalancerProcessFunc = func(instances []string) (string, error) {
+				balancer.BalancerMockProcessFunc = func(instances []string) (string, error) {
 					return "", errors.New("balancer error")
 				}
 			},
@@ -245,7 +243,7 @@ func TestCreate(t *testing.T) {
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
 				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
-				BalancerMock.BalancerProcessFunc = func(instances []string) (string, error) {
+				balancer.BalancerMockProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetErr(errors.New("redis error"))
@@ -265,11 +263,11 @@ func TestCreate(t *testing.T) {
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
 				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
-				BalancerMock.BalancerProcessFunc = func(instances []string) (string, error) {
+				balancer.BalancerMockProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					return nil, errors.New("bbb error")
 				}
 			},
@@ -288,11 +286,11 @@ func TestCreate(t *testing.T) {
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
 				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
-				BalancerMock.BalancerProcessFunc = func(instances []string) (string, error) {
+				balancer.BalancerMockProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					createResponse := &api.CreateResponse{
 						Response: api.Response{
 							ReturnCode: api.ReturnCodes().Success,
@@ -329,11 +327,11 @@ func TestCreate(t *testing.T) {
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
 				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
-				BalancerMock.BalancerProcessFunc = func(instances []string) (string, error) {
+				balancer.BalancerMockProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
 				redisMock.ExpectHGet(admin.B3LBInstances, instance).SetVal(test.DefaultSecret())
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					createResponse := &api.CreateResponse{
 						Response: api.Response{
 							ReturnCode: api.ReturnCodes().Success,
@@ -469,7 +467,7 @@ func TestJoin(t *testing.T) {
 					Action: api.Join,
 				}
 				c.Set("api_ctx", checksum)
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					return nil, errors.New("instance error")
 				}
 			},
@@ -489,7 +487,7 @@ func TestJoin(t *testing.T) {
 					Action: api.Join,
 				}
 				c.Set("api_ctx", checksum)
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					joinResponse := &api.JoinRedirectResponse{
 						Response: api.Response{
 							ReturnCode: api.ReturnCodes().Success,
@@ -552,7 +550,7 @@ func TestEnd(t *testing.T) {
 				}
 				c.Set("api_ctx", checksum)
 				redisMock.ExpectDel(MeetingMapKey(meetingID)).SetErr(errors.New("error"))
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					endResponse := &api.EndResponse{
 						Response: api.Response{
 							ReturnCode: api.ReturnCodes().Success,
@@ -587,7 +585,7 @@ func TestEnd(t *testing.T) {
 				}
 				c.Set("api_ctx", checksum)
 				redisMock.ExpectDel(MeetingMapKey(meetingID)).SetVal(1)
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					endResponse := &api.EndResponse{
 						Response: api.Response{
 							ReturnCode: api.ReturnCodes().Success,
@@ -698,7 +696,7 @@ func TestIsMeetingRunning(t *testing.T) {
 					Action: api.IsMeetingRunning,
 				}
 				c.Set("api_ctx", checksum)
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					return nil, errors.New("http error")
 				}
 			},
@@ -718,7 +716,7 @@ func TestIsMeetingRunning(t *testing.T) {
 					Action: api.IsMeetingRunning,
 				}
 				c.Set("api_ctx", checksum)
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					isRunningReponse := &api.IsMeetingsRunningResponse{
 						Running:    true,
 						ReturnCode: api.ReturnCodes().Success,
@@ -777,7 +775,7 @@ func TestGetMeetingInfo(t *testing.T) {
 					Action: api.IsMeetingRunning,
 				}
 				c.Set("api_ctx", checksum)
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					meetingResponse := &api.GetMeetingInfoResponse{
 						ReturnCode: api.ReturnCodes().Success,
 						MeetingInfo: api.MeetingInfo{
@@ -835,7 +833,7 @@ func TestGetMeetings(t *testing.T) {
 					"http://localhost/bigbluebutton": test.DefaultSecret(),
 				}
 				redisMock.ExpectHGetAll(admin.B3LBInstances).SetVal(instances)
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					meetings := &api.GetMeetingsResponse{
 						ReturnCode: api.ReturnCodes().Success,
 						Meetings: []api.MeetingInfo{
@@ -872,7 +870,7 @@ func TestGetMeetings(t *testing.T) {
 					"http://localhost:8080/bigbluebutton": test.DefaultSecret(),
 				}
 				redisMock.ExpectHGetAll(admin.B3LBInstances).SetVal(instances)
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					if req.URL.Host == "localhost:8080" {
 						return nil, errors.New("remote error")
 					}
@@ -956,7 +954,7 @@ func TestGetRecodings(t *testing.T) {
 			Mock: func() {
 				c.Set("api_ctx", checksum)
 				redisMock.ExpectHGetAll(admin.B3LBInstances).SetVal(instances)
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					return nil, errors.New("remote error")
 				}
 			},
@@ -969,7 +967,7 @@ func TestGetRecodings(t *testing.T) {
 			Mock: func() {
 				c.Set("api_ctx", checksum)
 				redisMock.ExpectHGetAll(admin.B3LBInstances).SetVal(instances)
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					recordings := api.GetRecordingsResponse{
 						Response: api.Response{
 							ReturnCode: api.ReturnCodes().Success,
@@ -1003,7 +1001,7 @@ func TestGetRecodings(t *testing.T) {
 			Mock: func() {
 				c.Set("api_ctx", checksum)
 				redisMock.ExpectHGetAll(admin.B3LBInstances).SetVal(instances)
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					recordings := api.GetRecordingsResponse{
 						Response: api.Response{
 							ReturnCode: api.ReturnCodes().Success,
@@ -1134,7 +1132,7 @@ func TestUpdateRecordings(t *testing.T) {
 
 				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
 				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					return nil, errors.New("http error")
 				}
 			},
@@ -1156,7 +1154,7 @@ func TestUpdateRecordings(t *testing.T) {
 
 				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
 				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					recordings := &api.UpdateRecordingsResponse{
 						ReturnCode: api.ReturnCodes().Success,
 						Updated:    true,
@@ -1212,7 +1210,7 @@ func TestDeleteRecordings(t *testing.T) {
 
 				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
 				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					recordings := &api.DeleteRecordingsResponse{
 						ReturnCode: api.ReturnCodes().Success,
 						Deleted:    false,
@@ -1250,7 +1248,7 @@ func TestDeleteRecordings(t *testing.T) {
 
 				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
 				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					recordings := &api.DeleteRecordingsResponse{
 						ReturnCode: api.ReturnCodes().Success,
 						Deleted:    true,
@@ -1288,7 +1286,7 @@ func TestDeleteRecordings(t *testing.T) {
 
 				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
 				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					recordings := &api.DeleteRecordingsResponse{
 						ReturnCode: api.ReturnCodes().Success,
 						Deleted:    true,
@@ -1345,7 +1343,7 @@ func TestPublishRecordings(t *testing.T) {
 
 				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
 				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					recordings := &api.PublishRecordingsResponse{
 						ReturnCode: api.ReturnCodes().Success,
 						Published:  true,
@@ -1401,7 +1399,7 @@ func TestGetRecordingsTextTracks(t *testing.T) {
 
 				redisMock.ExpectGet(RecordingMapKey("record-id")).SetVal("http://localhost:8080/bigbluebutton")
 				redisMock.ExpectHGet(admin.B3LBInstances, "http://localhost:8080/bigbluebutton").SetVal(test.DefaultSecret())
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					tracks := &api.GetRecordingsTextTracksResponse{
 						Response: api.RecordingsTextTrackResponseType{
 							ReturnCode: api.ReturnCodes().Success,

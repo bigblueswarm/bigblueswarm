@@ -12,7 +12,6 @@ import (
 	"github.com/SLedunois/b3lb/pkg/config"
 
 	"github.com/SLedunois/b3lb/internal/test"
-	bmock "github.com/SLedunois/b3lb/pkg/balancer/mock"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +32,7 @@ func toInstanceStatusArray(body []byte) []balancer.InstanceStatus {
 func TestListInstances(t *testing.T) {
 	url := "http://localhost/bigbluebutton"
 	var w *httptest.ResponseRecorder
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &bmock.Balancer{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
 
 	tests := []test.Test{
 		{
@@ -81,7 +80,7 @@ func TestListInstances(t *testing.T) {
 func TestClusterStatus(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &bmock.Balancer{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
 
 	host := "http://localhost/bigbluebutton"
 	cpu := 20.01
@@ -119,7 +118,7 @@ func TestClusterStatus(t *testing.T) {
 				ListInstanceManagerMockFunc = func() ([]string, error) {
 					return []string{}, nil
 				}
-				bmock.BalancerClusterStatusFunc = func(instances []string) ([]balancer.InstanceStatus, error) {
+				balancer.BalancerMockClusterStatusFunc = func(instances []string) ([]balancer.InstanceStatus, error) {
 					return nil, errors.New("balancer error")
 				}
 			},
@@ -133,7 +132,7 @@ func TestClusterStatus(t *testing.T) {
 				ListInstanceManagerMockFunc = func() ([]string, error) {
 					return []string{}, nil
 				}
-				bmock.BalancerClusterStatusFunc = func(instances []string) ([]balancer.InstanceStatus, error) {
+				balancer.BalancerMockClusterStatusFunc = func(instances []string) ([]balancer.InstanceStatus, error) {
 					return expectedStatus, nil
 				}
 			},
@@ -164,7 +163,7 @@ func TestClusterStatus(t *testing.T) {
 func TestSetInstances(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &bmock.Balancer{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
 
 	tests := []test.Test{
 		{
@@ -222,7 +221,7 @@ instances:
 func TestCreateTenant(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &bmock.Balancer{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
 
 	tests := []test.Test{
 		{

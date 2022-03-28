@@ -5,10 +5,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/SLedunois/b3lb/pkg/balancer"
 	"github.com/SLedunois/b3lb/pkg/config"
 
 	"github.com/SLedunois/b3lb/internal/test"
-	bmock "github.com/SLedunois/b3lb/pkg/balancer/mock"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +17,7 @@ import (
 func TestApiKeyValidation(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &bmock.Balancer{}, &config.AdminConfig{APIKey: test.DefaultAPIKey()})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{APIKey: test.DefaultAPIKey()})
 	tests := []test.Test{
 		{
 			Name: "An empty api key should returns an unauthorized error",

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	TestUtil "github.com/SLedunois/b3lb/internal/test"
-	bmock "github.com/SLedunois/b3lb/pkg/balancer/mock"
+	"github.com/SLedunois/b3lb/pkg/balancer"
 	"github.com/SLedunois/b3lb/pkg/config"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 	tenantManager = NewTenantManager(*client)
 
 	router = gin.Default()
-	CreateAdmin(instanceManager, tenantManager, &bmock.Balancer{}, &config.AdminConfig{
+	CreateAdmin(instanceManager, tenantManager, &balancer.Mock{}, &config.AdminConfig{
 		APIKey: TestUtil.DefaultAPIKey(),
 	})
 
