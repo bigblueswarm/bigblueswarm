@@ -27,6 +27,15 @@ func (a *Admin) Routes() *[]api.EndpointGroup {
 								},
 							},
 						},
+						api.EndpointGroup{
+							Path: "/tenants",
+							Endpoints: []interface{}{
+								api.Endpoint{
+									Method: http.MethodPost,
+									Handler: a.CreateTenant,
+								},
+							},
+						},
 						api.Endpoint{
 							Path:    "/cluster",
 							Method:  http.MethodGet,

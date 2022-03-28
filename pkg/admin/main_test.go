@@ -15,6 +15,7 @@ import (
 
 var router *gin.Engine
 var instanceManager InstanceManager
+var tenantManager TenantManager
 var redisMock redismock.ClientMock
 var redisClient *redis.Client
 
@@ -25,9 +26,10 @@ func TestMain(m *testing.M) {
 	redisMock = mock
 
 	instanceManager = NewInstanceManager(*client)
+	tenantManager = NewTenantManager(*client)
 
 	router = gin.Default()
-	CreateAdmin(instanceManager, &bmock.Balancer{}, &config.AdminConfig{
+	CreateAdmin(instanceManager, tenantManager, &bmock.Balancer{}, &config.AdminConfig{
 		APIKey: TestUtil.DefaultAPIKey(),
 	})
 

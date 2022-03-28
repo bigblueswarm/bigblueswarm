@@ -61,6 +61,58 @@
 					"response": []
 				},
 				{
+					"name": "Add a tenant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Adding a tenant should return a 201 status code \", () => {",
+									"    pm.response.to.have.status(201)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "kind: Tenant\nspec:\n  host: {{b3lb_host}}\ninstances:\n  - {{instance_url}}",
+							"options": {
+								"raw": {
+									"language": "text"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/tenants",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"admin",
+								"api",
+								"tenants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "List instances",
 					"event": [
 						{

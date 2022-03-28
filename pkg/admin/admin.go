@@ -14,14 +14,16 @@ import (
 // Admin struct manager b3lb administration
 type Admin struct {
 	InstanceManager InstanceManager
+	TenantManager   TenantManager
 	Balancer        balancer.Balancer
 	Config          *config.AdminConfig
 }
 
 // CreateAdmin creates a new admin based on given configuration
-func CreateAdmin(manager InstanceManager, balancer balancer.Balancer, config *config.AdminConfig) *Admin {
+func CreateAdmin(manager InstanceManager, tenantManager TenantManager, balancer balancer.Balancer, config *config.AdminConfig) *Admin {
 	return &Admin{
 		InstanceManager: manager,
+		TenantManager:   tenantManager,
 		Config:          config,
 		Balancer:        balancer,
 	}
@@ -73,4 +75,24 @@ func (a *Admin) SetInstances(c *gin.Context) {
 	} else {
 		c.AbortWithStatus(http.StatusCreated)
 	}
+}
+
+// CreateTenant create a tenant from a configuraion YAML body
+func (a *Admin) CreateTenant(c *gin.Context) {
+	defer c.Request.Body.Close()
+
+	tenant := &Tenant{}
+	if err := c.ShouldBindYAML(tenant); err != nil {
+		e := fmt.Errorf("Body does not bind Tenant object: %s", err)
+		log.Error(e)
+		c.String(http.StatusBadRequest, e.Error())
+		return
+	}
+
+	if err := a.TenantManager.AddTenant(tenant); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.AbortWithStatus(http.StatusCreated)
 }

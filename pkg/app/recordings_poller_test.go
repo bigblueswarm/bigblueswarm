@@ -12,7 +12,7 @@ import (
 	"github.com/SLedunois/b3lb/internal/test"
 	"github.com/stretchr/testify/assert"
 
-	AdminMock "github.com/SLedunois/b3lb/pkg/admin/mock"
+	"github.com/SLedunois/b3lb/pkg/admin"
 	"github.com/SLedunois/b3lb/pkg/api"
 	RestClientMock "github.com/SLedunois/b3lb/pkg/restclient/mock"
 
@@ -51,7 +51,7 @@ func TestPollRecordings(t *testing.T) {
 			Name: "An error returned by the list instances method should be logged",
 			Mock: func() {
 				redisMock.ExpectKeys(RecodingPattern()).SetVal([]string{})
-				AdminMock.ListInstancesFunc = func() ([]api.BigBlueButtonInstance, error) {
+				admin.ListInstancesInstanceManagerMockFunc = func() ([]api.BigBlueButtonInstance, error) {
 					return nil, errors.New("admin error")
 				}
 			},
@@ -63,7 +63,7 @@ func TestPollRecordings(t *testing.T) {
 			Name: "An error returned by the instance get recordings method should be logged",
 			Mock: func() {
 				redisMock.ExpectKeys(RecodingPattern()).SetVal([]string{})
-				AdminMock.ListInstancesFunc = func() ([]api.BigBlueButtonInstance, error) {
+				admin.ListInstancesInstanceManagerMockFunc = func() ([]api.BigBlueButtonInstance, error) {
 					return []api.BigBlueButtonInstance{
 						{
 							URL:    "http://localhost:8080/bigbluebutton",
@@ -83,7 +83,7 @@ func TestPollRecordings(t *testing.T) {
 			Name: "An error returned by the mapper add method should be logged",
 			Mock: func() {
 				redisMock.ExpectKeys(RecodingPattern()).SetVal([]string{})
-				AdminMock.ListInstancesFunc = func() ([]api.BigBlueButtonInstance, error) {
+				admin.ListInstancesInstanceManagerMockFunc = func() ([]api.BigBlueButtonInstance, error) {
 					return []api.BigBlueButtonInstance{
 						{
 							URL:    "http://localhost:8080/bigbluebutton",
@@ -120,7 +120,7 @@ func TestPollRecordings(t *testing.T) {
 		},
 	}
 	server := doGenericInitialization()
-	server.InstanceManager = &AdminMock.InstanceManager{}
+	server.InstanceManager = &admin.InstanceManagerMock{}
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
