@@ -6,14 +6,10 @@ import "github.com/SLedunois/b3lb/pkg/api"
 type InstanceManagerMock struct{}
 
 var (
-	// ExistsInstanceManagerMockFunc is the function that will be called when the mock instance manager is used.
-	ExistsInstanceManagerMockFunc func(instance api.BigBlueButtonInstance) (bool, error)
 	// ListInstanceManagerMockFunc is the function that will be called when the mock instance manager is used.
 	ListInstanceManagerMockFunc func() ([]string, error)
 	// AddInstanceManagerMockFunc is the function that will be called when the mock instance manager is used.
 	AddInstanceManagerMockFunc func(instance api.BigBlueButtonInstance) error
-	// RemoveInstanceManagerMockFunc is the function that will be called when the mock instance manager is used.
-	RemoveInstanceManagerMockFunc func(URL string) error
 	// GetInstanceManagerMockFunc is the function that will be called when the mock instance manager is used.
 	GetInstanceManagerMockFunc func(URL string) (api.BigBlueButtonInstance, error)
 	// ListInstancesInstanceManagerMockFunc is the function that will be called when the mock instance manager is used.
@@ -21,11 +17,6 @@ var (
 	// SetInstancesInstanceManagerMockFunc is the function that will be called when the mock instance manager is used.
 	SetInstancesInstanceManagerMockFunc func(instances map[string]string) error
 )
-
-// Exists is a mock implementation that returns true if the instance exists.
-func (m *InstanceManagerMock) Exists(instance api.BigBlueButtonInstance) (bool, error) {
-	return ExistsInstanceManagerMockFunc(instance)
-}
 
 // List is a mock implementation that returns a list of all instances.
 func (m *InstanceManagerMock) List() ([]string, error) {
@@ -35,11 +26,6 @@ func (m *InstanceManagerMock) List() ([]string, error) {
 // Add is a mock implementation that adds a new instance.
 func (m *InstanceManagerMock) Add(instance api.BigBlueButtonInstance) error {
 	return AddInstanceManagerMockFunc(instance)
-}
-
-// Remove is a mock implementation that removes an instance.
-func (m *InstanceManagerMock) Remove(URL string) error {
-	return RemoveInstanceManagerMockFunc(URL)
 }
 
 // Get is a mock implementation that returns an instance.

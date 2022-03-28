@@ -276,7 +276,7 @@ func TestCreate(t *testing.T) {
 			},
 		},
 		{
-			Name: "An error thrown by SessionManager while adding session should return an internal server error",
+			Name: "An error thrown by Mapper while adding session should return an internal server error",
 			Mock: func() {
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
@@ -538,7 +538,7 @@ func TestEnd(t *testing.T) {
 
 	tests := []test.Test{
 		{
-			Name: "An error thrown by SessionManager removing session should return an http interal server error",
+			Name: "An error thrown by Mapper removing session should return an http interal server error",
 			Mock: func() {
 				test.SetRequestParams(c, params)
 				redisMock.ExpectGet(MeetingMapKey(meetingID)).SetVal(instance)

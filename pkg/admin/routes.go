@@ -22,6 +22,10 @@ func (a *Admin) Routes() *[]api.EndpointGroup {
 							Path: "/instances",
 							Endpoints: []interface{}{
 								api.Endpoint{
+									Method:  http.MethodGet,
+									Handler: a.ListInstances,
+								},
+								api.Endpoint{
 									Method:  http.MethodPost,
 									Handler: a.SetInstances,
 								},
@@ -31,7 +35,7 @@ func (a *Admin) Routes() *[]api.EndpointGroup {
 							Path: "/tenants",
 							Endpoints: []interface{}{
 								api.Endpoint{
-									Method: http.MethodPost,
+									Method:  http.MethodPost,
 									Handler: a.CreateTenant,
 								},
 							},
@@ -40,15 +44,6 @@ func (a *Admin) Routes() *[]api.EndpointGroup {
 							Path:    "/cluster",
 							Method:  http.MethodGet,
 							Handler: a.ClusterStatus,
-						},
-					},
-				},
-				api.EndpointGroup{
-					Path: "/servers",
-					Endpoints: []interface{}{
-						api.Endpoint{
-							Method:  http.MethodGet,
-							Handler: a.ListInstances,
 						},
 					},
 				},

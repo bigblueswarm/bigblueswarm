@@ -21,7 +21,7 @@ type RedisMapper struct {
 	RDB *redis.Client
 }
 
-// NewMapper creates a new SessionManager
+// NewMapper creates a new Mapper
 func NewMapper(rdb redis.Client) Mapper {
 	return &RedisMapper{
 		RDB: &rdb,

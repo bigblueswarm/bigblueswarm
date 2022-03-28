@@ -147,7 +147,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/servers",
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/instances",
 							"protocol": "http",
 							"host": [
 								"{{b3lb_host}}"
@@ -155,7 +155,8 @@
 							"port": "{{b3lb_port}}",
 							"path": [
 								"admin",
-								"servers"
+								"api",
+								"instances"
 							]
 						}
 					},

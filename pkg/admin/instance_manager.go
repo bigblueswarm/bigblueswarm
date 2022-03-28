@@ -18,11 +18,9 @@ const B3LBInstances = "instances:list"
 
 // InstanceManager manager Bigbluebutton instances
 type InstanceManager interface {
-	Exists(instance api.BigBlueButtonInstance) (bool, error)
 	List() ([]string, error)
 	ListInstances() ([]api.BigBlueButtonInstance, error)
 	Add(instance api.BigBlueButtonInstance) error
-	Remove(URL string) error
 	Get(URL string) (api.BigBlueButtonInstance, error)
 	SetInstances(instances map[string]string) error
 }
@@ -39,12 +37,6 @@ func NewInstanceManager(rdb redis.Client) InstanceManager {
 	}
 }
 
-// Exists checks if an instance exists
-func (m *RedisInstanceManager) Exists(instance api.BigBlueButtonInstance) (bool, error) {
-	exists, err := m.RDB.HExists(ctx, B3LBInstances, instance.URL).Result()
-	return exists, utils.ComputeErr(err)
-}
-
 // List returns the list of instances
 func (m *RedisInstanceManager) List() ([]string, error) {
 	instances, err := m.RDB.HKeys(ctx, B3LBInstances).Result()
@@ -54,12 +46,6 @@ func (m *RedisInstanceManager) List() ([]string, error) {
 // Add adds an instance to the manager
 func (m *RedisInstanceManager) Add(instance api.BigBlueButtonInstance) error {
 	_, err := m.RDB.HSet(ctx, B3LBInstances, instance.URL, instance.Secret).Result()
-	return utils.ComputeErr(err)
-}
-
-// Remove and instance from the manager
-func (m *RedisInstanceManager) Remove(URL string) error {
-	_, err := m.RDB.HDel(ctx, B3LBInstances, URL).Result()
 	return utils.ComputeErr(err)
 }
 
