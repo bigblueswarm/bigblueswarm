@@ -13,65 +13,6 @@ import (
 
 const url string = "https://bbb_test.com"
 
-func TestInstanceManagerExists(t *testing.T) {
-	tests := []test.Test{
-		{
-			Name: "Existing value should return true and no error",
-			Mock: func() {
-				mock := redisMock.ExpectHExists(B3LBInstances, url)
-				mock.SetErr(nil)
-				mock.SetVal(true)
-			},
-			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.True(t, value.(bool))
-				assert.Nil(t, err)
-			},
-		},
-		{
-			Name: "Non existing value should return true and no error",
-			Mock: func() {
-				mock := redisMock.ExpectHExists(B3LBInstances, url)
-				mock.SetErr(nil)
-				mock.SetVal(false)
-			},
-			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.False(t, value.(bool))
-				assert.Nil(t, err)
-			},
-		},
-		{
-			Name: "Returning redis.Nil should return false and no error",
-			Mock: func() {
-				mock := redisMock.ExpectHExists(B3LBInstances, url)
-				mock.SetErr(redis.Nil)
-				mock.SetVal(false)
-			},
-			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.False(t, value.(bool))
-				assert.Nil(t, err)
-			},
-		},
-		{
-			Name: "Returning an error should return the error",
-			Mock: func() {
-				mock := redisMock.ExpectHExists(B3LBInstances, url)
-				mock.SetErr(errors.New("test error"))
-			},
-			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.NotNil(t, err)
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.Name, func(t *testing.T) {
-			test.Mock()
-			exists, err := instanceManager.Exists(api.BigBlueButtonInstance{URL: url})
-			test.Validator(t, exists, err)
-		})
-	}
-}
-
 func TestInstanceManagerList(t *testing.T) {
 	tests := []test.Test{
 		{
@@ -142,39 +83,6 @@ func TestInstanceManagerAdd(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Mock()
 			err := instanceManager.Add(api.BigBlueButtonInstance{URL: url, Secret: "secret"})
-			test.Validator(t, nil, err)
-		})
-	}
-}
-
-func TestInstanceManagerRemove(t *testing.T) {
-	tests := []test.Test{
-		{
-			Name: "Removing an instance should return no error",
-			Mock: func() {
-				mock := redisMock.ExpectHDel(B3LBInstances, url)
-				mock.SetErr(nil)
-				mock.SetVal(1)
-			},
-			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.Nil(t, err)
-			},
-		},
-		{
-			Name: "Throwing an error when removing an instance should return the error",
-			Mock: func() {
-				redisMock.ExpectHDel(B3LBInstances, url).SetErr(errors.New("test error"))
-			},
-			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.NotNil(t, err)
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.Name, func(t *testing.T) {
-			test.Mock()
-			err := instanceManager.Remove(url)
 			test.Validator(t, nil, err)
 		})
 	}
