@@ -12,7 +12,6 @@ import (
 	"github.com/SLedunois/b3lb/pkg/config"
 
 	"github.com/SLedunois/b3lb/internal/test"
-	"github.com/SLedunois/b3lb/pkg/admin/mock"
 	bmock "github.com/SLedunois/b3lb/pkg/balancer/mock"
 
 	"github.com/gin-gonic/gin"
@@ -34,13 +33,13 @@ func toInstanceStatusArray(body []byte) []balancer.InstanceStatus {
 func TestListInstances(t *testing.T) {
 	url := "http://localhost/bigbluebutton"
 	var w *httptest.ResponseRecorder
-	admin := CreateAdmin(&mock.InstanceManager{}, &bmock.Balancer{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &bmock.Balancer{}, &config.AdminConfig{})
 
 	tests := []test.Test{
 		{
 			Name: "List should returns a list containg a single bigbluebutton instance",
 			Mock: func() {
-				mock.ListInstancesFunc = func() ([]api.BigBlueButtonInstance, error) {
+				ListInstancesInstanceManagerMockFunc = func() ([]api.BigBlueButtonInstance, error) {
 					return []api.BigBlueButtonInstance{
 						{
 							URL:    url,
@@ -58,7 +57,7 @@ func TestListInstances(t *testing.T) {
 		{
 			Name: "List should return an internal server error if instance manager returns an error",
 			Mock: func() {
-				mock.ListInstancesFunc = func() ([]api.BigBlueButtonInstance, error) {
+				ListInstancesInstanceManagerMockFunc = func() ([]api.BigBlueButtonInstance, error) {
 					return nil, errors.New("unexpected error")
 				}
 			},
@@ -82,7 +81,7 @@ func TestListInstances(t *testing.T) {
 func TestClusterStatus(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&mock.InstanceManager{}, &bmock.Balancer{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &bmock.Balancer{}, &config.AdminConfig{})
 
 	host := "http://localhost/bigbluebutton"
 	cpu := 20.01
@@ -106,7 +105,7 @@ func TestClusterStatus(t *testing.T) {
 		{
 			Name: "an error returned by InstanceManager should return a 500 Internal Server Error status code",
 			Mock: func() {
-				mock.ListFunc = func() ([]string, error) {
+				ListInstanceManagerMockFunc = func() ([]string, error) {
 					return nil, errors.New("manager error")
 				}
 			},
@@ -117,7 +116,7 @@ func TestClusterStatus(t *testing.T) {
 		{
 			Name: "an error returned by Balancer should return a 500 Internal Server Error status code",
 			Mock: func() {
-				mock.ListFunc = func() ([]string, error) {
+				ListInstanceManagerMockFunc = func() ([]string, error) {
 					return []string{}, nil
 				}
 				bmock.BalancerClusterStatusFunc = func(instances []string) ([]balancer.InstanceStatus, error) {
@@ -131,7 +130,7 @@ func TestClusterStatus(t *testing.T) {
 		{
 			Name: "a valid request should return a 200 Status OK and a list of status",
 			Mock: func() {
-				mock.ListFunc = func() ([]string, error) {
+				ListInstanceManagerMockFunc = func() ([]string, error) {
 					return []string{}, nil
 				}
 				bmock.BalancerClusterStatusFunc = func(instances []string) ([]balancer.InstanceStatus, error) {
@@ -165,7 +164,7 @@ func TestClusterStatus(t *testing.T) {
 func TestSetInstances(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&mock.InstanceManager{}, &bmock.Balancer{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &bmock.Balancer{}, &config.AdminConfig{})
 
 	tests := []test.Test{
 		{
@@ -184,7 +183,7 @@ func TestSetInstances(t *testing.T) {
 				test.AddRequestBody(c, `kind: InstanceList
 instances:
   http://bigbluebutton1: secret1`)
-				mock.SetInstancesFunc = func(instances map[string]string) error {
+				SetInstancesInstanceManagerMockFunc = func(instances map[string]string) error {
 					return errors.New("instance manager error")
 				}
 			},
@@ -199,7 +198,7 @@ instances:
 				test.AddRequestBody(c, `kind: InstanceList
 instances:
   http://bigbluebutton1: secret1`)
-				mock.SetInstancesFunc = func(instances map[string]string) error {
+				SetInstancesInstanceManagerMockFunc = func(instances map[string]string) error {
 					return nil
 				}
 			},
@@ -215,6 +214,66 @@ instances:
 			c, _ = gin.CreateTestContext(w)
 			test.Mock()
 			admin.SetInstances(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}
+
+func TestCreateTenant(t *testing.T) {
+	var w *httptest.ResponseRecorder
+	var c *gin.Context
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &bmock.Balancer{}, &config.AdminConfig{})
+
+	tests := []test.Test{
+		{
+			Name: "an invalid body should return a bad request status and an error",
+			Mock: func() {
+				test.AddRequestBody(c, "")
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusBadRequest, w.Code)
+				assert.Equal(t, "Body does not bind Tenant object: EOF", w.Body.String())
+			},
+		},
+		{
+			Name: "an error returned by tenant manager should return an internal server error",
+			Mock: func() {
+				test.AddRequestBody(c, `kind: Tenant
+spec:
+  host: localhost:8090
+instances:`)
+				AddTenantTenantManagerMockFunc = func(tenant *Tenant) error {
+					return errors.New("manager error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, "manager error", w.Body.String())
+			},
+		},
+		{
+			Name: "a valid request should return a 201 created status",
+			Mock: func() {
+				test.AddRequestBody(c, `kind: Tenant
+spec:
+  host: localhost:8090
+instances:`)
+				AddTenantTenantManagerMockFunc = func(tenant *Tenant) error {
+					return nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusCreated, w.Code)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			test.Mock()
+			admin.CreateTenant(c)
 			test.Validator(t, nil, nil)
 		})
 	}
