@@ -14,7 +14,7 @@ import (
 
 	"github.com/SLedunois/b3lb/pkg/admin"
 	"github.com/SLedunois/b3lb/pkg/api"
-	RestClientMock "github.com/SLedunois/b3lb/pkg/restclient/mock"
+	"github.com/SLedunois/b3lb/pkg/restclient"
 
 	log "github.com/sirupsen/logrus"
 	LogTest "github.com/sirupsen/logrus/hooks/test"
@@ -71,7 +71,7 @@ func TestPollRecordings(t *testing.T) {
 						},
 					}, nil
 				}
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					return nil, errors.New("rest client error")
 				}
 			},
@@ -91,7 +91,7 @@ func TestPollRecordings(t *testing.T) {
 						},
 					}, nil
 				}
-				RestClientMock.DoFunc = func(req *http.Request) (*http.Response, error) {
+				restclient.RestClientMockDoFunc = func(req *http.Request) (*http.Response, error) {
 					recordings := api.GetRecordingsResponse{
 						Recordings: []api.Recording{
 							{

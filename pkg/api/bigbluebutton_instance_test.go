@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	TestUtil "github.com/SLedunois/b3lb/internal/test"
-	"github.com/SLedunois/b3lb/pkg/restclient/mock"
+	"github.com/SLedunois/b3lb/pkg/restclient"
 	"github.com/gin-gonic/gin"
 
 	"github.com/stretchr/testify/assert"
@@ -85,7 +85,7 @@ func getTests(action string, hasParams bool, params string, validResponse interf
 func executeTests(t *testing.T, action string, tests []test) {
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			mock.DoFunc = test.MockFunction
+			restclient.RestClientMockDoFunc = test.MockFunction
 			method := reflect.ValueOf(instance).MethodByName(action)
 			if method.IsNil() {
 				panic(fmt.Sprintf("Method %s not found", action))
