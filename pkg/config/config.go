@@ -69,9 +69,12 @@ type Config struct {
 
 const defaultConfigFileName = "b3lb.yaml"
 
+// DefaultConfigFolder is the default config folder path
+const DefaultConfigFolder = "$HOME/.b3lb"
+
 // DefaultConfigPath return the default config path file
 func DefaultConfigPath() string {
-	return fmt.Sprintf("$HOME/.b3lb/%s", defaultConfigFileName)
+	return fmt.Sprintf("%s/%s", DefaultConfigFolder, defaultConfigFileName)
 }
 
 // FormalizeConfigPath formalize config path. If config path is the default config path (home directory),
