@@ -96,3 +96,21 @@ func (a *Admin) CreateTenant(c *gin.Context) {
 
 	c.AbortWithStatus(http.StatusCreated)
 }
+
+// ListTenants list all tenants in system
+func (a *Admin) ListTenants(c *gin.Context) {
+	tenants, err := a.TenantManager.ListTenants()
+	if err != nil {
+		e := fmt.Errorf("Unable to list all tenants: %s", err)
+		log.Error(e)
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+
+	list := &TenantList{
+		Kind:    "TenantList",
+		Tenants: tenants,
+	}
+
+	c.JSON(http.StatusOK, list)
+}

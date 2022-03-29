@@ -289,3 +289,48 @@ func TestCreateTenant(t *testing.T) {
 		})
 	}
 }
+
+func TestListTenantsHandler(t *testing.T) {
+	var w *httptest.ResponseRecorder
+	var c *gin.Context
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
+
+	tests := []test.Test{
+		{
+			Name: "an error returned by tenant manager should return an HTTP 500 - Internal Server Error - and a log",
+			Mock: func() {
+				ListTenantsTenantManagerMockFunc = func() ([]string, error) {
+					return []string{}, errors.New("manager error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, "Unable to list all tenants: manager error", w.Body.String())
+			},
+		},
+		{
+			Name: "a valid request should return an HTTP 200 - OK - and a valid response",
+			Mock: func() {
+				ListTenantsTenantManagerMockFunc = func() ([]string, error) {
+					return []string{
+						"localhost:8090",
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, `{"kind":"TenantList","tenants":["localhost:8090"]}`, w.Body.String())
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			test.Mock()
+			admin.ListTenants(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}

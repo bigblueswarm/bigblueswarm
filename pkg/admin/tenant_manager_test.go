@@ -85,3 +85,41 @@ func TestAddTenant(t *testing.T) {
 		})
 	}
 }
+
+func TestListTenants(t *testing.T) {
+	tests := []test.Test{
+		{
+			Name: "a redis error should return an error",
+			Mock: func() {
+				mock := redisMock.ExpectKeys("tenant:*")
+				mock.SetErr(errors.New("redis error"))
+				mock.SetVal([]string{})
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				res := value.([]string)
+				assert.NotNil(t, err)
+				assert.Empty(t, res)
+			},
+		},
+		{
+			Name: "no error should return a valid list",
+			Mock: func() {
+				redisMock.ExpectKeys("tenant:*").SetVal([]string{"tenant:localhost"})
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				res := value.([]string)
+				assert.Nil(t, err)
+				assert.Equal(t, 1, len(res))
+				assert.Equal(t, "localhost", res[0])
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Mock()
+			tenants, err := tenantManager.ListTenants()
+			test.Validator(t, tenants, err)
+		})
+	}
+}
