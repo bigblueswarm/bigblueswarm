@@ -187,7 +187,7 @@ func TestConsulConfigLoad(t *testing.T) {
 }
 
 func TestDefaultConfigPath(t *testing.T) {
-	assert.Equal(t, "$HOME/.b3lb.yaml", DefaultConfigPath())
+	assert.Equal(t, "$HOME/.b3lb/b3lb.yaml", DefaultConfigPath())
 }
 
 func TestFormalizeConfigPath(t *testing.T) {
@@ -211,7 +211,7 @@ func TestFormalizeConfigPath(t *testing.T) {
 		{
 			name:     "default path should return the home path",
 			path:     DefaultConfigPath(),
-			expected: fmt.Sprintf("%s/.b3lb.yaml", homeDir),
+			expected: fmt.Sprintf("%s/.b3lb/b3lb.yaml", homeDir),
 		},
 	}
 
