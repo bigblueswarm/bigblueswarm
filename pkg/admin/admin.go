@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/SLedunois/b3lb/pkg/balancer"
 	"github.com/SLedunois/b3lb/pkg/config"
@@ -113,4 +114,19 @@ func (a *Admin) ListTenants(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, list)
+}
+
+// DeleteTenant delete a given tenant
+func (a *Admin) DeleteTenant(c *gin.Context) {
+	hostname, exists := c.Params.Get("hostname")
+	if !exists || strings.TrimSpace(hostname) == "" {
+		c.String(http.StatusBadRequest, "hostname not found or empty")
+		return
+	}
+
+	if err := a.TenantManager.DeleteTenant(hostname); err != nil {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("unable to delete tenant: %s", err.Error()))
+	} else {
+		c.AbortWithStatus(http.StatusNoContent)
+	}
 }

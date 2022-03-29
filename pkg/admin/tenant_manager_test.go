@@ -123,3 +123,36 @@ func TestListTenants(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteTenant(t *testing.T) {
+	tests := []test.Test{
+		{
+			Name: "an error returned by redis should return an error",
+			Mock: func() {
+				mock := redisMock.ExpectDel("tenant:localhost")
+				mock.SetVal(0)
+				mock.SetErr(errors.New("redis error"))
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.NotNil(t, err)
+			},
+		},
+		{
+			Name: "a valid request should remove tenant from redis and return no error",
+			Mock: func() {
+				redisMock.ExpectDel("tenant:localhost").SetVal(1)
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Nil(t, err)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Mock()
+			err := tenantManager.DeleteTenant("localhost")
+			test.Validator(t, nil, err)
+		})
+	}
+}
