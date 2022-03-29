@@ -179,9 +179,12 @@ func TestSetInstances(t *testing.T) {
 		{
 			Name: "an error returned by InstanceManager should return an internal server error and an error",
 			Mock: func() {
-				test.AddRequestBody(c, `kind: InstanceList
-instances:
-  http://bigbluebutton1: secret1`)
+				test.AddRequestBody(c, `{
+	"kind": "InstanceList",
+	"instances": {
+		"http://bigbluebutton1": "secret1"
+	}
+}`)
 				SetInstancesInstanceManagerMockFunc = func(instances map[string]string) error {
 					return errors.New("instance manager error")
 				}
@@ -194,9 +197,12 @@ instances:
 		{
 			Name: "a valid request should return a http 200 ok",
 			Mock: func() {
-				test.AddRequestBody(c, `kind: InstanceList
-instances:
-  http://bigbluebutton1: secret1`)
+				test.AddRequestBody(c, `{
+	"kind": "InstanceList",
+	"instances": {
+		"http://bigbluebutton1": "secret1"
+	}
+}`)
 				SetInstancesInstanceManagerMockFunc = func(instances map[string]string) error {
 					return nil
 				}
@@ -237,10 +243,13 @@ func TestCreateTenant(t *testing.T) {
 		{
 			Name: "an error returned by tenant manager should return an internal server error",
 			Mock: func() {
-				test.AddRequestBody(c, `kind: Tenant
-spec:
-  host: localhost:8090
-instances:`)
+				test.AddRequestBody(c, `{
+	"kind": "Tenant",
+	"spec": {
+  		"host": "localhost:8090"
+	},
+	"instances": []
+}`)
 				AddTenantTenantManagerMockFunc = func(tenant *Tenant) error {
 					return errors.New("manager error")
 				}
@@ -253,10 +262,13 @@ instances:`)
 		{
 			Name: "a valid request should return a 201 created status",
 			Mock: func() {
-				test.AddRequestBody(c, `kind: Tenant
-spec:
-  host: localhost:8090
-instances:`)
+				test.AddRequestBody(c, `{
+	"kind": "Tenant",
+	"spec": {
+			"host": "localhost:8090"
+	},
+	"instances": []
+}`)
 				AddTenantTenantManagerMockFunc = func(tenant *Tenant) error {
 					return nil
 				}

@@ -37,10 +37,10 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "kind: InstanceList\ninstances:\n  {{instance_url}}: {{instance_secret}}",
+							"raw": "{\n    \"kind\": \"InstanceList\",\n    \"instances\": {\n        \"{{instance_url}}\": \"{{instance_secret}}\"\n    }\n}",
 							"options": {
 								"raw": {
-									"language": "text"
+									"language": "json"
 								}
 							}
 						},
@@ -89,10 +89,10 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "kind: Tenant\nspec:\n  host: {{b3lb_host}}\ninstances:\n  - {{instance_url}}",
+							"raw": "{\n    \"kind\": \"Tenant\",\n    \"spec\": {\n        \"host\": \"{{b3lb_host}}\"\n    },\n    \"instances\": [\"{{instance_url}}\"]\n}",
 							"options": {
 								"raw": {
-									"language": "text"
+									"language": "json"
 								}
 							}
 						},

@@ -63,7 +63,7 @@ func (a *Admin) SetInstances(c *gin.Context) {
 	defer c.Request.Body.Close()
 
 	instanceList := &InstanceList{}
-	if err := c.ShouldBindYAML(instanceList); err != nil {
+	if err := c.ShouldBindJSON(instanceList); err != nil {
 		e := fmt.Errorf("Body does not bind InstanceList object: %s", err)
 		log.Error(e)
 		c.String(http.StatusBadRequest, e.Error())
@@ -82,7 +82,7 @@ func (a *Admin) CreateTenant(c *gin.Context) {
 	defer c.Request.Body.Close()
 
 	tenant := &Tenant{}
-	if err := c.ShouldBindYAML(tenant); err != nil {
+	if err := c.ShouldBindJSON(tenant); err != nil {
 		e := fmt.Errorf("Body does not bind Tenant object: %s", err)
 		log.Error(e)
 		c.String(http.StatusBadRequest, e.Error())
