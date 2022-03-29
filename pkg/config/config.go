@@ -67,11 +67,11 @@ type Config struct {
 	IDB           IDB            `yaml:"influxdb"`
 }
 
-const defaultConfigFileName = ".b3lb.yaml"
+const defaultConfigFileName = "b3lb.yaml"
 
 // DefaultConfigPath return the default config path file
 func DefaultConfigPath() string {
-	return fmt.Sprintf("$HOME/%s", defaultConfigFileName)
+	return fmt.Sprintf("$HOME/.b3lb/%s", defaultConfigFileName)
 }
 
 // FormalizeConfigPath formalize config path. If config path is the default config path (home directory),
@@ -83,7 +83,7 @@ func FormalizeConfigPath(path string) (string, error) {
 			return "", err
 		}
 
-		path = filepath.Join(homeDir, defaultConfigFileName)
+		path = filepath.Join(homeDir, ".b3lb", defaultConfigFileName)
 	}
 
 	return path, nil
