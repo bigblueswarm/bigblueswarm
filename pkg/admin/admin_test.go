@@ -334,3 +334,64 @@ func TestListTenantsHandler(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteHandler(t *testing.T) {
+	var w *httptest.ResponseRecorder
+	var c *gin.Context
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
+
+	tests := []test.Test{
+		{
+			Name: "an invalid hostname query parameter should return a HTTP 400 - BadRequest - status code",
+			Mock: func() {},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusBadRequest, w.Code)
+			},
+		},
+		{
+			Name: "an error returned by TenantManager should return a HTTP 500 - InternalServerError - status code and a log",
+			Mock: func() {
+				c.Params = gin.Params{
+					{
+						Key:   "hostname",
+						Value: "localhost",
+					},
+				}
+				DeleteTenantTenantManagerMockFunc = func(hostname string) error {
+					return errors.New("manager error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, "unable to delete tenant: manager error", w.Body.String())
+			},
+		},
+		{
+			Name: "a valid request should return a HTTP 204 - No Content",
+			Mock: func() {
+				c.Params = gin.Params{
+					{
+						Key:   "hostname",
+						Value: "localhost",
+					},
+				}
+				DeleteTenantTenantManagerMockFunc = func(hostname string) error {
+					return nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusNoContent, w.Code)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			test.Mock()
+			admin.DeleteTenant(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}
