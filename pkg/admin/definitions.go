@@ -12,3 +12,9 @@ type Tenant struct {
 	Spec      map[string]string `yaml:"spec" json:"spec"`
 	Instances []string          `yaml:"instances" json:"instances"`
 }
+
+// TenantList represents the system tenant list
+type TenantList struct {
+	Kind    string   `yaml:"kind" json:"kind"`
+	Tenants []string `yaml:"tenants" json:"tenants"`
+}
