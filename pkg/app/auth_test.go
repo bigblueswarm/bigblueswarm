@@ -2,12 +2,14 @@ package app
 
 import (
 	"encoding/xml"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/SLedunois/b3lb/internal/test"
 
+	"github.com/SLedunois/b3lb/pkg/admin"
 	"github.com/SLedunois/b3lb/pkg/api"
 
 	"github.com/SLedunois/b3lb/pkg/config"
@@ -24,6 +26,7 @@ func TestChecksumValidation(t *testing.T) {
 			Secret: test.DefaultSecret(),
 		},
 	})
+	server.TenantManager = &admin.TenantManagerMock{}
 
 	tests := []test.Test{
 		{
@@ -41,8 +44,27 @@ func TestChecksumValidation(t *testing.T) {
 			},
 		},
 		{
+			Name: "An error returned by tenant manager should returns 500 status code",
+			Mock: func() {
+				test.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return nil, errors.New("tenant manager error")
+				}
+				test.SetRequestParams(c, "name=simon&checksum=invalid_checksum")
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+		{
 			Name: "An invalid checksum should returns 200 with checksum error",
 			Mock: func() {
+				test.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return &admin.Tenant{
+						Spec: map[string]string{},
+					}, nil
+				}
 				test.SetRequestParams(c, "name=simon&checksum=invalid_checksum")
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
@@ -55,9 +77,33 @@ func TestChecksumValidation(t *testing.T) {
 			},
 		},
 		{
+			Name: "A valid custom tenant checksum should returns 200 code",
+			Mock: func() {
+				test.SetRequestParams(c, "name=simon&checksum=a03a5771d5bd9b0930df4c99599a20dab8319226")
+				test.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return &admin.Tenant{
+						Spec: map[string]string{
+							"secret": "dummy_secret",
+						},
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, w.Body.String(), "") //Next handler returns an empty string
+			},
+		},
+		{
 			Name: "A valid checksum should returns 200 code",
 			Mock: func() {
 				test.SetRequestParams(c, "name=simon&checksum=8f0378b9dbb7967c7069c418062d4f486b951b6f")
+				test.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return &admin.Tenant{
+						Spec: map[string]string{},
+					}, nil
+				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusOK, w.Code)
