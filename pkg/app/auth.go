@@ -8,6 +8,7 @@ import (
 	"github.com/SLedunois/b3lb/pkg/api"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 func processParameters(query string) string {
@@ -26,8 +27,20 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 		return
 	}
 
+	secret := s.Config.BigBlueButton.Secret
+	tenant, err := s.TenantManager.GetTenant(c.Request.Host)
+	if err != nil {
+		log.Error("Tenant manager can't retrieve tenant: ", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if tenantSecret, exists := tenant.Spec["secret"]; exists {
+		secret = tenantSecret
+	}
+
 	checksum := &api.Checksum{
-		Secret: s.Config.BigBlueButton.Secret,
+		Secret: secret,
 		Action: strings.TrimPrefix(c.FullPath(), "/bigbluebutton/api/"),
 		Params: processParameters(c.Request.URL.RawQuery),
 	}
