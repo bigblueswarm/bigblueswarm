@@ -65,3 +65,9 @@ func SetRequestHeader(c *gin.Context, key, value string) {
 	initRequestContext(c)
 	c.Request.Header.Set(key, value)
 }
+
+// SetRequestHost set the request host
+func SetRequestHost(c *gin.Context, hostname string) {
+	initRequestContext(c)
+	c.Request.Host = hostname
+}

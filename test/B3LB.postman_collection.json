@@ -89,7 +89,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"kind\": \"Tenant\",\n    \"spec\": {\n        \"host\": \"{{b3lb_host}}\"\n    },\n    \"instances\": [\"{{instance_url}}\"]\n}",
+							"raw": "{\n    \"kind\": \"Tenant\",\n    \"spec\": {\n        \"host\": \"{{b3lb_host}}:{{b3lb_port}}\"\n    },\n    \"instances\": [\"{{instance_url}}\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -127,7 +127,7 @@
 									"    const response = pm.response.json()",
 									"    pm.expect(response.kind).to.eql(\"TenantList\")",
 									"    pm.expect(response.tenants.length).to.eql(1)",
-									"    pm.expect(response.tenants[0]).to.eql(pm.environment.get(\"b3lb_host\"))",
+									"    pm.expect(response.tenants[0]).to.eql(pm.environment.get(\"b3lb_host\") + \":\" + pm.environment.get(\"b3lb_port\"))",
 									"})"
 								],
 								"type": "text/javascript"

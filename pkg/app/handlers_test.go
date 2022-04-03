@@ -37,6 +37,7 @@ func doGenericInitialization() *Server {
 	server := NewServer(&config.Config{})
 	server.Mapper = mapper
 	server.InstanceManager = instanceManager
+	server.TenantManager = &admin.TenantManagerMock{}
 	server.Balancer = &balancer.Mock{}
 	restclient.Client = &restclient.Mock{}
 
@@ -182,7 +183,7 @@ func TestCreate(t *testing.T) {
 	creationParams := fmt.Sprintf("%s&name=test_name&attendeePW=pwd&moderatorPW=pwd2", params)
 	tests := []test.Test{
 		{
-			Name: "An error thrown by the InstanceManager while listing instances should return an internal server error",
+			Name: "An error thrown by the TenantManager while getting active tenant should return an internal server error",
 			Mock: func() {
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
@@ -190,8 +191,11 @@ func TestCreate(t *testing.T) {
 					Action: api.IsMeetingRunning,
 				}
 				c.Set("api_ctx", checksum)
+				test.SetRequestHost(c, "localhost")
 				test.SetRequestParams(c, creationParams)
-				redisMock.ExpectHKeys(admin.B3LBInstances).SetErr(errors.New("redis error"))
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return nil, errors.New("tenant manager error")
+				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -207,7 +211,12 @@ func TestCreate(t *testing.T) {
 				}
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
-				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{})
+				test.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return &admin.Tenant{
+						Instances: []string{},
+					}, nil
+				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -223,7 +232,14 @@ func TestCreate(t *testing.T) {
 				}
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
-				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
+				test.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return &admin.Tenant{
+						Instances: []string{
+							"http://localhost/bigbuebutton",
+						},
+					}, nil
+				}
 				balancer.BalancerMockProcessFunc = func(instances []string) (string, error) {
 					return "", errors.New("balancer error")
 				}
@@ -242,7 +258,14 @@ func TestCreate(t *testing.T) {
 				}
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
-				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
+				test.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return &admin.Tenant{
+						Instances: []string{
+							"http://localhost/bigbuebutton",
+						},
+					}, nil
+				}
 				balancer.BalancerMockProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
@@ -262,7 +285,14 @@ func TestCreate(t *testing.T) {
 				}
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
-				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
+				test.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return &admin.Tenant{
+						Instances: []string{
+							"http://localhost/bigbuebutton",
+						},
+					}, nil
+				}
 				balancer.BalancerMockProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
@@ -285,7 +315,14 @@ func TestCreate(t *testing.T) {
 				}
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
-				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
+				test.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return &admin.Tenant{
+						Instances: []string{
+							"http://localhost/bigbuebutton",
+						},
+					}, nil
+				}
 				balancer.BalancerMockProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
@@ -326,7 +363,14 @@ func TestCreate(t *testing.T) {
 				}
 				c.Set("api_ctx", checksum)
 				test.SetRequestParams(c, creationParams)
-				redisMock.ExpectHKeys(admin.B3LBInstances).SetVal([]string{instance})
+				test.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return &admin.Tenant{
+						Instances: []string{
+							"http://localhost/bigbuebutton",
+						},
+					}, nil
+				}
 				balancer.BalancerMockProcessFunc = func(instances []string) (string, error) {
 					return instance, nil
 				}
