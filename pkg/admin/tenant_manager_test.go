@@ -156,3 +156,53 @@ func TestDeleteTenant(t *testing.T) {
 		})
 	}
 }
+
+func TestGetTenant(t *testing.T) {
+	tests := []test.Test{
+		{
+			Name: "an error returned by Redis should return the error",
+			Mock: func() {
+				mock := redisMock.ExpectGet("tenant:localhost")
+				mock.SetVal("")
+				mock.SetErr(errors.New("redis error"))
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.NotNil(t, err)
+			},
+		},
+		{
+			Name: "a valid request should return a valid tenant",
+			Mock: func() {
+				tenant := Tenant{
+					Kind: "Tenant",
+					Spec: map[string]string{
+						"host": "localhost",
+					},
+					Instances: []string{
+						"http://localhost/bigbluebutton",
+					},
+				}
+
+				if out, err := yaml.Marshal(tenant); err == nil {
+					redisMock.ExpectGet("tenant:localhost").SetVal(string(out))
+				} else {
+					t.Error(err)
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				tenant := value.(*Tenant)
+				assert.NotNil(t, tenant)
+				assert.Equal(t, "localhost", tenant.Spec["host"])
+				assert.Nil(t, err)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Mock()
+			tenant, err := tenantManager.GetTenant("localhost")
+			test.Validator(t, tenant, err)
+		})
+	}
+}

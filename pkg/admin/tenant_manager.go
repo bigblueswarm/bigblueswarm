@@ -22,6 +22,8 @@ type TenantManager interface {
 	ListTenants() ([]string, error)
 	// DeleteTenant delete a specific tenant based on tenant hostname
 	DeleteTenant(hostname string) error
+	// GetTenant retrieve a tenant from a hostname
+	GetTenant(hostname string) (*Tenant, error)
 }
 
 // RedisTenantManager is the redis implementation of TenantManager
@@ -70,4 +72,19 @@ func (r *RedisTenantManager) ListTenants() ([]string, error) {
 func (r *RedisTenantManager) DeleteTenant(hostname string) error {
 	_, err := r.RDB.Del(context.Background(), tenantKey(hostname)).Result()
 	return utils.ComputeErr(err)
+}
+
+// GetTenant retrieve a tenant from a hostname
+func (r *RedisTenantManager) GetTenant(hostname string) (*Tenant, error) {
+	res, err := r.RDB.Get(context.Background(), tenantKey(hostname)).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	var tenant Tenant
+	if err := yaml.Unmarshal([]byte(res), &tenant); err != nil {
+		return nil, err
+	}
+
+	return &tenant, nil
 }

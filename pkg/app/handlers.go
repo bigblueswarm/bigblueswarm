@@ -75,20 +75,20 @@ func (s *Server) retrieveBBBBInstanceFromKey(key string) (api.BigBlueButtonInsta
 // Create handler find a server and create a meeting on balanced server.
 func (s *Server) Create(c *gin.Context) {
 	ctx := getAPIContext(c)
-	instances, err := s.InstanceManager.List()
+	tenant, err := s.TenantManager.GetTenant(c.Request.Host)
 	if err != nil {
-		log.Error("Manager failed to retrieve instance list", err)
+		log.Error("Manager failed to retrieve tenant: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	if len(instances) == 0 {
+	if len(tenant.Instances) == 0 {
 		log.Error("InstanceManager does not retrieve any instances. Please check you add at least one Bigbluebutton instance")
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	target, err := s.Balancer.Process(instances)
+	target, err := s.Balancer.Process(tenant.Instances)
 	if err != nil || target == "" {
 		log.Error("Balancer failed to process current request", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
