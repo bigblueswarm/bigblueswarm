@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/SLedunois/b3lb/internal/test"
+	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )
@@ -168,6 +169,18 @@ func TestGetTenant(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.NotNil(t, err)
+			},
+		},
+		{
+			Name: "a not found tenant should return nil for tenant and error",
+			Mock: func() {
+				mock := redisMock.ExpectGet("tenant:localhost")
+				mock.SetVal("")
+				mock.SetErr(redis.Nil)
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Nil(t, err)
+				assert.Nil(t, value)
 			},
 		},
 		{

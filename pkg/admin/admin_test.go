@@ -395,3 +395,80 @@ func TestDeleteHandler(t *testing.T) {
 		})
 	}
 }
+
+func TestGetTenantHandler(t *testing.T) {
+	var w *httptest.ResponseRecorder
+	var c *gin.Context
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.Config{})
+	tests := []test.Test{
+		{
+			Name: "an error returned by tenant manager should end with a HTTP 500 - Internal Server Error",
+			Mock: func() {
+				c.Params = gin.Params{
+					{
+						Key:   "hostname",
+						Value: "localhost",
+					},
+				}
+				GetTenantTenantManagerMockFunc = func(hostname string) (*Tenant, error) {
+					return nil, errors.New("manager error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, "unable to retrieve tenant localhost: manager error", w.Body.String())
+			},
+		},
+		{
+			Name: "no tenant found should ends with a HTTP 404 - Not Found",
+			Mock: func() {
+				c.Params = gin.Params{
+					{
+						Key:   "hostname",
+						Value: "localhost",
+					},
+				}
+				GetTenantTenantManagerMockFunc = func(hostname string) (*Tenant, error) {
+					return nil, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusNotFound, w.Code)
+			},
+		},
+		{
+			Name: "a valid tenant should return a tenant as JSON",
+			Mock: func() {
+				c.Params = gin.Params{
+					{
+						Key:   "hostname",
+						Value: "localhost",
+					},
+				}
+				GetTenantTenantManagerMockFunc = func(hostname string) (*Tenant, error) {
+					return &Tenant{
+						Kind: "Tenant",
+						Spec: map[string]string{
+							"host": "localhost",
+						},
+						Instances: []string{},
+					}, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusOK, w.Code)
+				assert.Equal(t, `{"kind":"Tenant","spec":{"host":"localhost"},"instances":[]}`, w.Body.String())
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			test.Mock()
+			admin.GetTenant(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}

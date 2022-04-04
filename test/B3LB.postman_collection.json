@@ -175,6 +175,69 @@
 					"response": []
 				},
 				{
+					"name": "Get tenant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json()",
+									"pm.test(\"Getting a tenant should return a 200 status code \", () => {",
+									"    pm.response.to.have.status(200)",
+									"})",
+									"",
+									"pm.test(\"Getting a tenant should return a valid tenant\", () => {",
+									"    pm.expect(response.kind).to.eql(\"Tenant\")",
+									"    pm.expect(response.spec.host).to.eql(pm.environment.get(\"b3lb_host\") + \":\" + pm.environment.get(\"b3lb_port\"))",
+									"    pm.expect(response.instances[0]).to.eql(pm.environment.get(\"instance_url\"))",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/tenants/{{b3lb_host}}:{{b3lb_port}}",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"admin",
+								"api",
+								"tenants",
+								"{{b3lb_host}}:{{b3lb_port}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Delete tenant",
 					"event": [
 						{
