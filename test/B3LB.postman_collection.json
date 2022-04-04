@@ -278,6 +278,95 @@
 					"response": []
 				},
 				{
+					"name": "Get configuration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json()",
+									"",
+									"pm.test(\"Getting configurations should return a 200 status code \", () => {",
+									"    pm.response.to.have.status(200)",
+									"})",
+									"",
+									"pm.test(\"Getting configurations should returns a valid BigBlueButton configuration\", () => {",
+									"    pm.expect(response.bigbluebutton.secret).to.eql(\"0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU\")",
+									"    pm.expect(response.bigbluebutton.recordingsPollInterval).to.eql(\"1m\")",
+									"})",
+									"",
+									"pm.test(\"Getting configurations should returns a valid Balancer configuration\", () => {",
+									"    pm.expect(response.balancer.metricsRange).to.eql(\"-5m\")",
+									"    pm.expect(response.balancer.cpuLimit).to.eql(99)",
+									"    pm.expect(response.balancer.memLimit).to.eql(99)",
+									"})",
+									"",
+									"pm.test(\"Getting configurations should returns a valid Admin configuration\", () => {",
+									"    pm.expect(response.admin.apiKey).to.eql(\"kgpqrTipM2yjcXwz5pOxBKViE9oNX76R\")",
+									"})",
+									"",
+									"pm.test(\"Getting configurations should returns a valid Port configuration\", () => {",
+									"    pm.expect(response.port).to.eql(8090)",
+									"})",
+									"",
+									"pm.test(\"Getting configurations should returns a valid Redis configuration\", () => {",
+									"    pm.expect(response.redis.address).to.eql(\"localhost:6379\")",
+									"    pm.expect(response.redis.password).to.eql(\"\")",
+									"    pm.expect(response.redis.database).to.eql(0)",
+									"})",
+									"",
+									"pm.test(\"Getting configurations should returns a valid InfluxDB configuration\", () => {",
+									"    pm.expect(response.influxdb.address).to.eql(\"http://localhost:8086\")",
+									"    pm.expect(response.influxdb.token).to.eql(\"Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg==\")",
+									"    pm.expect(response.influxdb.organization).to.eql(\"b3lb\")",
+									"    pm.expect(response.influxdb.bucket).to.eql(\"bucket\")",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/configurations",
+							"protocol": "http",
+							"host": [
+								"{{b3lb_host}}"
+							],
+							"port": "{{b3lb_port}}",
+							"path": [
+								"admin",
+								"api",
+								"configurations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get cluster status",
 					"event": [
 						{

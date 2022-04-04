@@ -17,11 +17,11 @@ type Admin struct {
 	InstanceManager InstanceManager
 	TenantManager   TenantManager
 	Balancer        balancer.Balancer
-	Config          *config.AdminConfig
+	Config          *config.Config
 }
 
 // CreateAdmin creates a new admin based on given configuration
-func CreateAdmin(manager InstanceManager, tenantManager TenantManager, balancer balancer.Balancer, config *config.AdminConfig) *Admin {
+func CreateAdmin(manager InstanceManager, tenantManager TenantManager, balancer balancer.Balancer, config *config.Config) *Admin {
 	return &Admin{
 		InstanceManager: manager,
 		TenantManager:   tenantManager,
@@ -129,4 +129,8 @@ func (a *Admin) DeleteTenant(c *gin.Context) {
 	} else {
 		c.AbortWithStatus(http.StatusNoContent)
 	}
+}
+
+func (a *Admin) GetConfiguration(c *gin.Context) {
+	c.AbortWithStatusJSON(http.StatusOK, a.Config)
 }

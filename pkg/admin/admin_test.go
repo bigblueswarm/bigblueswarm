@@ -32,7 +32,7 @@ func toInstanceStatusArray(body []byte) []balancer.InstanceStatus {
 func TestListInstances(t *testing.T) {
 	url := "http://localhost/bigbluebutton"
 	var w *httptest.ResponseRecorder
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.Config{})
 
 	tests := []test.Test{
 		{
@@ -80,7 +80,7 @@ func TestListInstances(t *testing.T) {
 func TestClusterStatus(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.Config{})
 
 	host := "http://localhost/bigbluebutton"
 	cpu := 20.01
@@ -163,7 +163,7 @@ func TestClusterStatus(t *testing.T) {
 func TestSetInstances(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.Config{})
 
 	tests := []test.Test{
 		{
@@ -227,7 +227,7 @@ func TestSetInstances(t *testing.T) {
 func TestCreateTenant(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.Config{})
 
 	tests := []test.Test{
 		{
@@ -293,7 +293,7 @@ func TestCreateTenant(t *testing.T) {
 func TestListTenantsHandler(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.Config{})
 
 	tests := []test.Test{
 		{
@@ -338,7 +338,7 @@ func TestListTenantsHandler(t *testing.T) {
 func TestDeleteHandler(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.Config{})
 
 	tests := []test.Test{
 		{
