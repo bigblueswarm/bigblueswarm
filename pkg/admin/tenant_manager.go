@@ -77,8 +77,12 @@ func (r *RedisTenantManager) DeleteTenant(hostname string) error {
 // GetTenant retrieve a tenant from a hostname
 func (r *RedisTenantManager) GetTenant(hostname string) (*Tenant, error) {
 	res, err := r.RDB.Get(context.Background(), tenantKey(hostname)).Result()
-	if err != nil {
+	if utils.ComputeErr(err) != nil {
 		return nil, err
+	}
+
+	if res == "" {
+		return nil, nil
 	}
 
 	var tenant Tenant

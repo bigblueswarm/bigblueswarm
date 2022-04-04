@@ -42,10 +42,18 @@ func (a *Admin) Routes() *[]api.EndpointGroup {
 									Method:  http.MethodPost,
 									Handler: a.CreateTenant,
 								},
-								api.Endpoint{
-									Method:  http.MethodDelete,
-									Path:    "/:hostname",
-									Handler: a.DeleteTenant,
+								api.EndpointGroup{
+									Path: "/:hostname",
+									Endpoints: []interface{}{
+										api.Endpoint{
+											Method:  http.MethodDelete,
+											Handler: a.DeleteTenant,
+										},
+										api.Endpoint{
+											Method:  http.MethodGet,
+											Handler: a.GetTenant,
+										},
+									},
 								},
 							},
 						},

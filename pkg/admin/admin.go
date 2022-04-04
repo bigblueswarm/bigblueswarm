@@ -131,6 +131,24 @@ func (a *Admin) DeleteTenant(c *gin.Context) {
 	}
 }
 
+// GetConfiguration render configuration
 func (a *Admin) GetConfiguration(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusOK, a.Config)
+}
+
+// GetTenant retrieve a tenant based on its hostname
+func (a *Admin) GetTenant(c *gin.Context) {
+	hostname, _ := c.Params.Get("hostname")
+	tenant, err := a.TenantManager.GetTenant(hostname)
+	if err != nil {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("unable to retrieve tenant %s: %s", hostname, err.Error()))
+		return
+	}
+
+	if tenant == nil {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	c.AbortWithStatusJSON(http.StatusOK, tenant)
 }
