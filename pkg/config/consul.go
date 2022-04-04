@@ -95,7 +95,7 @@ func getConfigType(key string) interface{} {
 		return &BigBlueButton{}
 	case "admin":
 		return &AdminConfig{}
-	case "balancer":	
+	case "balancer":
 		return &BalancerConfig{}
 	case "redis":
 		return &RDB{}
@@ -129,6 +129,7 @@ func watchChanges(key string, handler func(value []byte)) error {
 			}
 		}
 
+		log.Info(fmt.Sprintf("Changes detected, reloading %s configuration", key))
 		handler(pair.Value)
 	}
 

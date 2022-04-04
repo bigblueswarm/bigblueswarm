@@ -17,7 +17,7 @@ func (a *Admin) APIKeyValidation(c *gin.Context) {
 		return
 	}
 
-	if auth != a.Config.APIKey {
+	if auth != a.Config.Admin.APIKey {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}

@@ -29,9 +29,10 @@ func TestMain(m *testing.M) {
 	tenantManager = NewTenantManager(*client)
 
 	router = gin.Default()
-	CreateAdmin(instanceManager, tenantManager, &balancer.Mock{}, &config.AdminConfig{
+	config := &config.Config{Admin: config.AdminConfig{
 		APIKey: TestUtil.DefaultAPIKey(),
-	})
+	}}
+	CreateAdmin(instanceManager, tenantManager, &balancer.Mock{}, config)
 
 	status := m.Run()
 	if err := redisMock.ExpectationsWereMet(); err != nil {

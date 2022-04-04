@@ -17,7 +17,7 @@ import (
 func TestApiKeyValidation(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
-	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.AdminConfig{APIKey: test.DefaultAPIKey()})
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, &config.Config{Admin: config.AdminConfig{APIKey: test.DefaultAPIKey()}})
 	tests := []test.Test{
 		{
 			Name: "An empty api key should returns an unauthorized error",

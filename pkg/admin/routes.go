@@ -43,8 +43,8 @@ func (a *Admin) Routes() *[]api.EndpointGroup {
 									Handler: a.CreateTenant,
 								},
 								api.Endpoint{
-									Method: http.MethodDelete,
-									Path: "/:hostname",
+									Method:  http.MethodDelete,
+									Path:    "/:hostname",
 									Handler: a.DeleteTenant,
 								},
 							},
@@ -53,6 +53,11 @@ func (a *Admin) Routes() *[]api.EndpointGroup {
 							Path:    "/cluster",
 							Method:  http.MethodGet,
 							Handler: a.ClusterStatus,
+						},
+						api.Endpoint{
+							Path:    "/configurations",
+							Method:  http.MethodGet,
+							Handler: a.GetConfiguration,
 						},
 					},
 				},
