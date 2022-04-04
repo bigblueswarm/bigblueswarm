@@ -396,6 +396,48 @@ func TestDeleteHandler(t *testing.T) {
 	}
 }
 
+func TestGetConfigurtionHandler(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	config := &config.Config{
+		BigBlueButton: config.BigBlueButton{
+			Secret:                 "secret",
+			RecordingsPollInterval: "5m",
+		},
+		Admin: config.AdminConfig{
+			APIKey: "key",
+		},
+		Balancer: config.BalancerConfig{
+			MetricsRange: "-5m",
+			CPULimit:     99,
+			MemLimit:     99,
+		},
+		Port: 8090,
+		RDB: config.RDB{
+			Address:  "http://localhost:8500",
+			Password: "",
+			DB:       0,
+		},
+		IDB: config.IDB{
+			Address:      "http://localhost:8086",
+			Token:        "token",
+			Organization: "b3lb",
+			Bucket:       "bucket",
+		},
+	}
+	admin := CreateAdmin(&InstanceManagerMock{}, &TenantManagerMock{}, &balancer.Mock{}, config)
+
+	expected, err := json.Marshal(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	admin.GetConfiguration(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, string(expected), w.Body.String())
+}
+
 func TestGetTenantHandler(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
