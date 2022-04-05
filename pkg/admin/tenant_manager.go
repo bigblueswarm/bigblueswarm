@@ -19,7 +19,7 @@ type TenantManager interface {
 	// AddTenant add a tenant in the manager
 	AddTenant(tenant *Tenant) error
 	// ListTenants list all tenants in the system
-	ListTenants() ([]string, error)
+	ListTenants() ([]TenantListObject, error)
 	// DeleteTenant delete a specific tenant based on tenant hostname
 	DeleteTenant(hostname string) error
 	// GetTenant retrieve a tenant from a hostname
@@ -58,11 +58,20 @@ func (r *RedisTenantManager) AddTenant(tenant *Tenant) error {
 }
 
 // ListTenants list all tenants in the system
-func (r *RedisTenantManager) ListTenants() ([]string, error) {
+func (r *RedisTenantManager) ListTenants() ([]TenantListObject, error) {
 	tenants, err := r.RDB.Keys(context.Background(), tenantKey("*")).Result()
-	list := []string{}
-	for _, tenant := range tenants {
-		list = append(list, strings.ReplaceAll(tenant, "tenant:", ""))
+	list := []TenantListObject{}
+	for _, tenantKey := range tenants {
+		tenant, err := r.GetTenant(strings.ReplaceAll(tenantKey, "tenant:", ""))
+		if err != nil {
+			return []TenantListObject{}, err
+		}
+
+		list = append(list, TenantListObject{
+			Hostname:      tenant.Spec["host"],
+			InstanceCount: len(tenant.Instances),
+		})
+
 	}
 
 	return list, utils.ComputeErr(err)

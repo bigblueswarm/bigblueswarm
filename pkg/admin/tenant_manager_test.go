@@ -97,7 +97,7 @@ func TestListTenants(t *testing.T) {
 				mock.SetVal([]string{})
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
-				res := value.([]string)
+				res := value.([]TenantListObject)
 				assert.NotNil(t, err)
 				assert.Empty(t, res)
 			},
@@ -106,12 +106,27 @@ func TestListTenants(t *testing.T) {
 			Name: "no error should return a valid list",
 			Mock: func() {
 				redisMock.ExpectKeys("tenant:*").SetVal([]string{"tenant:localhost"})
+				tenant := &Tenant{
+					Kind: "Tenant",
+					Spec: map[string]string{
+						"host": "localhost",
+					},
+					Instances: []string{
+						"http://localhost/bigbluebutton",
+					},
+				}
+				if expected, err := yaml.Marshal(tenant); err == nil {
+					redisMock.ExpectGet("tenant:localhost").SetVal(string(expected))
+				} else {
+					t.Fatal(err)
+				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
-				res := value.([]string)
+				res := value.([]TenantListObject)
 				assert.Nil(t, err)
 				assert.Equal(t, 1, len(res))
-				assert.Equal(t, "localhost", res[0])
+				assert.Equal(t, "localhost", res[0].Hostname)
+				assert.Equal(t, 1, res[0].InstanceCount)
 			},
 		},
 	}

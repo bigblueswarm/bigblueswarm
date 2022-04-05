@@ -7,7 +7,7 @@ var (
 	// AddTenantTenantManagerMockFunc is the function that will be called when the mock tenant manager is used.
 	AddTenantTenantManagerMockFunc func(tenant *Tenant) error
 	// ListTenantsTenantManagerMockFunc is the function that will be called when the mock tenant manager is used
-	ListTenantsTenantManagerMockFunc func() ([]string, error)
+	ListTenantsTenantManagerMockFunc func() ([]TenantListObject, error)
 	// DeleteTenantTenantManagerMockFunc is the function that will be called when the mock tenant manager is used
 	DeleteTenantTenantManagerMockFunc func(hostname string) error
 	// GetTenantTenantManagerMockFunc is the function that will be called when the mock tenant manager is used
@@ -20,7 +20,7 @@ func (t *TenantManagerMock) AddTenant(tenant *Tenant) error {
 }
 
 // ListTenants is a mock implementation that list all tenants
-func (t *TenantManagerMock) ListTenants() ([]string, error) {
+func (t *TenantManagerMock) ListTenants() ([]TenantListObject, error) {
 	return ListTenantsTenantManagerMockFunc()
 }
 

@@ -15,6 +15,12 @@ type Tenant struct {
 
 // TenantList represents the system tenant list
 type TenantList struct {
-	Kind    string   `yaml:"kind" json:"kind"`
-	Tenants []string `yaml:"tenants" json:"tenants"`
+	Kind    string             `yaml:"kind" json:"kind"`
+	Tenants []TenantListObject `yaml:"tenants" json:"tenants"`
+}
+
+// TenantListObject represents a Tenant in a TenantList
+type TenantListObject struct {
+	Hostname      string `json:"hostname"`
+	InstanceCount int    `json:"instance_count"`
 }
