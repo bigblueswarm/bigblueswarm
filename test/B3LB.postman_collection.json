@@ -127,7 +127,8 @@
 									"    const response = pm.response.json()",
 									"    pm.expect(response.kind).to.eql(\"TenantList\")",
 									"    pm.expect(response.tenants.length).to.eql(1)",
-									"    pm.expect(response.tenants[0]).to.eql(pm.environment.get(\"b3lb_host\") + \":\" + pm.environment.get(\"b3lb_port\"))",
+									"    pm.expect(response.tenants[0].hostname).to.eql(pm.environment.get(\"b3lb_host\") + \":\" + pm.environment.get(\"b3lb_port\"))",
+									"    pm.expect(response.tenants[0].instance_count).to.eql(1)",
 									"})"
 								],
 								"type": "text/javascript"

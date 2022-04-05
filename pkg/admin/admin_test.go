@@ -299,8 +299,8 @@ func TestListTenantsHandler(t *testing.T) {
 		{
 			Name: "an error returned by tenant manager should return an HTTP 500 - Internal Server Error - and a log",
 			Mock: func() {
-				ListTenantsTenantManagerMockFunc = func() ([]string, error) {
-					return []string{}, errors.New("manager error")
+				ListTenantsTenantManagerMockFunc = func() ([]TenantListObject, error) {
+					return []TenantListObject{}, errors.New("manager error")
 				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
@@ -311,15 +311,18 @@ func TestListTenantsHandler(t *testing.T) {
 		{
 			Name: "a valid request should return an HTTP 200 - OK - and a valid response",
 			Mock: func() {
-				ListTenantsTenantManagerMockFunc = func() ([]string, error) {
-					return []string{
-						"localhost:8090",
+				ListTenantsTenantManagerMockFunc = func() ([]TenantListObject, error) {
+					return []TenantListObject{
+						{
+							Hostname:      "localhost:8090",
+							InstanceCount: 0,
+						},
 					}, nil
 				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusOK, w.Code)
-				assert.Equal(t, `{"kind":"TenantList","tenants":["localhost:8090"]}`, w.Body.String())
+				assert.Equal(t, `{"kind":"TenantList","tenants":[{"hostname":"localhost:8090","instance_count":0}]}`, w.Body.String())
 			},
 		},
 	}
