@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SLedunois/b3lb/pkg/balancer"
-	"github.com/SLedunois/b3lb/pkg/config"
+	"github.com/SLedunois/b3lb/v2/pkg/balancer"
+	"github.com/SLedunois/b3lb/v2/pkg/config"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"

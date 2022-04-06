@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/SLedunois/b3lb/pkg/api"
-	"github.com/SLedunois/b3lb/pkg/utils"
+	"github.com/SLedunois/b3lb/v2/pkg/api"
+	"github.com/SLedunois/b3lb/v2/pkg/utils"
 
 	"github.com/go-redis/redis/v8"
 )

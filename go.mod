@@ -1,4 +1,4 @@
-module github.com/SLedunois/b3lb
+module github.com/SLedunois/b3lb/v2
 
 go 1.18
 
@@ -52,5 +52,5 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.6 // indirect
 	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 )

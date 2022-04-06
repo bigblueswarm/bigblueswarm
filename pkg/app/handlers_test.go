@@ -11,13 +11,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/SLedunois/b3lb/pkg/admin"
-	"github.com/SLedunois/b3lb/pkg/api"
-	"github.com/SLedunois/b3lb/pkg/balancer"
+	"github.com/SLedunois/b3lb/v2/pkg/admin"
+	"github.com/SLedunois/b3lb/v2/pkg/api"
+	"github.com/SLedunois/b3lb/v2/pkg/balancer"
 
-	"github.com/SLedunois/b3lb/internal/test"
-	"github.com/SLedunois/b3lb/pkg/config"
-	"github.com/SLedunois/b3lb/pkg/restclient"
+	"github.com/SLedunois/b3lb/v2/internal/test"
+	"github.com/SLedunois/b3lb/v2/pkg/config"
+	"github.com/SLedunois/b3lb/v2/pkg/restclient"
 	log "github.com/sirupsen/logrus"
 	LogTest "github.com/sirupsen/logrus/hooks/test"
 

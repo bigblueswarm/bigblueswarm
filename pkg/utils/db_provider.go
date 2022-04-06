@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/SLedunois/b3lb/pkg/config"
+	"github.com/SLedunois/b3lb/v2/pkg/config"
 
 	"github.com/go-redis/redis/v8"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"

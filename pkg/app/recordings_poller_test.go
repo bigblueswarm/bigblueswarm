@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SLedunois/b3lb/internal/test"
+	"github.com/SLedunois/b3lb/v2/internal/test"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/SLedunois/b3lb/pkg/admin"
-	"github.com/SLedunois/b3lb/pkg/api"
-	"github.com/SLedunois/b3lb/pkg/restclient"
+	"github.com/SLedunois/b3lb/v2/pkg/admin"
+	"github.com/SLedunois/b3lb/v2/pkg/api"
+	"github.com/SLedunois/b3lb/v2/pkg/restclient"
 
 	log "github.com/sirupsen/logrus"
 	LogTest "github.com/sirupsen/logrus/hooks/test"

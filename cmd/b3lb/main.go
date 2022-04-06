@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/SLedunois/b3lb/pkg/app"
-	"github.com/SLedunois/b3lb/pkg/config"
+	"github.com/SLedunois/b3lb/v2/pkg/app"
+	"github.com/SLedunois/b3lb/v2/pkg/config"
 
 	log "github.com/sirupsen/logrus"
 )

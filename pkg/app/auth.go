@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/SLedunois/b3lb/pkg/api"
+	"github.com/SLedunois/b3lb/v2/pkg/api"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"

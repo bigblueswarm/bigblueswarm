@@ -29,13 +29,13 @@ init:
 test.unit:
 	@echo "[TEST.UNIT] run unit tests and coverage"
 	go test -race -covermode=atomic -coverprofile=coverage.out \
-		github.com/SLedunois/b3lb/pkg/admin \
-		github.com/SLedunois/b3lb/pkg/api \
-		github.com/SLedunois/b3lb/pkg/app \
-		github.com/SLedunois/b3lb/pkg/config \
-		github.com/SLedunois/b3lb/pkg/utils \
-		github.com/SLedunois/b3lb/pkg/balancer \
-		github.com/SLedunois/b3lb/pkg/restclient
+		github.com/SLedunois/b3lb/v2/pkg/admin \
+		github.com/SLedunois/b3lb/v2/pkg/api \
+		github.com/SLedunois/b3lb/v2/pkg/app \
+		github.com/SLedunois/b3lb/v2/pkg/config \
+		github.com/SLedunois/b3lb/v2/pkg/utils \
+		github.com/SLedunois/b3lb/v2/pkg/balancer \
+		github.com/SLedunois/b3lb/v2/pkg/restclient
 
 #test.integration: @ run integration tests
 test.integration: build test.integration.cluster.start test.integration.b3lb.run test.integration.launch test.integration.b3lb.stop cluster.stop test.integration.cluster.remove

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/SLedunois/b3lb/pkg/config"
-	"github.com/SLedunois/b3lb/pkg/utils"
+	"github.com/SLedunois/b3lb/v2/pkg/config"
+	"github.com/SLedunois/b3lb/v2/pkg/utils"
 	influxdb "github.com/influxdata/influxdb-client-go/v2/api"
 	log "github.com/sirupsen/logrus"
 )

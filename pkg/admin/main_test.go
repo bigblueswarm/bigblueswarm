@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	TestUtil "github.com/SLedunois/b3lb/internal/test"
-	"github.com/SLedunois/b3lb/pkg/balancer"
-	"github.com/SLedunois/b3lb/pkg/config"
+	TestUtil "github.com/SLedunois/b3lb/v2/internal/test"
+	"github.com/SLedunois/b3lb/v2/pkg/balancer"
+	"github.com/SLedunois/b3lb/v2/pkg/config"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"

@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 
-	"github.com/SLedunois/b3lb/pkg/utils"
+	"github.com/SLedunois/b3lb/v2/pkg/utils"
 
 	"github.com/go-redis/redis/v8"
 )
