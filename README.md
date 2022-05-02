@@ -139,6 +139,11 @@ systemctl restart telegraf
 Check official [Redis installaton guide](https://redis.io/topics/quickstart). Configure Redis using persistance mode.
 ### B3LB load balancer
 Download the [latest release](https://github.com/SLedunois/b3lb/releases).
+Since the v2, B3lb provide two configuration provider:
+- yaml file
+- [Consul service network](https://www.hashicorp.com/products/consul)
+
+#### Configuration file
 Add a configuration file:
 ```yml
 ---
@@ -165,8 +170,45 @@ influxdb: # InfluxDB Configuration
 ```
 
 Launch B3LB with `-config` flag pointing previous config file.
+
+#### Consul
+Install [Consul](https://www.hashicorp.com/products/consul) service network from the official documenation. Go to the KV UI and create the following configurations:
+- `configuration/bigbluebutton` (yaml type)
+```yaml
+secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU # Your B3LB secret. It works like a BigBlueButton secret.
+```
+- `configuration/admin` (yaml type)
+```yaml
+api_key: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R # Admin API key. Used to call admin rest endpoints
+```
+- `configuration/balancer` (yaml type)
+```yaml
+metrics_range: -5m # metrics range used by balancer to compute the next bigbluebutton instance
+cpu_limit: 100 # max cpu % average in range (metrics_range configuration). If the metric is higher than the configuration, the bigbluebutton instance could not be balanced
+mem_limit: 100 # max memory % average in range (metrics_range configuration). If the metric is higher than the configuration, the bigbluebutton instance could not be balanced
+```
+- `configuration/port`
+```
+8090 # B3LB port
+```
+- `configuration/redis` (yaml type)
+```yaml
+address:
+password:
+database: 0
+```
+- `configuration/influxdb` (yaml type)
+```yaml
+address:
+token: 
+organization:
+bucket:
+```
+ 
+> Notice using Consul configuration provider allow an update of `bigbluebutton`, `admin`, `balancer` keys without any B3lb restart.
+
 ## Manage B3LB
 Manage your B3LB cluster using the [b3lbctl](https://github.com/SLedunois/b3lbctl) cli tool.
 
-## Roadmap/
+## Roadmap
 Checkout [B3LB public roadmap](https://github.com/users/SLedunois/projects/4).
