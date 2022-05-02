@@ -1,4 +1,7 @@
-# B3LB
+<p align="center">
+<img src="assets/header.png" alt="Architecture" />
+</p>
+
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/c4c4627abd1f474fb2200f9831dfe502)](https://www.codacy.com/gh/SLedunois/b3lb/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=SLedunois/b3lb&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/c4c4627abd1f474fb2200f9831dfe502)](https://www.codacy.com/gh/SLedunois/b3lb/dashboard?utm_source=github.com&utm_medium=referral&utm_content=SLedunois/b3lb&utm_campaign=Badge_Coverage)
 ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/sledunois/b3lb/Code%20linting/main?label=Code%20linting)
