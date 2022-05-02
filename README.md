@@ -166,10 +166,7 @@ influxdb: # InfluxDB Configuration
 
 Launch B3LB with `-config` flag pointing previous config file.
 ## Manage B3LB
-Use the admin API to list, add and delete BigBlueButton instance inside B3LB load balancer.
-### List BigBlueButton instances
-```bash
-curl -s -G -X GET http://localhost:8090/admin/servers -H "Authorization: $API_KEY" | jq "."
-```
+Manage your B3LB cluster using the [b3lbctl](https://github.com/SLedunois/b3lbctl) cli tool.
+
 ## Roadmap/
 Checkout [B3LB public roadmap](https://github.com/users/SLedunois/projects/4).
