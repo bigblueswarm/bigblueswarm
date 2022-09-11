@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -32,6 +33,12 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 	if err != nil {
 		log.Error("Tenant manager can't retrieve tenant: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if tenant == nil {
+		log.Infoln(fmt.Sprintf("Tenant %s not found", c.Request.Host))
+		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
 
