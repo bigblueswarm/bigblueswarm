@@ -57,6 +57,19 @@ func TestChecksumValidation(t *testing.T) {
 			},
 		},
 		{
+			Name: "An unknown tenant should return 403 forbidden",
+			Mock: func() {
+				test.SetRequestHost(c, "localhost")
+				test.SetRequestParams(c, "name=simon&checksum=checksum")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return nil, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusForbidden, w.Code)
+			},
+		},
+		{
 			Name: "An invalid checksum should returns 200 with checksum error",
 			Mock: func() {
 				test.SetRequestHost(c, "localhost")
