@@ -352,6 +352,43 @@ func TestDeleteHandler(t *testing.T) {
 			},
 		},
 		{
+			Name: "an error occurred while getting tenant should return a HTTP 500 - Internal Server Error",
+			Mock: func() {
+				c.Params = gin.Params{
+					{
+						Key:   "hostname",
+						Value: "localhost",
+					},
+				}
+				GetTenantTenantManagerMockFunc = func(hostname string) (*Tenant, error) {
+					return nil, errors.New("redis error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, "Failed to retrieve tenant localhost: redis error", w.Body.String())
+			},
+		},
+		{
+			Name: "no tenant found should return a HTTP 404 - Not Found error",
+			Mock: func() {
+				c.Params = gin.Params{
+					{
+						Key:   "hostname",
+						Value: "localhost",
+					},
+				}
+				GetTenantTenantManagerMockFunc = func(hostname string) (*Tenant, error) {
+					return nil, nil
+				}
+
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusNotFound, w.Code)
+				assert.Equal(t, "Tenant localhost not found for deletion", w.Body.String())
+			},
+		},
+		{
 			Name: "an error returned by TenantManager should return a HTTP 500 - InternalServerError - status code and a log",
 			Mock: func() {
 				c.Params = gin.Params{
@@ -359,6 +396,9 @@ func TestDeleteHandler(t *testing.T) {
 						Key:   "hostname",
 						Value: "localhost",
 					},
+				}
+				GetTenantTenantManagerMockFunc = func(hostname string) (*Tenant, error) {
+					return &Tenant{}, nil
 				}
 				DeleteTenantTenantManagerMockFunc = func(hostname string) error {
 					return errors.New("manager error")

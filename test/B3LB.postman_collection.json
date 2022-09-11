@@ -246,7 +246,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Deleting a tenant should return a 204 status code \", () => {",
-									"    pm.response.to.have.status(204)",
+									"    pm.response.to.have.status(404)",
 									"})"
 								],
 								"type": "text/javascript"

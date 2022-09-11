@@ -124,6 +124,17 @@ func (a *Admin) DeleteTenant(c *gin.Context) {
 		return
 	}
 
+	tenant, err := a.TenantManager.GetTenant(hostname)
+	if err != nil {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to retrieve tenant %s: %s", hostname, err.Error()))
+		return
+	}
+
+	if tenant == nil {
+		c.String(http.StatusNotFound, fmt.Sprintf("Tenant %s not found for deletion", hostname))
+		return
+	}
+
 	if err := a.TenantManager.DeleteTenant(hostname); err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("unable to delete tenant: %s", err.Error()))
 	} else {
