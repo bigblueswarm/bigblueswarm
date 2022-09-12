@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -98,4 +99,14 @@ func Load(path string) (*Config, error) {
 	}
 
 	return loadConfigFromFile(path)
+}
+
+// Path return the flag config path
+func Path() string {
+	var configPath string
+
+	flag.StringVar(&configPath, "config", DefaultConfigPath(), "Config file path")
+	flag.Parse()
+
+	return configPath
 }

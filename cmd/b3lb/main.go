@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 
 	"github.com/SLedunois/b3lb/v2/pkg/app"
@@ -14,7 +13,7 @@ const version = "2.0.0"
 
 func main() {
 	initLog()
-	configPath, err := config.FormalizeConfigPath(configPath())
+	configPath, err := config.FormalizeConfigPath(config.Path())
 	if err != nil {
 		panic(fmt.Errorf("unable to parse configuration: %s", err.Error()))
 	}
@@ -35,15 +34,6 @@ func initLog() {
 		FullTimestamp: true,
 	})
 	log.SetReportCaller(true)
-}
-
-func configPath() string {
-	var configPath string
-
-	flag.StringVar(&configPath, "config", config.DefaultConfigPath(), "Config file path")
-	flag.Parse()
-
-	return configPath
 }
 
 func run(conf *config.Config) error {

@@ -106,7 +106,8 @@ func getConfigType(key string) interface{} {
 	}
 }
 
-func watchChanges(key string, handler func(value []byte)) error {
+// WatchChanges watch consul changes and execute handler on changes
+func WatchChanges(key string, handler func(value []byte)) error {
 	params := map[string]interface{}{
 		"type": "key",
 		"key":  consulKey(key),
@@ -153,7 +154,7 @@ func (c *Config) loadBBBConf(kv *api.KV) error {
 		c.BigBlueButton = *value
 	}
 
-	return watchChanges(key, func(value []byte) {
+	return WatchChanges(key, func(value []byte) {
 		var conf BigBlueButton
 		if err := yaml.Unmarshal(value, &conf); err != nil {
 			log.Error(fmt.Errorf("unable to parse new config value: %s", err))
@@ -175,7 +176,7 @@ func (c *Config) loadAdminConf(kv *api.KV) error {
 		c.Admin = *value
 	}
 
-	return watchChanges(key, func(value []byte) {
+	return WatchChanges(key, func(value []byte) {
 		var conf AdminConfig
 		if err := yaml.Unmarshal(value, &conf); err != nil {
 			log.Error(fmt.Errorf("unable to parse new config value: %s", err))
@@ -197,7 +198,7 @@ func (c *Config) loadBalancerConf(kv *api.KV) error {
 		c.Balancer = *value
 	}
 
-	return watchChanges(key, func(value []byte) {
+	return WatchChanges(key, func(value []byte) {
 		var conf BalancerConfig
 		if err := yaml.Unmarshal(value, &conf); err != nil {
 			log.Error(fmt.Errorf("unable to parse new config value: %s", err))
