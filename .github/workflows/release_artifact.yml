@@ -21,7 +21,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
-        goversion: 1.15
+        goversion: 1.18
         project_path: "${{ env.CMD_PATH }}"
         binary_name: "${{ env.BINARY_NAME }}"
         extra_files: LICENSE README.md
