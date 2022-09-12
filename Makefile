@@ -2,7 +2,6 @@
 SHELL := /bin/bash
 
 VERSION = $(shell grep -Po "version = \"(.*)\"" ./cmd/b3lb/main.go | cut -d= -f2 | xargs)
-TOKEN = $(shell grep  -Po "token: (.*)" ./config.yml | cut -d: -f2  | xargs)
 SECRET = $(shell docker exec bbb1 sh -c "bbb-conf --secret" | grep -Po "Secret: (.*)" | cut -d: -f2 | xargs)
 
 #help: @ list available tasks on this project
@@ -24,6 +23,11 @@ init:
 	npx husky add .husky/commit-msg "npx --no -- commitlint --edit \"$1\""
 	@echo "[INIT][3/3] administration script dependencies installation"
 	sudo apt-get install tidy jq
+
+#scripts: @ download scripts
+scripts:
+	@echo "[SCRIPTS] install b3lb scripts"
+	git clone https://github.com/b3lb/b3lb-scripts scripts
 
 #test.unit: @ run unit tests and coverage
 test.unit:
@@ -67,8 +71,7 @@ test.integration.launch:
 
 #build.image: @ build custom bigbluebutton docker image
 build.image:
-	@echo "[BUILD.IMAGE] build custom bigbluebutton docker image"
-	DOCKER_BUILDKIT=0 docker build "$(shell pwd)/scripts/docker" -t sledunois/bbb-dev:2.4-develop
+	@make -f ./scripts/Makefile build.image
 
 #build: @ build b3lb binary
 build:
@@ -81,31 +84,24 @@ cluster.init: cluster.influxdb cluster.telegraf
 
 #cluster.start: @ start development cluster
 cluster.start:
-	@echo "[CLUSTER] start development cluster"
-	@docker-compose -f "./scripts/docker-compose.yml" up -d
+	@make -f ./scripts/Makefile cluster.start
 
 #cluster.stop: @ stop development cluster
 cluster.stop:
-	@echo "[CLUSTER] stop development cluster"
-	@docker stop bbb1 bbb2 influxdb redis
+	@make -f ./scripts/Makefile cluster.stop
 
 #cluster.influxdb: @ initialize influxdb database
 cluster.influxdb:
-	@echo "[CLUSTER] initialize development cluster"
-	@echo "[CLUSTER] setting up InfluxDB token"
-	@docker exec influxdb sh -c "influx setup --name b3lbconfig --org b3lb --username admin --password password --token ${TOKEN} --bucket bucket --retention 0 --force"
+	@make -f ./scripts/Makefile cluster.influxdb
 
 #cluster.telegraf: @ initialize bigbluebutton telegraf configuration
 cluster.telegraf:
-	@echo "[CLUSTER] initialize bigbluebutton telegraf configuration"
-	@docker exec bbb1 sh -c "echo 'INFLUXDB_TOKEN=${TOKEN}\nB3LB_HOST=http://localhost/bigbluebutton\nBBB_SECRET=${SECRET}' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
-	@docker exec bbb2 sh -c "echo 'INFLUXDB_TOKEN=${TOKEN}\nB3LB_HOST=http://localhost:8080/bigbluebutton\nBBB_SECRET=${SECRET}' > /etc/default/telegraf && . /etc/default/telegraf && systemctl restart telegraf"
+	@make -f ./scripts/Makefile cluster.telegraf
 
 #cluster.grafana: @ launch cluster with grafana
 cluster.grafana:
-	@echo "[CLUSTER] starting BigBlueButton cluster including grafana"
-	@docker-compose -f ./scripts/docker-compose.yml -f ./scripts/docker-compose.grafana.yml up -d
+	@make -f ./scripts/Makefile cluster.grafana
 
 #cluster.consul: @ start development cluster using consul coniguration provider
 cluster.consul:
-	@docker-compose -f "./scripts/docker-compose.yml" -f "./scripts/docker-compose.consul.yml" up -d
+	@make -f ./scripts/Makefile cluster.consul
