@@ -79,6 +79,11 @@ build:
 	rm -rf bin
 	go build -o ./bin/b3lb-${VERSION} ./cmd/b3lb/main.go
 
+#build.docker @ build b3lb docker image
+build.docker:
+	@echo "[BUILD DOCKER] build b3lb docker image"
+	docker build . -t sledunois/b3lb:${VERSION}
+
 #cluster.init: @ initialize development cluster (initialize influxdb and telegraf)
 cluster.init: cluster.influxdb cluster.telegraf
 
