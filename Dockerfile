@@ -9,7 +9,7 @@ RUN go mod download
 RUN make build
 
 ## Deploy
-FROM gcr.io/distroless/static-debian11:nonroot
+FROM gcr.io/distroless/base-debian11:nonroot
 
 WORKDIR /
 
@@ -21,4 +21,4 @@ USER nonroot:nonroot
 
 ENTRYPOINT ["/b3lb"]
 
-## docker run -it --mount type=bind,source="$(pwd)/config.yml",target=/config.yml,readonly -p 8090:8090 b3lb:2.0.0 -config /config.yml
+## docker run -it --mount type=bind,source="$(pwd)/config.yml",target=/config.yml,readonly -p 8090:8090 sledunois/b3lb:2.1.0 -config /config.yml
