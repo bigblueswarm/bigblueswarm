@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/SLedunois/b3lb/v2/internal/test"
+	"github.com/b3lb/test_utils/pkg/test"
 	"github.com/stretchr/testify/assert"
 )
 

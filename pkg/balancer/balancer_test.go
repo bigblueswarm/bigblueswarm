@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/SLedunois/b3lb/v2/pkg/utils"
+	"github.com/b3lb/test_utils/pkg/test"
 
-	"github.com/SLedunois/b3lb/v2/internal/test"
 	"github.com/SLedunois/b3lb/v2/pkg/config"
 
 	"github.com/stretchr/testify/assert"

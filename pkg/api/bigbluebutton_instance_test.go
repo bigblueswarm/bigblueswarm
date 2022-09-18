@@ -11,8 +11,8 @@ import (
 	"reflect"
 	"testing"
 
-	TestUtil "github.com/SLedunois/b3lb/v2/internal/test"
 	"github.com/SLedunois/b3lb/v2/pkg/restclient"
+	"github.com/b3lb/test_utils/pkg/test"
 	"github.com/gin-gonic/gin"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +20,7 @@ import (
 
 const meetingID = "id"
 
-type test struct {
+type bbbTest struct {
 	Name            string
 	HasParams       bool
 	Params          string
@@ -38,8 +38,8 @@ func marshall(action string, value interface{}) ([]byte, error) {
 	}
 }
 
-func getTests(action string, hasParams bool, params string, validResponse interface{}, customValidator func(*testing.T, interface{})) []test {
-	return []test{
+func getTests(action string, hasParams bool, params string, validResponse interface{}, customValidator func(*testing.T, interface{})) []bbbTest {
+	return []bbbTest{
 		{
 			Name:            fmt.Sprintf("%s should return a valid response", action),
 			Params:          params,
@@ -82,7 +82,7 @@ func getTests(action string, hasParams bool, params string, validResponse interf
 	}
 }
 
-func executeTests(t *testing.T, action string, tests []test) {
+func executeTests(t *testing.T, action string, tests []bbbTest) {
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			restclient.RestClientMockDoFunc = test.MockFunction
@@ -405,7 +405,7 @@ func TestRedirect(t *testing.T) {
 	baseURL := "http://localhost/bigbluebutton"
 	parameters := "meetingID=meeting-id"
 
-	tests := []TestUtil.Test{
+	tests := []test.Test{
 		{
 			Name: "Redirect should end with a 302 status code",
 			Mock: func() {},
@@ -418,7 +418,7 @@ func TestRedirect(t *testing.T) {
 
 	instance := &BigBlueButtonInstance{
 		URL:    baseURL,
-		Secret: TestUtil.DefaultSecret(),
+		Secret: test.DefaultSecret(),
 	}
 
 	for _, test := range tests {
