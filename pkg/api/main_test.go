@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	TestUtil "github.com/SLedunois/b3lb/v2/internal/test"
 	"github.com/SLedunois/b3lb/v2/pkg/restclient"
+	"github.com/b3lb/test_utils/pkg/test"
 )
 
 var instance *BigBlueButtonInstance
@@ -13,7 +13,7 @@ var instance *BigBlueButtonInstance
 func TestMain(m *testing.M) {
 	instance = &BigBlueButtonInstance{
 		URL:    "http://localhost:80/bigbluebutton",
-		Secret: TestUtil.DefaultSecret(),
+		Secret: test.DefaultSecret(),
 	}
 
 	restclient.Client = &restclient.Mock{}

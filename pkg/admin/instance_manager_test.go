@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/SLedunois/b3lb/v2/internal/test"
 	"github.com/SLedunois/b3lb/v2/pkg/api"
+	"github.com/b3lb/test_utils/pkg/test"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"

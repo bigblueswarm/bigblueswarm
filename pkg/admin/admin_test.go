@@ -11,7 +11,8 @@ import (
 	"github.com/SLedunois/b3lb/v2/pkg/balancer"
 	"github.com/SLedunois/b3lb/v2/pkg/config"
 
-	"github.com/SLedunois/b3lb/v2/internal/test"
+	"github.com/b3lb/test_utils/pkg/request"
+	"github.com/b3lb/test_utils/pkg/test"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -169,7 +170,7 @@ func TestSetInstances(t *testing.T) {
 		{
 			Name: "an invalid body should return a bad request status and an error",
 			Mock: func() {
-				test.AddRequestBody(c, "")
+				request.AddRequestBody(c, "")
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -179,7 +180,7 @@ func TestSetInstances(t *testing.T) {
 		{
 			Name: "an error returned by InstanceManager should return an internal server error and an error",
 			Mock: func() {
-				test.AddRequestBody(c, `{
+				request.AddRequestBody(c, `{
 	"kind": "InstanceList",
 	"instances": {
 		"http://bigbluebutton1": "secret1"
@@ -197,7 +198,7 @@ func TestSetInstances(t *testing.T) {
 		{
 			Name: "a valid request should return a http 200 ok",
 			Mock: func() {
-				test.AddRequestBody(c, `{
+				request.AddRequestBody(c, `{
 	"kind": "InstanceList",
 	"instances": {
 		"http://bigbluebutton1": "secret1"
@@ -233,7 +234,7 @@ func TestCreateTenant(t *testing.T) {
 		{
 			Name: "an invalid body should return a bad request status and an error",
 			Mock: func() {
-				test.AddRequestBody(c, "")
+				request.AddRequestBody(c, "")
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -243,7 +244,7 @@ func TestCreateTenant(t *testing.T) {
 		{
 			Name: "an error returned by tenant manager should return an internal server error",
 			Mock: func() {
-				test.AddRequestBody(c, `{
+				request.AddRequestBody(c, `{
 	"kind": "Tenant",
 	"spec": {
   		"host": "localhost:8090"
@@ -262,7 +263,7 @@ func TestCreateTenant(t *testing.T) {
 		{
 			Name: "a valid request should return a 201 created status",
 			Mock: func() {
-				test.AddRequestBody(c, `{
+				request.AddRequestBody(c, `{
 	"kind": "Tenant",
 	"spec": {
 			"host": "localhost:8090"

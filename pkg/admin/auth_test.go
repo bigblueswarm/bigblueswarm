@@ -8,7 +8,8 @@ import (
 	"github.com/SLedunois/b3lb/v2/pkg/balancer"
 	"github.com/SLedunois/b3lb/v2/pkg/config"
 
-	"github.com/SLedunois/b3lb/v2/internal/test"
+	"github.com/b3lb/test_utils/pkg/request"
+	"github.com/b3lb/test_utils/pkg/test"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +23,7 @@ func TestApiKeyValidation(t *testing.T) {
 		{
 			Name: "An empty api key should returns an unauthorized error",
 			Mock: func() {
-				test.SetRequestHeader(c, "Authorization", "")
+				request.SetRequestHeader(c, "Authorization", "")
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusUnauthorized, w.Code)
@@ -31,7 +32,7 @@ func TestApiKeyValidation(t *testing.T) {
 		{
 			Name: "An invalid api key should returns an unauthorized error",
 			Mock: func() {
-				test.SetRequestHeader(c, "Authorization", "invalid_key")
+				request.SetRequestHeader(c, "Authorization", "invalid_key")
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusUnauthorized, w.Code)

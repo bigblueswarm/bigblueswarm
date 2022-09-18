@@ -22,6 +22,7 @@ require gopkg.in/yaml.v3 v3.0.1
 
 require (
 	github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da // indirect
+	github.com/b3lb/test_utils v0.0.0-20220918193343-b04e283e9a4c // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect

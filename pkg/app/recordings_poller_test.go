@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/SLedunois/b3lb/v2/internal/test"
+	"github.com/b3lb/test_utils/pkg/test"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/SLedunois/b3lb/v2/pkg/admin"
