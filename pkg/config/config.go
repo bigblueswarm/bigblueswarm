@@ -94,8 +94,8 @@ func FormalizeConfigPath(path string) (string, error) {
 
 // Load the configuration from the given path
 func Load(path string) (*Config, error) {
-	if isConsulEnabled(path) {
-		return loadConfigFromConsul(path)
+	if IsConsulEnabled(path) {
+		return LoadConfigFromConsul(path)
 	}
 
 	return loadConfigFromFile(path)

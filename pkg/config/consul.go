@@ -12,11 +12,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func isConsulEnabled(path string) bool {
+// IsConsulEnabled check if path starts with ConsulPrefix (consul:)
+func IsConsulEnabled(path string) bool {
 	return strings.HasPrefix(path, ConsulPrefix)
 }
 
-func getConsulConfig(path string) *api.Config {
+// GetConsulConfig returns the consul address from the path
+func GetConsulConfig(path string) *api.Config {
 	config := api.DefaultConfig()
 	addr := strings.ReplaceAll(path, ConsulPrefix, "")
 	config.Address = addr
@@ -24,9 +26,10 @@ func getConsulConfig(path string) *api.Config {
 	return config
 }
 
-func loadConfigFromConsul(path string) (*Config, error) {
+// LoadConfigFromConsul load B3LB configuration from consul provider
+func LoadConfigFromConsul(path string) (*Config, error) {
 	// Get a new consul client
-	client, err := api.NewClient(getConsulConfig(path))
+	client, err := api.NewClient(GetConsulConfig(path))
 	if err != nil {
 		return nil, err
 	}
@@ -51,23 +54,24 @@ func loadConfigFromConsul(path string) (*Config, error) {
 		return nil, err
 	}
 
-	if err := conf.loadRedisConf(kv); err != nil {
+	if err := conf.LoadRedisConf(kv); err != nil {
 		return nil, err
 	}
 
-	if err := conf.loadInfluxDBConf(kv); err != nil {
+	if err := conf.LoadInfluxDBConf(kv); err != nil {
 		return nil, err
 	}
 
 	return conf, nil
 }
 
-func consulKey(conf string) string {
+// ConsulKey return the consul key from the configuration name
+func ConsulKey(conf string) string {
 	return fmt.Sprintf("configuration/%s", conf)
 }
 
 func loadKey(kv *api.KV, key string) (interface{}, error) {
-	pair, _, err := kv.Get(consulKey(key), nil)
+	pair, _, err := kv.Get(ConsulKey(key), nil)
 
 	if err != nil {
 		return nil, err
@@ -110,7 +114,7 @@ func getConfigType(key string) interface{} {
 func WatchChanges(key string, handler func(value []byte)) error {
 	params := map[string]interface{}{
 		"type": "key",
-		"key":  consulKey(key),
+		"key":  ConsulKey(key),
 	}
 
 	plan, err := watch.Parse(params)
@@ -220,7 +224,8 @@ func (c *Config) loadPortConf(kv *api.KV) error {
 	return nil
 }
 
-func (c *Config) loadRedisConf(kv *api.KV) error {
+// LoadRedisConf load the redis configuration in the Config struct
+func (c *Config) LoadRedisConf(kv *api.KV) error {
 	conf, err := loadKey(kv, "redis")
 	if err != nil {
 		return err
@@ -233,7 +238,8 @@ func (c *Config) loadRedisConf(kv *api.KV) error {
 	return nil
 }
 
-func (c *Config) loadInfluxDBConf(kv *api.KV) error {
+// LoadInfluxDBConf load the influxdb configuration in the Config struct
+func (c *Config) LoadInfluxDBConf(kv *api.KV) error {
 	conf, err := loadKey(kv, "influxdb")
 	if err != nil {
 		return err
