@@ -278,6 +278,20 @@ func TestCreateTenant(t *testing.T) {
 				assert.Equal(t, http.StatusCreated, w.Code)
 			},
 		},
+		{
+			Name: "an error returned by tenant manager should return an internal server error",
+			Mock: func() {
+				request.AddRequestBody(c, `{
+	"kind": "Tenant",
+	"spec": {},
+	"instances": []
+}`)
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusBadRequest, w.Code)
+				assert.Equal(t, "tenant spec host should not be null", w.Body.String())
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -534,8 +548,8 @@ func TestGetTenantHandler(t *testing.T) {
 				GetTenantTenantManagerMockFunc = func(hostname string) (*Tenant, error) {
 					return &Tenant{
 						Kind: "Tenant",
-						Spec: map[string]string{
-							"host": "localhost",
+						Spec: &TenantSpec{
+							Host: "localhost",
 						},
 						Instances: []string{},
 					}, nil

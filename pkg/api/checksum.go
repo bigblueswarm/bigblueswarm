@@ -3,6 +3,8 @@ package api
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"fmt"
+	"net/url"
 )
 
 // StringToSHA1 returns the string value hashed with SHA1 algorithm
@@ -24,4 +26,9 @@ func (c *Checksum) Value() string {
 // Process compute the value and hash the previous value with SHA1 algorithm
 func (c *Checksum) Process() (string, error) {
 	return StringToSHA1(c.Value())
+}
+
+// SetTenantMetadata set metadata tenant for the context
+func (c *Checksum) SetTenantMetadata(host string) {
+	c.Params = fmt.Sprintf("%s&meta_tenant=%s", c.Params, url.QueryEscape(host))
 }

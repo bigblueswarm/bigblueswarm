@@ -54,3 +54,12 @@ func TestChecksumValue(t *testing.T) {
 		})
 	}
 }
+
+func TestChecksumSetTenant(t *testing.T) {
+	checksum := &Checksum{
+		Params: "param=value",
+	}
+
+	checksum.SetTenantMetadata("bbb.localhost.com")
+	assert.Equal(t, "param=value&meta_tenant=bbb.localhost.com", checksum.Params)
+}

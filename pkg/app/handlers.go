@@ -88,6 +88,8 @@ func (s *Server) Create(c *gin.Context) {
 		return
 	}
 
+	ctx.SetTenantMetadata(tenant.Spec.Host)
+
 	target, err := s.Balancer.Process(tenant.Instances)
 	if err != nil || target == "" {
 		log.Error("Balancer failed to process current request", err)

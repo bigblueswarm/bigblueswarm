@@ -236,6 +236,9 @@ func TestCreate(t *testing.T) {
 				request.SetRequestHost(c, "localhost")
 				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
 					return &admin.Tenant{
+						Spec: &admin.TenantSpec{
+							Host: "localhost",
+						},
 						Instances: []string{
 							"http://localhost/bigbuebutton",
 						},
@@ -262,6 +265,9 @@ func TestCreate(t *testing.T) {
 				request.SetRequestHost(c, "localhost")
 				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
 					return &admin.Tenant{
+						Spec: &admin.TenantSpec{
+							Host: "localhost",
+						},
 						Instances: []string{
 							"http://localhost/bigbuebutton",
 						},
@@ -289,6 +295,9 @@ func TestCreate(t *testing.T) {
 				request.SetRequestHost(c, "localhost")
 				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
 					return &admin.Tenant{
+						Spec: &admin.TenantSpec{
+							Host: "localhost",
+						},
 						Instances: []string{
 							"http://localhost/bigbuebutton",
 						},
@@ -319,6 +328,9 @@ func TestCreate(t *testing.T) {
 				request.SetRequestHost(c, "localhost")
 				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
 					return &admin.Tenant{
+						Spec: &admin.TenantSpec{
+							Host: "localhost",
+						},
 						Instances: []string{
 							"http://localhost/bigbuebutton",
 						},
@@ -367,6 +379,9 @@ func TestCreate(t *testing.T) {
 				request.SetRequestHost(c, "localhost")
 				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
 					return &admin.Tenant{
+						Spec: &admin.TenantSpec{
+							Host: "localhost",
+						},
 						Instances: []string{
 							"http://localhost/bigbuebutton",
 						},
