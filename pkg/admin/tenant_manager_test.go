@@ -19,7 +19,7 @@ func TestAddTenant(t *testing.T) {
 			Mock: func() {
 				tenant = &Tenant{
 					Kind:      "Tenant",
-					Spec:      map[string]string{},
+					Spec:      &TenantSpec{},
 					Instances: []string{},
 				}
 			},
@@ -33,8 +33,8 @@ func TestAddTenant(t *testing.T) {
 				host := "localhost:8090"
 				tenant = &Tenant{
 					Kind: "Tenant",
-					Spec: map[string]string{
-						"host": host,
+					Spec: &TenantSpec{
+						Host: host,
 					},
 					Instances: []string{
 						"http://localhost/bigbluebutton",
@@ -59,8 +59,8 @@ func TestAddTenant(t *testing.T) {
 				host := "localhost:8090"
 				tenant = &Tenant{
 					Kind: "Tenant",
-					Spec: map[string]string{
-						"host": host,
+					Spec: &TenantSpec{
+						Host: host,
 					},
 					Instances: []string{
 						"http://localhost/bigbluebutton",
@@ -108,8 +108,8 @@ func TestListTenants(t *testing.T) {
 				redisMock.ExpectKeys("tenant:*").SetVal([]string{"tenant:localhost"})
 				tenant := &Tenant{
 					Kind: "Tenant",
-					Spec: map[string]string{
-						"host": "localhost",
+					Spec: &TenantSpec{
+						Host: "localhost",
 					},
 					Instances: []string{
 						"http://localhost/bigbluebutton",
@@ -203,8 +203,8 @@ func TestGetTenant(t *testing.T) {
 			Mock: func() {
 				tenant := Tenant{
 					Kind: "Tenant",
-					Spec: map[string]string{
-						"host": "localhost",
+					Spec: &TenantSpec{
+						Host: "localhost",
 					},
 					Instances: []string{
 						"http://localhost/bigbluebutton",
@@ -220,7 +220,7 @@ func TestGetTenant(t *testing.T) {
 			Validator: func(t *testing.T, value interface{}, err error) {
 				tenant := value.(*Tenant)
 				assert.NotNil(t, tenant)
-				assert.Equal(t, "localhost", tenant.Spec["host"])
+				assert.Equal(t, "localhost", tenant.Spec.Host)
 				assert.Nil(t, err)
 			},
 		},

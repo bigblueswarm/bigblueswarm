@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "854c260e-9721-408d-8b37-57a49c8d98e8",
+		"_postman_id": "ad3350aa-ad9a-49ca-b126-7b52a759bae5",
 		"name": "B3LB",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -447,7 +447,6 @@
 									"    pm.expect(response[0].host).to.eql(pm.environment.get(\"instance_url\"))",
 									"    pm.expect(response[0].active_meetings).to.eql(0)",
 									"    pm.expect(response[0].active_participants).to.eql(0)",
-									"    pm.expect(response[0].api_status).to.eql(\"Up\")",
 									"    pm.expect(\"mem\" in response[0]).to.be.true",
 									"    pm.expect(\"cpu\" in response[0]).to.be.true",
 									"})"
@@ -868,6 +867,12 @@
 									"    pm.expect(response.meetings.meeting.meetingID).to.eql(pm.environment.get(\"meeting_id\"))",
 									"    pm.expect(response.meetings.meeting.moderatorPW).to.eql(pm.environment.get(\"moderator_pw\"))",
 									"    pm.expect(response.meetings.meeting.attendeePW).to.eql(pm.environment.get(\"attendee_pw\"))",
+									"})",
+									"",
+									"pm.test(\"GetMeetings should check the tenant metadata is valid\", () => {",
+									"    response = xml2Json(responseBody).response",
+									"    let tenant = `${pm.environment.get(\"b3lb_host\")}:${pm.environment.get(\"b3lb_port\")}`",
+									"    pm.expect(response.meetings.meeting.metadata.tenant).to.eql(tenant)",
 									"})"
 								],
 								"type": "text/javascript"

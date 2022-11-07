@@ -75,7 +75,9 @@ func TestChecksumValidation(t *testing.T) {
 				request.SetRequestHost(c, "localhost")
 				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
 					return &admin.Tenant{
-						Spec: map[string]string{},
+						Spec: &admin.TenantSpec{
+							Host: "localhost",
+						},
 					}, nil
 				}
 				request.SetRequestParams(c, "name=simon&checksum=invalid_checksum")
@@ -92,12 +94,13 @@ func TestChecksumValidation(t *testing.T) {
 		{
 			Name: "A valid custom tenant checksum should returns 200 code",
 			Mock: func() {
-				request.SetRequestParams(c, "name=simon&checksum=a03a5771d5bd9b0930df4c99599a20dab8319226")
+				request.SetRequestParams(c, "name=simon&checksum=f0ce59033b7468b690112cd2e715c698e35c8e2b")
 				request.SetRequestHost(c, "localhost")
 				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
 					return &admin.Tenant{
-						Spec: map[string]string{
-							"secret": "dummy_secret",
+						Spec: &admin.TenantSpec{
+							Host:   "localhost",
+							Secret: "mydummysecret",
 						},
 					}, nil
 				}
@@ -114,7 +117,9 @@ func TestChecksumValidation(t *testing.T) {
 				request.SetRequestHost(c, "localhost")
 				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
 					return &admin.Tenant{
-						Spec: map[string]string{},
+						Spec: &admin.TenantSpec{
+							Host: "localhost",
+						},
 					}, nil
 				}
 			},

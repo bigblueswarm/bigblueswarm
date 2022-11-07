@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -202,6 +203,13 @@ func TestFormalizeConfigPath(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	var expectedDefaultPath string
+	if runtime.GOOS == "windows" {
+		expectedDefaultPath = fmt.Sprintf("%s\\.b3lb\\b3lb.yaml", homeDir)
+	} else {
+		expectedDefaultPath = fmt.Sprintf("%s/.b3lb/b3lb.yaml", homeDir)
+	}
+
 	tests := []test{
 		{
 			name:     "a custom path should return the custom path",
@@ -211,7 +219,7 @@ func TestFormalizeConfigPath(t *testing.T) {
 		{
 			name:     "default path should return the home path",
 			path:     DefaultConfigPath(),
-			expected: fmt.Sprintf("%s/.b3lb/b3lb.yaml", homeDir),
+			expected: expectedDefaultPath,
 		},
 	}
 

@@ -29,6 +29,10 @@ scripts:
 	@echo "[SCRIPTS] install b3lb scripts"
 	git clone https://github.com/b3lb/b3lb-scripts scripts
 
+#start: @ launch b3lb using the default config file
+start:
+	go run cmd/b3lb/main.go -config config.yml
+
 #test.unit: @ run unit tests and coverage
 test.unit:
 	@echo "[TEST.UNIT] run unit tests and coverage"

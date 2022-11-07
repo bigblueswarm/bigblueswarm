@@ -42,8 +42,8 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 		return
 	}
 
-	if tenantSecret, exists := tenant.Spec["secret"]; exists {
-		secret = tenantSecret
+	if tenant.Spec.Secret != "" {
+		secret = tenant.Spec.Secret
 	}
 
 	checksum := &api.Checksum{

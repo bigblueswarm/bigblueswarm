@@ -44,7 +44,7 @@ func tenantKey(key string) string {
 
 // AddTenant store tenant in redis
 func (r *RedisTenantManager) AddTenant(tenant *Tenant) error {
-	if host, ok := tenant.Spec[hostSpec]; !ok || host == "" {
+	if tenant.Spec.Host == "" {
 		return errors.New("tenant host chould not be nil or empty string")
 	}
 
@@ -53,7 +53,7 @@ func (r *RedisTenantManager) AddTenant(tenant *Tenant) error {
 		return err
 	}
 
-	_, rErr := r.RDB.Set(context.Background(), tenantKey(tenant.Spec[hostSpec]), string(value), 0).Result()
+	_, rErr := r.RDB.Set(context.Background(), tenantKey(tenant.Spec.Host), string(value), 0).Result()
 	return utils.ComputeErr(rErr)
 }
 
@@ -68,7 +68,7 @@ func (r *RedisTenantManager) ListTenants() ([]TenantListObject, error) {
 		}
 
 		list = append(list, TenantListObject{
-			Hostname:      tenant.Spec["host"],
+			Hostname:      tenant.Spec.Host,
 			InstanceCount: len(tenant.Instances),
 		})
 

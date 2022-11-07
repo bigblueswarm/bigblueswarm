@@ -12,7 +12,7 @@
             "program": "cmd/b3lb/main.go",
             "args": [
                 "-config",
-                "/workspaces/b3lb/config.yml"
+                "../../config.yml"
             ]
         },
         {

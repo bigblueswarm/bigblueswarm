@@ -90,6 +90,11 @@ func (a *Admin) CreateTenant(c *gin.Context) {
 		return
 	}
 
+	if tenant.Spec.Host == "" {
+		c.String(http.StatusBadRequest, "tenant spec host should not be null")
+		return
+	}
+
 	if err := a.TenantManager.AddTenant(tenant); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
