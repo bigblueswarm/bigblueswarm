@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/SLedunois/b3lb/v2/pkg/api"
+	"github.com/SLedunois/b3lb/v2/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -29,7 +30,7 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 	}
 
 	secret := s.Config.BigBlueButton.Secret
-	tenant, err := s.TenantManager.GetTenant(c.Request.Host)
+	tenant, err := s.TenantManager.GetTenant(utils.GetHost(c))
 	if err != nil {
 		log.Error("Tenant manager can't retrieve tenant: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -37,7 +38,7 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 	}
 
 	if tenant == nil {
-		log.Infoln(fmt.Sprintf("Tenant %s not found", c.Request.Host))
+		log.Infoln(fmt.Sprintf("Tenant %s not found", utils.GetHost(c)))
 		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/SLedunois/b3lb/v2/pkg/api"
+	"github.com/SLedunois/b3lb/v2/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -75,7 +76,7 @@ func (s *Server) retrieveBBBBInstanceFromKey(key string) (api.BigBlueButtonInsta
 // Create handler find a server and create a meeting on balanced server.
 func (s *Server) Create(c *gin.Context) {
 	ctx := getAPIContext(c)
-	tenant, err := s.TenantManager.GetTenant(c.Request.Host)
+	tenant, err := s.TenantManager.GetTenant(utils.GetHost(c))
 	if err != nil {
 		log.Error("Manager failed to retrieve tenant: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
