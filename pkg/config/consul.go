@@ -62,6 +62,8 @@ func LoadConfigFromConsul(path string) (*Config, error) {
 		return nil, err
 	}
 
+	conf.Balancer.SetDefaultValues()
+
 	return conf, nil
 }
 

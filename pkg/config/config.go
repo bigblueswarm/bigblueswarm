@@ -46,11 +46,11 @@ type BalancerConfig struct {
 // SetDefaultValues initialize BalancerConfig default values
 func (bc *BalancerConfig) SetDefaultValues() {
 	if bc.CPULimit == 0 {
-		bc.CPULimit = 100
+		bc.CPULimit = 90
 	}
 
 	if bc.MemLimit == 0 {
-		bc.MemLimit = 100
+		bc.MemLimit = 90
 	}
 }
 
