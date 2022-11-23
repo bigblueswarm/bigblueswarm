@@ -240,8 +240,8 @@ func TestBalancerConfigSetDefaultValues(t *testing.T) {
 			Mock: func() {},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				conf := value.(*BalancerConfig)
-				assert.Equal(t, 100, conf.CPULimit)
-				assert.Equal(t, 100, conf.MemLimit)
+				assert.Equal(t, 90, conf.CPULimit)
+				assert.Equal(t, 90, conf.MemLimit)
 			},
 		},
 		{
