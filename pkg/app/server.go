@@ -3,12 +3,12 @@ package app
 import (
 	"fmt"
 
-	"github.com/SLedunois/b3lb/v2/pkg/admin"
-	"github.com/SLedunois/b3lb/v2/pkg/balancer"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
 
-	"github.com/SLedunois/b3lb/v2/pkg/config"
-	"github.com/SLedunois/b3lb/v2/pkg/restclient"
-	"github.com/SLedunois/b3lb/v2/pkg/utils"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/restclient"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )

@@ -16,6 +16,5 @@ redis:
 influxdb:
   address: http://localhost:8086
   token: Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg==
-  organization: b3lb
+  organization: bigblueswarm
   bucket: bucket
-...

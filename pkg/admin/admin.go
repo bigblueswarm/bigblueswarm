@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SLedunois/b3lb/v2/pkg/balancer"
-	"github.com/SLedunois/b3lb/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
 
-// Admin struct manager b3lb administration
+// Admin struct manager bigblueswarm administration
 type Admin struct {
 	InstanceManager InstanceManager
 	TenantManager   TenantManager

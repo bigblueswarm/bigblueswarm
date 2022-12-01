@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/SLedunois/b3lb/v2/pkg/utils"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
 	"github.com/go-redis/redis/v8"
 	"gopkg.in/yaml.v3"
 )
@@ -14,7 +14,7 @@ import (
 const tenantPrefix = "tenant:%s"
 const hostSpec = "host"
 
-// TenantManager is a struct manager b3lb tenants
+// TenantManager is a struct manager bigblueswarm tenants
 type TenantManager interface {
 	// AddTenant add a tenant in the manager
 	AddTenant(tenant *Tenant) error

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/b3lb/test_utils/pkg/test"
+	"github.com/bigblueswarm/test_utils/pkg/test"
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 )

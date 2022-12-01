@@ -1,4 +1,4 @@
-module github.com/SLedunois/b3lb/v2
+module github.com/bigblueswarm/bigblueswarm/v2
 
 go 1.19
 
@@ -18,11 +18,13 @@ require (
 	google.golang.org/protobuf v1.28.0 // indirect
 )
 
-require gopkg.in/yaml.v3 v3.0.1
+require (
+	github.com/bigblueswarm/test_utils v0.0.0-20221130142439-0fd13167b78a
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require (
 	github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da // indirect
-	github.com/b3lb/test_utils v0.0.0-20220918193343-b04e283e9a4c // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
@@ -45,7 +47,6 @@ require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/consul/api v1.12.0
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect

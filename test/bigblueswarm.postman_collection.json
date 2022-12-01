@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "ad3350aa-ad9a-49ca-b126-7b52a759bae5",
-		"name": "B3LB",
+		"name": "BigBlueSwarm",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -45,12 +45,12 @@
 							}
 						},
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/instances",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/admin/api/instances",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"admin",
 								"api",
@@ -89,7 +89,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"kind\": \"Tenant\",\n    \"spec\": {\n        \"host\": \"{{b3lb_host}}:{{b3lb_port}}\"\n    },\n    \"instances\": [\"{{instance_url}}\"]\n}",
+							"raw": "{\n    \"kind\": \"Tenant\",\n    \"spec\": {\n        \"host\": \"{{bigblueswarm_host}}:{{bigblueswarm_port}}\"\n    },\n    \"instances\": [\"{{instance_url}}\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -97,12 +97,12 @@
 							}
 						},
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/tenants",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/admin/api/tenants",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"admin",
 								"api",
@@ -127,7 +127,7 @@
 									"    const response = pm.response.json()",
 									"    pm.expect(response.kind).to.eql(\"TenantList\")",
 									"    pm.expect(response.tenants.length).to.eql(1)",
-									"    pm.expect(response.tenants[0].hostname).to.eql(pm.environment.get(\"b3lb_host\") + \":\" + pm.environment.get(\"b3lb_port\"))",
+									"    pm.expect(response.tenants[0].hostname).to.eql(pm.environment.get(\"bigblueswarm_host\") + \":\" + pm.environment.get(\"bigblueswarm_port\"))",
 									"    pm.expect(response.tenants[0].instance_count).to.eql(1)",
 									"})"
 								],
@@ -160,12 +160,12 @@
 							}
 						},
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/tenants",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/admin/api/tenants",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"admin",
 								"api",
@@ -189,7 +189,7 @@
 									"",
 									"pm.test(\"Getting a tenant should return a valid tenant\", () => {",
 									"    pm.expect(response.kind).to.eql(\"Tenant\")",
-									"    pm.expect(response.spec.host).to.eql(pm.environment.get(\"b3lb_host\") + \":\" + pm.environment.get(\"b3lb_port\"))",
+									"    pm.expect(response.spec.host).to.eql(pm.environment.get(\"bigblueswarm_host\") + \":\" + pm.environment.get(\"bigblueswarm_port\"))",
 									"    pm.expect(response.instances[0]).to.eql(pm.environment.get(\"instance_url\"))",
 									"})"
 								],
@@ -222,17 +222,17 @@
 							}
 						},
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/tenants/{{b3lb_host}}:{{b3lb_port}}",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/admin/api/tenants/{{bigblueswarm_host}}:{{bigblueswarm_port}}",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"admin",
 								"api",
 								"tenants",
-								"{{b3lb_host}}:{{b3lb_port}}"
+								"{{bigblueswarm_host}}:{{bigblueswarm_port}}"
 							]
 						}
 					},
@@ -275,17 +275,17 @@
 							}
 						},
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/tenants/{{b3lb_host}}",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/admin/api/tenants/{{bigblueswarm_host}}",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"admin",
 								"api",
 								"tenants",
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							]
 						}
 					},
@@ -326,12 +326,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/instances",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/admin/api/instances",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"admin",
 								"api",
@@ -382,7 +382,7 @@
 									"pm.test(\"Getting configurations should returns a valid InfluxDB configuration\", () => {",
 									"    pm.expect(response.influxdb.address).to.eql(\"http://localhost:8086\")",
 									"    pm.expect(response.influxdb.token).to.eql(\"Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg==\")",
-									"    pm.expect(response.influxdb.organization).to.eql(\"b3lb\")",
+									"    pm.expect(response.influxdb.organization).to.eql(\"bigblueswarm\")",
 									"    pm.expect(response.influxdb.bucket).to.eql(\"bucket\")",
 									"})"
 								],
@@ -415,12 +415,12 @@
 							}
 						},
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/configurations",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/admin/api/configurations",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"admin",
 								"api",
@@ -468,12 +468,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/admin/api/cluster",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/admin/api/cluster",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"admin",
 								"api",
@@ -489,7 +489,7 @@
 				"apikey": [
 					{
 						"key": "value",
-						"value": "{{b3lb_admin_api_key}}",
+						"value": "{{bigblueswarm_admin_api_key}}",
 						"type": "string"
 					},
 					{
@@ -562,12 +562,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api"
@@ -612,12 +612,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/create?name={{session_name}}&meetingID={{meeting_id}}&moderatorPW={{moderator_pw}}&attendeePW={{attendee_pw}}",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/create?name={{session_name}}&meetingID={{meeting_id}}&moderatorPW={{moderator_pw}}&attendeePW={{attendee_pw}}",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -669,12 +669,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/join?fullName=Simon LEDUNOIS&password={{moderator_pw}}&meetingID={{meeting_id}}",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/join?fullName=Simon LEDUNOIS&password={{moderator_pw}}&meetingID={{meeting_id}}",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -723,12 +723,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/join?fullName=Simon LEDUNOIS&password={{moderator_pw}}&meetingID={{meeting_id}}&redirect=false",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/join?fullName=Simon LEDUNOIS&password={{moderator_pw}}&meetingID={{meeting_id}}&redirect=false",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -781,12 +781,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/isMeetingRunning?meetingID={{meeting_id}}",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/isMeetingRunning?meetingID={{meeting_id}}",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -827,12 +827,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/getMeetingInfo?meetingID={{meeting_id}}",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/getMeetingInfo?meetingID={{meeting_id}}",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -871,7 +871,7 @@
 									"",
 									"pm.test(\"GetMeetings should check the tenant metadata is valid\", () => {",
 									"    response = xml2Json(responseBody).response",
-									"    let tenant = `${pm.environment.get(\"b3lb_host\")}:${pm.environment.get(\"b3lb_port\")}`",
+									"    let tenant = `${pm.environment.get(\"bigblueswarm_host\")}:${pm.environment.get(\"bigblueswarm_port\")}`",
 									"    pm.expect(response.meetings.meeting.metadata.tenant).to.eql(tenant)",
 									"})"
 								],
@@ -883,12 +883,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/getMeetings",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/getMeetings",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -926,12 +926,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/getRecordings",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/getRecordings",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -968,12 +968,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/updateRecordings?recordID=record-id",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/updateRecordings?recordID=record-id",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -1016,12 +1016,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/getRecordingTextTracks?recordID=record-id",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/getRecordingTextTracks?recordID=record-id",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -1064,12 +1064,12 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/putRecordingTextTrack?recordID=record-id",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/putRecordingTextTrack?recordID=record-id",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -1112,12 +1112,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/publishRecordings?recordID=record-id&publish=true",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/publishRecordings?recordID=record-id&publish=true",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -1164,12 +1164,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/deleteRecordings?recordID=record-id",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/deleteRecordings?recordID=record-id",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -1215,12 +1215,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://{{b3lb_host}}:{{b3lb_port}}/bigbluebutton/api/end?meetingID={{meeting_id}}&password={{moderator_pw}}",
+							"raw": "http://{{bigblueswarm_host}}:{{bigblueswarm_port}}/bigbluebutton/api/end?meetingID={{meeting_id}}&password={{moderator_pw}}",
 							"protocol": "http",
 							"host": [
-								"{{b3lb_host}}"
+								"{{bigblueswarm_host}}"
 							],
-							"port": "{{b3lb_port}}",
+							"port": "{{bigblueswarm_port}}",
 							"path": [
 								"bigbluebutton",
 								"api",
@@ -1281,7 +1281,7 @@
 							"        if (queries.count() > 0) {",
 							"            checksum = checksum.slice(0, -1)",
 							"        }",
-							"        checksum += pm.environment.get(\"b3lb_secret\")",
+							"        checksum += pm.environment.get(\"bigblueswarm_secret\")",
 							"",
 							"        return CryptoJS.SHA1(checksum).toString()",
 							"    }",
@@ -1338,7 +1338,7 @@
 	],
 	"variable": [
 		{
-			"key": "madatory_b3lb_request",
+			"key": "madatory_bigblueswarm_request",
 			"value": ""
 		},
 		{

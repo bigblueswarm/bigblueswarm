@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 
-	"github.com/SLedunois/b3lb/v2/pkg/utils"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -33,7 +33,7 @@ func MeetingMapKey(id string) string {
 	return "meeting:" + id
 }
 
-//RecordingMapKey format recordingID as a valid recording map key
+// RecordingMapKey format recordingID as a valid recording map key
 func RecordingMapKey(id string) string {
 	return "recording:" + id
 }

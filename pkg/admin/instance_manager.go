@@ -5,16 +5,16 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/SLedunois/b3lb/v2/pkg/api"
-	"github.com/SLedunois/b3lb/v2/pkg/utils"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
 
 	"github.com/go-redis/redis/v8"
 )
 
 var ctx = context.Background()
 
-// B3LBInstances is the key for the list of instances
-const B3LBInstances = "instances:list"
+// BBSInstances is the key for the list of instances
+const BBSInstances = "instances:list"
 
 // InstanceManager manager Bigbluebutton instances
 type InstanceManager interface {
@@ -39,19 +39,19 @@ func NewInstanceManager(rdb redis.Client) InstanceManager {
 
 // List returns the list of instances
 func (m *RedisInstanceManager) List() ([]string, error) {
-	instances, err := m.RDB.HKeys(ctx, B3LBInstances).Result()
+	instances, err := m.RDB.HKeys(ctx, BBSInstances).Result()
 	return instances, utils.ComputeErr(err)
 }
 
 // Add adds an instance to the manager
 func (m *RedisInstanceManager) Add(instance api.BigBlueButtonInstance) error {
-	_, err := m.RDB.HSet(ctx, B3LBInstances, instance.URL, instance.Secret).Result()
+	_, err := m.RDB.HSet(ctx, BBSInstances, instance.URL, instance.Secret).Result()
 	return utils.ComputeErr(err)
 }
 
 // Get retrieve a BigBlueButton instance based on its url
 func (m *RedisInstanceManager) Get(URL string) (api.BigBlueButtonInstance, error) {
-	secret, err := m.RDB.HGet(ctx, B3LBInstances, URL).Result()
+	secret, err := m.RDB.HGet(ctx, BBSInstances, URL).Result()
 
 	if secret == "" {
 		return api.BigBlueButtonInstance{}, errors.New("Instance not found")
@@ -65,7 +65,7 @@ func (m *RedisInstanceManager) Get(URL string) (api.BigBlueButtonInstance, error
 
 // ListInstances retrieve all instance as a BigBlueButtonInstance array
 func (m *RedisInstanceManager) ListInstances() ([]api.BigBlueButtonInstance, error) {
-	instanceMap, err := m.RDB.HGetAll(ctx, B3LBInstances).Result()
+	instanceMap, err := m.RDB.HGetAll(ctx, BBSInstances).Result()
 
 	instances := make([]api.BigBlueButtonInstance, 0)
 	for k, v := range instanceMap {
@@ -80,7 +80,7 @@ func (m *RedisInstanceManager) ListInstances() ([]api.BigBlueButtonInstance, err
 
 // SetInstances set instances map
 func (m *RedisInstanceManager) SetInstances(instances map[string]string) error {
-	_, err := m.RDB.Del(ctx, B3LBInstances).Result()
+	_, err := m.RDB.Del(ctx, BBSInstances).Result()
 	if utils.ComputeErr(err) != nil {
 		return fmt.Errorf("failed to clear instances: %s", err)
 	}

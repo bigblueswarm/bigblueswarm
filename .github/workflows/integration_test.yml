@@ -13,13 +13,13 @@ jobs:
     name: Integration test
     steps:
       - uses: actions/checkout@v2
-      - name: Build B3LB artifact
+      - name: Build BigBlueSwarm artifact
         run: make build
-      - name: Download B3LB scripts
+      - name: Download BigBlueSwarm scripts
         run: make scripts
       - name: Run integration test cluster
-        run: make test.integration.cluster.start test.integration.b3lb.run
+        run: make test.integration.cluster.start test.integration.bigblueswarm.run
       - name: Launch integration tests
         run: make test.integration.launch
       - name: Stop integration test cluster
-        run: make test.integration.b3lb.stop cluster.stop test.integration.cluster.remove
+        run: make test.integration.bigblueswarm.stop cluster.stop test.integration.cluster.remove
