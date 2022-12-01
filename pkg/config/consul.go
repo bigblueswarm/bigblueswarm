@@ -26,7 +26,7 @@ func GetConsulConfig(path string) *api.Config {
 	return config
 }
 
-// LoadConfigFromConsul load B3LB configuration from consul provider
+// LoadConfigFromConsul load BigBlueSwarm configuration from consul provider
 func LoadConfigFromConsul(path string) (*Config, error) {
 	// Get a new consul client
 	client, err := api.NewClient(GetConsulConfig(path))

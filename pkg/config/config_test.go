@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/b3lb/test_utils/pkg/test"
+	"github.com/bigblueswarm/test_utils/pkg/test"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -141,7 +141,7 @@ func TestConsulConfigLoad(t *testing.T) {
 			Name: "no error should return a valid configuration",
 			Mock: func() {
 				url = server.URL
-				idbConf = `[{"LockIndex":0,"Key":"configuration/influxdb","Flags":0,"Value":"YWRkcmVzczogaHR0cDovL2xvY2FsaG9zdDo4MDg2CnRva2VuOiBacTl3THNtaG5XNVV0T2lQSkFwVXYxY1RWSmZ3WHNUZ2xfcENraVRpa1EzZzJZR1B0UzVIcXNYZWYtV2Y1cFVVM3dqWTNuVldUWVJJLVdjOExqYkRmZz09Cm9yZ2FuaXphdGlvbjogYjNsYgpidWNrZXQ6IGJ1Y2tldA==","CreateIndex":50,"ModifyIndex":50}]`
+				idbConf = `[{"LockIndex":0,"Key":"configuration/influxdb","Flags":0,"Value":"YWRkcmVzczogaHR0cDovL2xvY2FsaG9zdDo4MDg2CnRva2VuOiBacTl3THNtaG5XNVV0T2lQSkFwVXYxY1RWSmZ3WHNUZ2xfcENraVRpa1EzZzJZR1B0UzVIcXNYZWYtV2Y1cFVVM3dqWTNuVldUWVJJLVdjOExqYkRmZz09Cm9yZ2FuaXphdGlvbjogYmlnYmx1ZXN3YXJtCmJ1Y2tldDogYnVja2V0","CreateIndex":55,"ModifyIndex":55}]`
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				conf := value.(*Config)
@@ -163,7 +163,7 @@ func TestConsulConfigLoad(t *testing.T) {
 					IDB: IDB{
 						Address:      "http://localhost:8086",
 						Token:        "Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg==",
-						Organization: "b3lb",
+						Organization: "bigblueswarm",
 						Bucket:       "bucket",
 					},
 					RDB: RDB{
@@ -188,7 +188,7 @@ func TestConsulConfigLoad(t *testing.T) {
 }
 
 func TestDefaultConfigPath(t *testing.T) {
-	assert.Equal(t, "$HOME/.b3lb/b3lb.yaml", DefaultConfigPath())
+	assert.Equal(t, "$HOME/.bigblueswarm/bigblueswarm.yaml", DefaultConfigPath())
 }
 
 func TestFormalizeConfigPath(t *testing.T) {
@@ -205,16 +205,16 @@ func TestFormalizeConfigPath(t *testing.T) {
 
 	var expectedDefaultPath string
 	if runtime.GOOS == "windows" {
-		expectedDefaultPath = fmt.Sprintf("%s\\.b3lb\\b3lb.yaml", homeDir)
+		expectedDefaultPath = fmt.Sprintf("%s\\.bigblueswarm\\bigblueswarm.yaml", homeDir)
 	} else {
-		expectedDefaultPath = fmt.Sprintf("%s/.b3lb/b3lb.yaml", homeDir)
+		expectedDefaultPath = fmt.Sprintf("%s/.bigblueswarm/bigblueswarm.yaml", homeDir)
 	}
 
 	tests := []test{
 		{
 			name:     "a custom path should return the custom path",
-			path:     "/etc/config/b3lb.yaml",
-			expected: "/etc/config/b3lb.yaml",
+			path:     "/etc/config/bigblueswarm.yaml",
+			expected: "/etc/config/bigblueswarm.yaml",
 		},
 		{
 			name:     "default path should return the home path",

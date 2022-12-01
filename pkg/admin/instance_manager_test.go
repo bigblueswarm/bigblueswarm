@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/SLedunois/b3lb/v2/pkg/api"
-	"github.com/b3lb/test_utils/pkg/test"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
+	"github.com/bigblueswarm/test_utils/pkg/test"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +18,7 @@ func TestInstanceManagerList(t *testing.T) {
 		{
 			Name: "Returning a list of keys should return the list and no error",
 			Mock: func() {
-				redisMock.ExpectHKeys(B3LBInstances).SetVal([]string{url})
+				redisMock.ExpectHKeys(BBSInstances).SetVal([]string{url})
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, value.([]string)[0], url)
@@ -28,7 +28,7 @@ func TestInstanceManagerList(t *testing.T) {
 		{
 			Name: "Returning redis.Nil should return an empty list and no error",
 			Mock: func() {
-				mock := redisMock.ExpectHKeys(B3LBInstances)
+				mock := redisMock.ExpectHKeys(BBSInstances)
 				mock.SetErr(redis.Nil)
 				mock.SetVal([]string{})
 			},
@@ -40,7 +40,7 @@ func TestInstanceManagerList(t *testing.T) {
 		{
 			Name: "Returning an error should return the error",
 			Mock: func() {
-				redisMock.ExpectHKeys(B3LBInstances).SetErr(errors.New("test error"))
+				redisMock.ExpectHKeys(BBSInstances).SetErr(errors.New("test error"))
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.NotNil(t, err)
@@ -62,7 +62,7 @@ func TestInstanceManagerAdd(t *testing.T) {
 		{
 			Name: "Adding a new instance should return no error",
 			Mock: func() {
-				redisMock.ExpectHSet(B3LBInstances, url, "secret")
+				redisMock.ExpectHSet(BBSInstances, url, "secret")
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.NotNil(t, err)
@@ -71,7 +71,7 @@ func TestInstanceManagerAdd(t *testing.T) {
 		{
 			Name: "Throwing an error when adding an instance should return the error",
 			Mock: func() {
-				redisMock.ExpectHSet(B3LBInstances, url, "secret").SetErr(errors.New("test error"))
+				redisMock.ExpectHSet(BBSInstances, url, "secret").SetErr(errors.New("test error"))
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.NotNil(t, err)
@@ -94,7 +94,7 @@ func TestInstanceManagerGet(t *testing.T) {
 		{
 			Name: "Getting an instance should return the instance and no error",
 			Mock: func() {
-				mock := redisMock.ExpectHGet(B3LBInstances, url)
+				mock := redisMock.ExpectHGet(BBSInstances, url)
 				mock.SetErr(nil)
 				mock.SetVal(secret)
 			},
@@ -108,7 +108,7 @@ func TestInstanceManagerGet(t *testing.T) {
 		{
 			Name: "Throwing an error when getting an instance should return the error",
 			Mock: func() {
-				mock := redisMock.ExpectHGet(B3LBInstances, url)
+				mock := redisMock.ExpectHGet(BBSInstances, url)
 				mock.SetErr(errors.New("test error"))
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
@@ -131,7 +131,7 @@ func TestInstanceManagerListInstances(t *testing.T) {
 		{
 			Name: "An empty map should return an empty list",
 			Mock: func() {
-				redisMock.ExpectHGetAll(B3LBInstances).SetVal(map[string]string{})
+				redisMock.ExpectHGetAll(BBSInstances).SetVal(map[string]string{})
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				instances := value.([]api.BigBlueButtonInstance)
@@ -145,7 +145,7 @@ func TestInstanceManagerListInstances(t *testing.T) {
 				instances := map[string]string{
 					"http://localhost/bigbluebutton": "secret",
 				}
-				redisMock.ExpectHGetAll(B3LBInstances).SetVal(instances)
+				redisMock.ExpectHGetAll(BBSInstances).SetVal(instances)
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				instances := value.([]api.BigBlueButtonInstance)
@@ -158,7 +158,7 @@ func TestInstanceManagerListInstances(t *testing.T) {
 		{
 			Name: "Redis returning an error should return an error and an empty list",
 			Mock: func() {
-				redisMock.ExpectHGetAll(B3LBInstances).SetErr(errors.New("redis error"))
+				redisMock.ExpectHGetAll(BBSInstances).SetErr(errors.New("redis error"))
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				instances := value.([]api.BigBlueButtonInstance)
@@ -186,7 +186,7 @@ func TestInstanceManagerSetInstances(t *testing.T) {
 		{
 			Name: "an error returned by redis while cleaning instances should return an error",
 			Mock: func() {
-				mock := redisMock.ExpectDel(B3LBInstances)
+				mock := redisMock.ExpectDel(BBSInstances)
 				mock.SetVal(0)
 				mock.SetErr(errors.New("redis error"))
 			},
@@ -197,8 +197,8 @@ func TestInstanceManagerSetInstances(t *testing.T) {
 		{
 			Name: "an error returned by redis while adding a new instance should return an error",
 			Mock: func() {
-				redisMock.ExpectDel(B3LBInstances).SetVal(1)
-				mock := redisMock.ExpectHSet(B3LBInstances, "http://localhost/bigbluebutton", "dummy_secret")
+				redisMock.ExpectDel(BBSInstances).SetVal(1)
+				mock := redisMock.ExpectHSet(BBSInstances, "http://localhost/bigbluebutton", "dummy_secret")
 				mock.SetVal(0)
 				mock.SetErr(errors.New("redis error"))
 			},
@@ -209,8 +209,8 @@ func TestInstanceManagerSetInstances(t *testing.T) {
 		{
 			Name: "a valid call should return no error",
 			Mock: func() {
-				redisMock.ExpectDel(B3LBInstances).SetVal(1)
-				redisMock.ExpectHSet(B3LBInstances, "http://localhost/bigbluebutton", "dummy_secret").SetVal(1)
+				redisMock.ExpectDel(BBSInstances).SetVal(1)
+				redisMock.ExpectHSet(BBSInstances, "http://localhost/bigbluebutton", "dummy_secret").SetVal(1)
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Nil(t, err)

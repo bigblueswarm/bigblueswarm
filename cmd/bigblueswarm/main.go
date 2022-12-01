@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/SLedunois/b3lb/v2/pkg/app"
-	"github.com/SLedunois/b3lb/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/app"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -37,7 +37,7 @@ func initLog() {
 }
 
 func run(conf *config.Config) error {
-	log.Info(fmt.Sprintf("Starting b3lb server version %s", version))
+	log.Info(fmt.Sprintf("Starting BigBlueSwarm server version %s", version))
 	err := app.NewServer(conf).Run()
 
 	if err != nil {

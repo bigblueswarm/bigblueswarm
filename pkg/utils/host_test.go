@@ -3,7 +3,7 @@ package utils
 import (
 	"testing"
 
-	"github.com/b3lb/test_utils/pkg/request"
+	"github.com/bigblueswarm/test_utils/pkg/request"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )

@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-VERSION = $(shell grep -Po "version = \"(.*)\"" ./cmd/b3lb/main.go | cut -d= -f2 | xargs)
+VERSION = $(shell grep -Po "version = \"(.*)\"" ./cmd/bigblueswarm/main.go | cut -d= -f2 | xargs)
 SECRET = $(shell docker exec bbb1 sh -c "bbb-conf --secret" | grep -Po "Secret: (.*)" | cut -d: -f2 | xargs)
 
 #help: @ list available tasks on this project
@@ -26,27 +26,27 @@ init:
 
 #scripts: @ download scripts
 scripts:
-	@echo "[SCRIPTS] install b3lb scripts"
-	git clone https://github.com/b3lb/b3lb-scripts scripts
+	@echo "[SCRIPTS] install bigblueswarm scripts"
+	git clone https://github.com/bigblueswarm/bbs-scripts scripts
 
-#start: @ launch b3lb using the default config file
+#start: @ launch bigblueswarm using the default config file
 start:
-	go run cmd/b3lb/main.go -config config.yml
+	go run cmd/bigblueswarm/main.go -config config.yml
 
 #test.unit: @ run unit tests and coverage
 test.unit:
 	@echo "[TEST.UNIT] run unit tests and coverage"
 	go test -race -covermode=atomic -coverprofile=coverage.out \
-		github.com/SLedunois/b3lb/v2/pkg/admin \
-		github.com/SLedunois/b3lb/v2/pkg/api \
-		github.com/SLedunois/b3lb/v2/pkg/app \
-		github.com/SLedunois/b3lb/v2/pkg/config \
-		github.com/SLedunois/b3lb/v2/pkg/utils \
-		github.com/SLedunois/b3lb/v2/pkg/balancer \
-		github.com/SLedunois/b3lb/v2/pkg/restclient
+		github.com/bigblueswarm/bigblueswarm/v2/pkg/admin \
+		github.com/bigblueswarm/bigblueswarm/v2/pkg/api \
+		github.com/bigblueswarm/bigblueswarm/v2/pkg/app \
+		github.com/bigblueswarm/bigblueswarm/v2/pkg/config \
+		github.com/bigblueswarm/bigblueswarm/v2/pkg/utils \
+		github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer \
+		github.com/bigblueswarm/bigblueswarm/v2/pkg/restclient
 
 #test.integration: @ run integration tests
-test.integration: build test.integration.cluster.start test.integration.b3lb.run test.integration.launch test.integration.b3lb.stop cluster.stop test.integration.cluster.remove
+test.integration: build test.integration.cluster.start test.integration.bigblueswarm.run test.integration.launch test.integration.bigblueswarm.stop cluster.stop test.integration.cluster.remove
 
 test.integration.cluster.start:
 	@if [ "$(shell docker images | grep sledunois/bbb-dev | wc -l)" -eq "0" ]; then\
@@ -57,36 +57,36 @@ test.integration.cluster.start:
 	@sleep 5m
 	@make cluster.init
 
-test.integration.b3lb.run:
-	@echo "[RUN] start b3lb"
-	@nohup ./bin/b3lb-${VERSION} --config config.yml &
+test.integration.bigblueswarm.run:
+	@echo "[RUN] start bigblueswarm"
+	@nohup ./bin/bigblueswarm-${VERSION} --config config.yml &
 	@sleep 15s
 
-test.integration.b3lb.stop:
-	ps -ef | grep b3lb-${VERSION} | grep -v grep | awk '{print $$2}' | xargs kill
+test.integration.bigblueswarm.stop:
+	ps -ef | grep bigblueswarm-${VERSION} | grep -v grep | awk '{print $$2}' | xargs kill
 
 test.integration.cluster.remove:
 	docker rm -f bbb1 bbb2 redis influxdb
 
 test.integration.launch:
 	npm install newman
-	node_modules/.bin/newman run ./test/B3LB.postman_collection.json -e ./test/Integration\ test.postman_environment.json --env-var instance_secret="${SECRET}" --bail --verbose --ignore-redirects
+	node_modules/.bin/newman run ./test/bigblueswarm.postman_collection.json -e ./test/Integration\ test.postman_environment.json --env-var instance_secret="${SECRET}" --bail --verbose --ignore-redirects
 
 
 #build.image: @ build custom bigbluebutton docker image
 build.image:
 	@make -f ./scripts/Makefile build.image
 
-#build: @ build b3lb binary
+#build: @ build bigblueswarm binary
 build:
-	@echo "[BUILD] build b3lb ${VERSION} binary"
+	@echo "[BUILD] build bigblueswarm ${VERSION} binary"
 	rm -rf bin
-	go build -o ./bin/b3lb-${VERSION} ./cmd/b3lb/main.go
+	go build -o ./bin/bigblueswarm-${VERSION} ./cmd/bigblueswarm/main.go
 
-#build.docker @ build b3lb docker image
+#build.docker @ build bigblueswarm docker image
 build.docker:
-	@echo "[BUILD DOCKER] build b3lb docker image"
-	docker build . -t sledunois/b3lb:${VERSION}
+	@echo "[BUILD DOCKER] build bigblueswarm docker image"
+	docker build . -t sledunois/bigblueswarm:${VERSION}
 
 #cluster.init: @ initialize development cluster (initialize influxdb and telegraf)
 cluster.init: cluster.influxdb cluster.telegraf

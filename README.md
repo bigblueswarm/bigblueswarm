@@ -4,20 +4,20 @@
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/c4c4627abd1f474fb2200f9831dfe502)](https://www.codacy.com/gh/SLedunois/b3lb/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=SLedunois/b3lb&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/c4c4627abd1f474fb2200f9831dfe502)](https://www.codacy.com/gh/SLedunois/b3lb/dashboard?utm_source=github.com&utm_medium=referral&utm_content=SLedunois/b3lb&utm_campaign=Badge_Coverage)
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/sledunois/b3lb/Code%20linting/main?label=Code%20linting)
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/sledunois/b3lb/Unit%20tests%20and%20coverage/main?label=Unit%20tests)
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/sledunois/b3lb/Integration%20tests/main?label=Integration%20tests)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/sledunois/b3lb)
-![GitHub](https://img.shields.io/github/license/SLedunois/b3lb)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/bigblueswarm/bigblueswarm/Code%20linting/main?label=Code%20linting)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/bigblueswarm/bigblueswarm/Unit%20tests%20and%20coverage/main?label=Unit%20tests)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/bigblueswarm/bigblueswarm/Integration%20tests/main?label=Integration%20tests)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/bigblueswarm/bigblueswarm)
+![GitHub](https://img.shields.io/github/license/bigblueswarm/bigblueswarm)
 
 [BigBlueButton](https://bigbluebutton.org/) is an open source web conferencing system for online learning.
 
-B3LB is an open source metrics based load balancer that manages a pool of BigBlueButton servers. It works like a proxy and makes the pool of servers appears like a single server. Send standard BigBlueButton API requests and B3LB distributes those request to the least loaded BigBlueButton server in the pool.
+BigBlueSwarm is an open source metrics based load balancer that manages a pool of BigBlueButton servers. It works like a proxy and makes the pool of servers appears like a single server. Send standard BigBlueButton API requests and BigBlueSwarm distributes those request to the least loaded BigBlueButton server in the pool.
 
 ## Architecture
-A deployment of B3LB requires serveral components to get running:
+A deployment of BigBlueSwarm requires serveral components to get running:
 *   At least 2 BigBlueButton servers containing a telegraf server agent
-*   B3LB loadbalancer server
+*   BigBlueSwarm loadbalancer server
 *   Redis database
 *   InfluxDB database
 
@@ -25,7 +25,7 @@ A deployment of B3LB requires serveral components to get running:
 <img src="assets/architecture.png" alt="Architecture" />
 </p>
 
-Currently, to compute the least loaded BigBlueButton server, B3LB computes the mean or average of the cpu and memory sum metric records for the last 5 minutes and take the lowest average. Check [balancer code](https://github.com/SLedunois/b3lb/blob/main/pkg/app/balancer.go) for more details.
+Currently, to compute the least loaded BigBlueButton server, BigBlueSwarm computes the mean or average of the cpu and memory sum metric records for the last 5 minutes and take the lowest average. Check [balancer code](https://github.com/bigblueswarm/bigblueswarm/blob/main/pkg/app/balancer.go) for more details.
 
 ## Installation
 ### BigBlueButton
@@ -34,17 +34,17 @@ Check official [BigBlueButton installation documentation](https://docs.bigbluebu
 Check official [InfluxDB v2 installation documentation](https://docs.influxdata.com/influxdb/v2.1/install/).
 Once your InfluxDB runs, create an InfluxDB api token using the [UI](https://docs.influxdata.com/influxdb/cloud/security/tokens/create-token/) or the following instructions:
 ```bash
-export INFLUXDB_ORG=b3lb # B3LB InfluxDB organization
-export INFLUXDB_BUCKET=bucket # B3LB InfluxDB bucket
+export INFLUXDB_ORG=bigblueswarm # BigBlueSwarm InfluxDB organization
+export INFLUXDB_BUCKET=bucket # BigBlueSwarm InfluxDB bucket
 export INFLUXDB_TOKEN=Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg== # InfluxDB API token.
-influx setup --name b3lb --org $INFLUXDB_ORG --username admin --password password --token $INFLUX_TOKEN --bucket $INFLUXDB_BUCKET --retention 0 --force
+influx setup --name bigblueswarm --org $INFLUXDB_ORG --username admin --password password --token $INFLUX_TOKEN --bucket $INFLUXDB_BUCKET --retention 0 --force
 ```
 ### Telegraf
 Install Telegraf on your BigBlueButton servers. Check official [Telegraf installation documentation](https://docs.influxdata.com/telegraf/v1.21/introduction/).
 The following is the minimal configuraton. Add it into `telegraf.conf` file:
 ```toml
 [global_tags]
-  b3lb_host="${B3LB_HOST}"
+  bigblueswarm_host="${BIGBLUESWARM_HOST}"
 
 # Configuration for telegraf agent
 [agent]
@@ -125,10 +125,10 @@ The following is the minimal configuraton. Add it into `telegraf.conf` file:
 ```
 Edit `/etc/default/telegraf` file and add the following variables:
 ```bash
-B3LB_HOST= # Your public bigbluebutton url like https://yourbbbhost/bigbluebutton
+BIGBLUESWARM_HOST= # Your public bigbluebutton url like https://yourbbbhost/bigbluebutton
 INFLUXDB_URL= # InfluxDB url
 INFLUXDB_TOKEN=Zq9wLsmhnW5UtOiPJApUv1cTVJfwXsTgl_pCkiTikQ3g2YGPtS5HqsXef-Wf5pUU3wjY3nVWTYRI-Wc8LjbDfg== # Generated InfluxDB api token
-INFLUXDB_ORG=b3lb # InfluxDB organization
+INFLUXDB_ORG=bigblueswarm # InfluxDB organization
 INFLUXDB_BUCKET=bucket # InfluxDB bucket
 ```
 Restart your telegraf server agent:
@@ -137,9 +137,9 @@ systemctl restart telegraf
 ```
 ### Redis
 Check official [Redis installaton guide](https://redis.io/topics/quickstart). Configure Redis using persistance mode.
-### B3LB load balancer
-Download the [latest release](https://github.com/SLedunois/b3lb/releases).
-Since the v2, B3lb provide two configuration provider:
+### BigBlueSwarm load balancer
+Download the [latest release](https://github.com/bigblueswarm/bigblueswarm/releases).
+Since the v2, BigBlueSwarm provide two configuration provider:
 - yaml file
 - [Consul service network](https://www.hashicorp.com/products/consul)
 
@@ -148,14 +148,14 @@ Add a configuration file:
 ```yml
 ---
 bigbluebutton:
-  secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU # Your B3LB secret. It works like a BigBlueButton secret.
+  secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU # Your BigBlueSwarm secret. It works like a BigBlueButton secret.
 admin:
   api_key: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R # Admin API key. Used to call admin rest endpoints
 balancer:
   metrics_range: -5m # metrics range used by balancer to compute the next bigbluebutton instance
   cpu_limit: 100 # max cpu % average in range (metrics_range configuration). If the metric is higher than the configuration, the bigbluebutton instance could not be balanced
   mem_limit: 100 # max memory % average in range (metrics_range configuration). If the metric is higher than the configuration, the bigbluebutton instance could not be balanced
-port: 8090 # B3LB port
+port: 8090 # BigBlueSwarm port
 redis: # Redis configuration
   address:
   password:
@@ -169,13 +169,13 @@ influxdb: # InfluxDB Configuration
 
 ```
 
-Launch B3LB with `-config` flag pointing previous config file.
+Launch BigBlueSwarm with `-config` flag pointing previous config file.
 
 #### Consul
 Install [Consul](https://www.hashicorp.com/products/consul) service network from the official documenation. Go to the KV UI and create the following configurations:
 - `configuration/bigbluebutton` (yaml type)
 ```yaml
-secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU # Your B3LB secret. It works like a BigBlueButton secret.
+secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU # Your BigBlueSwarm secret. It works like a BigBlueButton secret.
 ```
 - `configuration/admin` (yaml type)
 ```yaml
@@ -189,7 +189,7 @@ mem_limit: 100 # max memory % average in range (metrics_range configuration). If
 ```
 - `configuration/port`
 ```
-8090 # B3LB port
+8090 # BigBlueSwarm port
 ```
 - `configuration/redis` (yaml type)
 ```yaml
@@ -205,10 +205,10 @@ organization:
 bucket:
 ```
  
-> Notice using Consul configuration provider allow an update of `bigbluebutton`, `admin`, `balancer` keys without any B3lb restart.
+> Notice using Consul configuration provider allow an update of `bigbluebutton`, `admin`, `balancer` keys without any BigBlueSwarm restart.
 
-## Manage B3LB
-Manage your B3LB cluster using the [b3lbctl](https://github.com/SLedunois/b3lbctl) cli tool.
+## Manage BigBlueSwarm
+Manage your BigBlueSwarm cluster using the [bbsctl](https://github.com/bigblueswarm/bbsctl) cli tool.
 
 ## Roadmap
-Checkout [B3LB public roadmap](https://github.com/users/SLedunois/projects/4).
+Checkout [BigBlueSwarm public roadmap](https://github.com/users/SLedunois/projects/4).

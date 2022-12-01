@@ -3,7 +3,7 @@ package admin
 import (
 	"net/http"
 
-	"github.com/SLedunois/b3lb/v2/pkg/api"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
 )
 
 // Routes returns admin routes

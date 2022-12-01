@@ -5,10 +5,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/SLedunois/b3lb/v2/pkg/utils"
-	"github.com/b3lb/test_utils/pkg/test"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
+	"github.com/bigblueswarm/test_utils/pkg/test"
 
-	"github.com/SLedunois/b3lb/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -60,7 +60,7 @@ func TestProcess(t *testing.T) {
 				body = `#datatype,string,long,dateTime:RFC3339,string,double
 #group,false,false,false,false,false
 #default,_result,,,,
-,result,table,_time,b3lb_host,_value
+,result,table,_time,bigblueswarm_host,_value
 ,balancer,0,2022-01-10T16:57:30Z,http://localhost:8080,`
 			},
 			Validator: func(t *testing.T, result interface{}, err error) {
@@ -135,19 +135,19 @@ func TestClusterStatus(t *testing.T) {
 				body = `#group,false,false,true,true,true,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double
 #default,cpu,,,,,
-,result,table,_start,_stop,b3lb_host,_value
+,result,table,_start,_stop,bigblueswarm_host,_value
 ,,0,2022-03-10T13:41:21.808246343Z,2022-03-10T13:46:21.808246343Z,http://localhost/bigbluebutton,8.840855095953396
 
 #group,false,false,true,true,true,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double
 #default,mem,,,,,
-,result,table,_start,_stop,b3lb_host,_value
+,result,table,_start,_stop,bigblueswarm_host,_value
 ,,0,2022-03-10T13:41:21.808246343Z,2022-03-10T13:46:21.808246343Z,http://localhost/bigbluebutton,68.82938000133251
 
 #group,false,false,true,true,true,false,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,long,long,long
 #default,bbb,,,,,,,
-,result,table,_start,_stop,b3lb_host,online,active_meetings,participant_count
+,result,table,_start,_stop,bigblueswarm_host,online,active_meetings,participant_count
 ,,0,2022-03-10T13:41:21.808246343Z,2022-03-10T13:46:21.808246343Z,http://localhost/bigbluebutton,1,0,0`
 			},
 			Validator: func(t *testing.T, result interface{}, err error) {

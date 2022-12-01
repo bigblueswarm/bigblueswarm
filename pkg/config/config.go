@@ -54,7 +54,7 @@ func (bc *BalancerConfig) SetDefaultValues() {
 	}
 }
 
-// Port represents the B3LB port configuration
+// Port represents the BigBlueSwarm port configuration
 type Port int
 
 // Config represents main configuration mapping
@@ -67,10 +67,10 @@ type Config struct {
 	IDB           IDB            `yaml:"influxdb" json:"influxdb"`
 }
 
-const defaultConfigFileName = "b3lb.yaml"
+const defaultConfigFileName = "bigblueswarm.yaml"
 
 // DefaultConfigFolder is the default config folder path
-const DefaultConfigFolder = "$HOME/.b3lb"
+const DefaultConfigFolder = "$HOME/.bigblueswarm"
 
 // DefaultConfigPath return the default config path file
 func DefaultConfigPath() string {
@@ -86,7 +86,7 @@ func FormalizeConfigPath(path string) (string, error) {
 			return "", err
 		}
 
-		path = filepath.Join(homeDir, ".b3lb", defaultConfigFileName)
+		path = filepath.Join(homeDir, ".bigblueswarm", defaultConfigFileName)
 	}
 
 	return path, nil

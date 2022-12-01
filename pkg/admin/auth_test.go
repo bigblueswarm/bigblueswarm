@@ -5,11 +5,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/SLedunois/b3lb/v2/pkg/balancer"
-	"github.com/SLedunois/b3lb/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
 
-	"github.com/b3lb/test_utils/pkg/request"
-	"github.com/b3lb/test_utils/pkg/test"
+	"github.com/bigblueswarm/test_utils/pkg/request"
+	"github.com/bigblueswarm/test_utils/pkg/test"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

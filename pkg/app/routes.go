@@ -3,8 +3,8 @@ package app
 import (
 	"net/http"
 
-	"github.com/SLedunois/b3lb/v2/pkg/admin"
-	"github.com/SLedunois/b3lb/v2/pkg/api"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
 )
 
 func (s *Server) initRoutes() {

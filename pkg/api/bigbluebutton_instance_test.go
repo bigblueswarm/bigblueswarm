@@ -11,8 +11,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/SLedunois/b3lb/v2/pkg/restclient"
-	"github.com/b3lb/test_utils/pkg/test"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/restclient"
+	"github.com/bigblueswarm/test_utils/pkg/test"
 	"github.com/gin-gonic/gin"
 
 	"github.com/stretchr/testify/assert"

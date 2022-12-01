@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/SLedunois/b3lb/v2/pkg/config"
-	"github.com/SLedunois/b3lb/v2/pkg/utils"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
 	influxdb "github.com/influxdata/influxdb-client-go/v2/api"
 	log "github.com/sirupsen/logrus"
 )
@@ -39,7 +39,7 @@ func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
 		|> range(start: %s)
 		|> filter(fn: (r) => r["_measurement"] == "cpu" and r["_field"] == "usage_system" and r["cpu"] == "cpu-total")
 		|> filter(fn: (r) => %s)
-		|> group(columns: ["b3lb_host"])
+		|> group(columns: ["bigblueswarm_host"])
 		|> mean(column: "_value")
 		|> yield(name: "cpu")
   
@@ -47,17 +47,17 @@ func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
 		|> range(start: %s)
 		|> filter(fn: (r) => r["_measurement"] == "mem" and r["_field"] == "used_percent")
 		|> filter(fn: (r) => %s)
-		|> group(columns: ["b3lb_host"])
+		|> group(columns: ["bigblueswarm_host"])
 		|> mean(column: "_value")
 		|> yield(name: "mem")
 	
 	join(
 		tables: {mem: memFilter, cpu: cpuFilter},
-		on: ["b3lb_host", "_start", "_stop"],
+		on: ["bigblueswarm_host", "_start", "_stop"],
 	)
 	|> filter(fn: (r) => r["_value_cpu"] <= %d and r["_value_mem"] <= %d)
 	|> map(fn: (r) => ({ r with _value: r["_value_cpu"] + r["_value_mem"] }))
-	|> lowestAverage(n: 1, column: "_value", groupColumns: ["b3lb_host", "_time"])
+	|> lowestAverage(n: 1, column: "_value", groupColumns: ["bigblueswarm_host", "_time"])
 	|> yield(name: "balancer")
 	`,
 		b.IDBConfig.Bucket,
@@ -86,7 +86,7 @@ func (b *InfluxDBBalancer) ClusterStatus(instances []string) ([]InstanceStatus, 
 		|> filter(fn: (r) => r["_measurement"] == "bigbluebutton_api" or r["_measurement"] == "bigbluebutton_meetings")
 		|> filter(fn: (r) => r["_field"] == "online" or r["_field"] == "active_meetings" or r["_field"] == "participant_count")
 		|> filter(fn: (r) => %s)
-		|> group(columns:["b3lb_host", "_start"])
+		|> group(columns:["bigblueswarm_host", "_start"])
 		|> pivot(rowKey: ["_start"], columnKey: ["_field"], valueColumn: "_value")
 		|> last(column: "_start")
 		|> yield(name: "bbb")
@@ -95,7 +95,7 @@ func (b *InfluxDBBalancer) ClusterStatus(instances []string) ([]InstanceStatus, 
 		|> range(start: %s)
 		|> filter(fn: (r) => r["_measurement"] == "cpu" and r["_field"] == "usage_system" and r["cpu"] == "cpu-total")
 		|> filter(fn: (r) => %s)
-		|> group(columns:["b3lb_host", "_start"])
+		|> group(columns:["bigblueswarm_host", "_start"])
 		|> mean()
 		|> yield(name: "cpu")
 	
@@ -103,7 +103,7 @@ func (b *InfluxDBBalancer) ClusterStatus(instances []string) ([]InstanceStatus, 
 		|> range(start: %s)
 		|> filter(fn: (r) => r["_measurement"] == "mem" and r["_field"] == "used_percent")
 		|> filter(fn: (r) => %s)
-		|> group(columns:["b3lb_host", "_start"])
+		|> group(columns:["bigblueswarm_host", "_start"])
 		|> mean()
 		|> yield(name: "mem")
 	`,
@@ -130,7 +130,7 @@ func (b *InfluxDBBalancer) ClusterStatus(instances []string) ([]InstanceStatus, 
 func parseClusterStatusResult(result *influxdb.QueryTableResult) []InstanceStatus {
 	instanceMap := make(map[string]*InstanceStatus)
 	for result.Next() {
-		instance := result.Record().ValueByKey("b3lb_host").(string)
+		instance := result.Record().ValueByKey("bigblueswarm_host").(string)
 		var status *InstanceStatus
 		if _, ok := instanceMap[instance]; !ok {
 			status = &InstanceStatus{
@@ -179,7 +179,7 @@ func extractBalancerResult(result *influxdb.QueryTableResult) string {
 	instance := ""
 	for result.Next() {
 		if result.Record().Result() == "balancer" {
-			return result.Record().ValueByKey("b3lb_host").(string)
+			return result.Record().ValueByKey("bigblueswarm_host").(string)
 		}
 	}
 

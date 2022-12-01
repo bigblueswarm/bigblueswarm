@@ -21,12 +21,12 @@ func TestFormatInstanceFilter(t *testing.T) {
 		{
 			name:      "One parameter should returns a valid filter",
 			parameter: []string{"http://localhost:8080"},
-			expected:  `r["b3lb_host"] == "http://localhost:8080"`,
+			expected:  `r["bigblueswarm_host"] == "http://localhost:8080"`,
 		},
 		{
 			name:      "Multiple parameters should returns a valid filter",
 			parameter: []string{"http://localhost:8080", "http://localhost:8081"},
-			expected:  `r["b3lb_host"] == "http://localhost:8080" or r["b3lb_host"] == "http://localhost:8081"`,
+			expected:  `r["bigblueswarm_host"] == "http://localhost:8080" or r["bigblueswarm_host"] == "http://localhost:8081"`,
 		},
 	}
 
