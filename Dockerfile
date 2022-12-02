@@ -13,7 +13,7 @@ FROM gcr.io/distroless/base-debian11:nonroot
 
 WORKDIR /
 
-COPY --from=build /app/bin/b3bigblueswarmlb-* /bigblueswarm
+COPY --from=build /app/bin/bigblueswarm-* /bigblueswarm
 
 EXPOSE 8090
 
