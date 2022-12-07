@@ -30,5 +30,5 @@ func (c *Checksum) Process() (string, error) {
 
 // SetTenantMetadata set metadata tenant for the context
 func (c *Checksum) SetTenantMetadata(host string) {
-	c.Params = fmt.Sprintf("%s&meta_tenant=%s", c.Params, url.QueryEscape(host))
+	c.Params = fmt.Sprintf("%s&meta_bigblueswarm-tenant=%s", c.Params, url.QueryEscape(host))
 }

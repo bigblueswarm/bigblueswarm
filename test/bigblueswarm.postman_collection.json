@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ad3350aa-ad9a-49ca-b126-7b52a759bae5",
+		"_postman_id": "76c63027-f8e8-4555-94f7-edfc737274a1",
 		"name": "BigBlueSwarm",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -872,7 +872,7 @@
 									"pm.test(\"GetMeetings should check the tenant metadata is valid\", () => {",
 									"    response = xml2Json(responseBody).response",
 									"    let tenant = `${pm.environment.get(\"bigblueswarm_host\")}:${pm.environment.get(\"bigblueswarm_port\")}`",
-									"    pm.expect(response.meetings.meeting.metadata.tenant).to.eql(tenant)",
+									"    pm.expect(response.meetings.meeting.metadata[\"bigblueswarm-tenant\"]).to.eql(tenant)",
 									"})"
 								],
 								"type": "text/javascript"

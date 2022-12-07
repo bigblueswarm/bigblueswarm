@@ -61,5 +61,5 @@ func TestChecksumSetTenant(t *testing.T) {
 	}
 
 	checksum.SetTenantMetadata("bbb.localhost.com")
-	assert.Equal(t, "param=value&meta_tenant=bbb.localhost.com", checksum.Params)
+	assert.Equal(t, "param=value&meta_bigblueswarm-tenant=bbb.localhost.com", checksum.Params)
 }
