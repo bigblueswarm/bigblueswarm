@@ -13,6 +13,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func stopWatcher() {
+	for i := 0; i < len(consulWatchers); i++ {
+		consulWatchers[i].Stop()
+	}
+}
+
 func TestFSConfigLoad(t *testing.T) {
 
 	type test struct {
@@ -75,6 +81,7 @@ func TestConsulConfigLoad(t *testing.T) {
 		}
 	}))
 
+	defer stopWatcher()
 	defer server.Close()
 
 	tests := []test.Test{

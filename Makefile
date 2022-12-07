@@ -36,7 +36,7 @@ start:
 #test.unit: @ run unit tests and coverage
 test.unit:
 	@echo "[TEST.UNIT] run unit tests and coverage"
-	go test -race -covermode=atomic -coverprofile=coverage.out \
+	go test -covermode=atomic -coverprofile=coverage.out \
 		github.com/bigblueswarm/bigblueswarm/v2/pkg/admin \
 		github.com/bigblueswarm/bigblueswarm/v2/pkg/api \
 		github.com/bigblueswarm/bigblueswarm/v2/pkg/app \
