@@ -12,6 +12,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var consulConfig *api.Config
+var consulWatchers []*watch.Plan = []*watch.Plan{}
+
 // IsConsulEnabled check if path starts with ConsulPrefix (consul:)
 func IsConsulEnabled(path string) bool {
 	return strings.HasPrefix(path, ConsulPrefix)
@@ -28,8 +31,10 @@ func GetConsulConfig(path string) *api.Config {
 
 // LoadConfigFromConsul load BigBlueSwarm configuration from consul provider
 func LoadConfigFromConsul(path string) (*Config, error) {
+	consulConfig = GetConsulConfig(path)
+
 	// Get a new consul client
-	client, err := api.NewClient(GetConsulConfig(path))
+	client, err := api.NewClient(consulConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -140,8 +145,10 @@ func WatchChanges(key string, handler func(value []byte)) error {
 		handler(pair.Value)
 	}
 
+	addWatcher(plan)
+
 	go func() {
-		if err := plan.Run(api.DefaultConfig().Address); err != nil {
+		if err := plan.Run(consulConfig.Address); err != nil {
 			log.Error(fmt.Errorf("err watching consul key: %v", err))
 		}
 	}()
@@ -252,4 +259,8 @@ func (c *Config) LoadInfluxDBConf(kv *api.KV) error {
 	}
 
 	return nil
+}
+
+func addWatcher(watcher *watch.Plan) {
+	consulWatchers = append(consulWatchers, watcher)
 }
