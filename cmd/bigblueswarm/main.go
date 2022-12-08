@@ -1,3 +1,4 @@
+// BigBlueSwarm is a metrics based load balancer for BigBlueButton service
 package main
 
 import (

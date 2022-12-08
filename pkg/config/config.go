@@ -1,3 +1,4 @@
+// Package config manages the bigblueswarm config
 package config
 
 import (

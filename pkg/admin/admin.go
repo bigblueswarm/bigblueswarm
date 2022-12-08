@@ -1,3 +1,4 @@
+// Package admin manages the bigblueswarm admin part
 package admin
 
 import (

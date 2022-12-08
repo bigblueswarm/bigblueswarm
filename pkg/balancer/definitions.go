@@ -1,3 +1,4 @@
+// Package balancer manage the balancer progress and choose the next server
 package balancer
 
 // InstanceStatus represents a cluster instance status at a time

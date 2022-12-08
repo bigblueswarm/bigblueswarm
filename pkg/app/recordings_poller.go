@@ -1,3 +1,4 @@
+// Package app is the bigblueswarm core
 package app
 
 import (
