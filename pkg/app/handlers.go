@@ -84,9 +84,14 @@ func (s *Server) Create(c *gin.Context) {
 	}
 
 	if len(tenant.Instances) == 0 {
-		log.Error("InstanceManager does not retrieve any instances. Please check you add at least one Bigbluebutton instance")
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
+		instances, err := s.InstanceManager.List()
+		if err != nil {
+			log.Error("InstanceManager failed to retrieve instances", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		tenant.Instances = instances
 	}
 
 	ctx.SetTenantMetadata(tenant.Spec.Host)
