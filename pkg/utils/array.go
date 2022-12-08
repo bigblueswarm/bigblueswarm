@@ -1,3 +1,4 @@
+// Package utils provide few utilies functions
 package utils
 
 // ArrayContainsString checks if a string is in an array

@@ -1,3 +1,4 @@
+// Package restclient is an abstration that perform http requests
 package restclient
 
 import (

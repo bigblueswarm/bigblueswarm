@@ -1,3 +1,4 @@
+// Package api manage the bigbluebutton api and communication between bigblueswarm and bigbluebutton instances
 package api
 
 // CreateHealthCheck returns a health check response

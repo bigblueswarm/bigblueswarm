@@ -1,3 +1,4 @@
+// Package utils provide few utilies functions
 package utils
 
 import "github.com/go-redis/redis/v8"

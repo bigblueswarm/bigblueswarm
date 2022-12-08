@@ -1,3 +1,4 @@
+// Package admin manages the bigblueswarm admin part
 package admin
 
 // TenantManagerMock is a mock implementation of the TenantManager interface.

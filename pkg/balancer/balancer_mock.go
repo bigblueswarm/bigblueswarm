@@ -1,3 +1,4 @@
+// Package balancer manage the balancer progress and choose the next server
 package balancer
 
 // Mock is a mock implementation of the Balancer interface
