@@ -12,6 +12,7 @@ type TenantSpec struct {
 	Host         string `yaml:"host,omitempty" json:"host,omitempty"`
 	Secret       string `yaml:"secret,omitempty" json:"secret,omitempty"`
 	MeetingsPool *int64 `yaml:"meetings_pool,omitempty" json:"meetings_pool,omitempty"`
+	UserPool     *int64 `yaml:"user_pool,omitempty" json:"user_pool,omitempty"`
 }
 
 // Tenant represents the kind Tenant configuration struct file

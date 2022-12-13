@@ -5,15 +5,36 @@ import (
 	"fmt"
 
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
 )
 
-func (s *Server) canTenantCreateMeeting(t *admin.Tenant) (bool, error) {
+func isPoolReached(b balancer.Balancer, m string, f string, p int64) (bool, error) {
+	state, err := b.GetCurrentState(m, f)
+	if err != nil {
+		return false, err
+	}
+
+	return state < p, nil
+}
+
+func (s *Server) isTenantLowerThanMeetingPool(t *admin.Tenant) (bool, error) {
 	measurement := fmt.Sprintf("%s:bigbluebutton_meetings", t.Spec.Host)
 	field := "active_meetings"
-	status, err := s.Balancer.GetCurrentState(measurement, field)
+	reached, err := isPoolReached(s.Balancer, measurement, field, *t.Spec.MeetingsPool)
 	if err != nil {
 		return false, fmt.Errorf("failed to check tenant state for tenant %s: %s", t.Spec.Host, err)
 	}
 
-	return status < *t.Spec.MeetingsPool, nil
+	return reached, nil
+}
+
+func (s *Server) isTenantLowerThanUserPool(t *admin.Tenant) (bool, error) {
+	measurement := fmt.Sprintf("%s:bigbluebutton_meetings", t.Spec.Host)
+	field := "participant_count"
+	reached, err := isPoolReached(s.Balancer, measurement, field, *t.Spec.UserPool)
+	if err != nil {
+		return false, fmt.Errorf("failed to check tenant state for tenant %s: %s", t.Spec.Host, err)
+	}
+
+	return reached, nil
 }
