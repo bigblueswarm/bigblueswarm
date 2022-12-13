@@ -75,16 +75,31 @@ func (s *Server) retrieveBBBBInstanceFromKey(key string) (api.BigBlueButtonInsta
 	return instance, nil
 }
 
-func (s *Server) checkTenantMeetingConstraint(tenant *admin.Tenant) int {
-	canCreate, err := s.canTenantCreateMeeting(tenant)
-	if err != nil {
-		log.Errorf("unable to check if tenant can create meeting for tenant %s: %s", tenant.Spec.Host, err)
-		return http.StatusInternalServerError
+func (s *Server) checkTenantCreationConstraint(tenant *admin.Tenant) int {
+	if tenant.Spec.MeetingsPool != nil {
+		canCreate, err := s.isTenantLowerThanMeetingPool(tenant)
+		if err != nil {
+			log.Errorf("unable to check if tenant can create meeting for tenant %s: %s", tenant.Spec.Host, err)
+			return http.StatusInternalServerError
+		}
+
+		if !canCreate {
+			log.Infof("tenant %s raise the meetings pool limit and can't create a new meeting", tenant.Spec.Host)
+			return http.StatusForbidden
+		}
 	}
 
-	if !canCreate {
-		log.Infof("tenant %s raise the meetings pool limit and can't create a new meeting", tenant.Spec.Host)
-		return http.StatusForbidden
+	if tenant.Spec.UserPool != nil {
+		canCreate, err := s.isTenantLowerThanUserPool(tenant)
+		if err != nil {
+			log.Errorf("unable to check if tenant can create meeting for tenant %s: %s", tenant.Spec.Host, err)
+			return http.StatusInternalServerError
+		}
+
+		if !canCreate {
+			log.Infof("tenant %s raise the user pool limit and can't create a new meeting", tenant.Spec.Host)
+			return http.StatusForbidden
+		}
 	}
 
 	return http.StatusOK
@@ -100,11 +115,9 @@ func (s *Server) Create(c *gin.Context) {
 		return
 	}
 
-	if tenant.Spec.MeetingsPool != nil {
-		if status := s.checkTenantMeetingConstraint(tenant); status != http.StatusOK {
-			c.AbortWithStatus(status)
-			return
-		}
+	if status := s.checkTenantCreationConstraint(tenant); status != http.StatusOK {
+		c.AbortWithStatus(status)
+		return
 	}
 
 	if len(tenant.Instances) == 0 {
