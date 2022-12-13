@@ -13,7 +13,6 @@ import (
 )
 
 const tenantPrefix = "tenant:%s"
-const hostSpec = "host"
 
 // TenantManager is a struct manager bigblueswarm tenants
 type TenantManager interface {

@@ -203,6 +203,62 @@ func TestCreate(t *testing.T) {
 			},
 		},
 		{
+			Name: "An error returned while checking if tenant raise meeting pool should return an internal http error - 500",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Secret: test.DefaultSecret(),
+					Params: creationParams,
+					Action: api.IsMeetingRunning,
+				}
+				c.Set("api_ctx", checksum)
+				request.SetRequestHost(c, "localhost")
+				request.SetRequestParams(c, creationParams)
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					pool := int64(0)
+					return &admin.Tenant{
+						Spec: &admin.TenantSpec{
+							MeetingsPool: &pool,
+						},
+						Instances: []string{},
+					}, nil
+				}
+				balancer.BalancerGetCurrentStateFunc = func(measurement, field string) (int64, error) {
+					return 0, errors.New("balancer error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+		{
+			Name: "Creating a meeting for a tenant that raise the pool should return a forbidden error",
+			Mock: func() {
+				checksum := &api.Checksum{
+					Secret: test.DefaultSecret(),
+					Params: creationParams,
+					Action: api.IsMeetingRunning,
+				}
+				c.Set("api_ctx", checksum)
+				request.SetRequestHost(c, "localhost")
+				request.SetRequestParams(c, creationParams)
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					pool := int64(0)
+					return &admin.Tenant{
+						Spec: &admin.TenantSpec{
+							MeetingsPool: &pool,
+						},
+						Instances: []string{},
+					}, nil
+				}
+				balancer.BalancerGetCurrentStateFunc = func(measurement, field string) (int64, error) {
+					return 10, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, http.StatusForbidden, w.Code)
+			},
+		},
+		{
 			Name: "No instances found by InstanceManager shold return an internal server error",
 			Mock: func() {
 				checksum := &api.Checksum{
@@ -215,6 +271,7 @@ func TestCreate(t *testing.T) {
 				request.SetRequestHost(c, "localhost")
 				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
 					return &admin.Tenant{
+						Spec:      &admin.TenantSpec{},
 						Instances: []string{},
 					}, nil
 				}

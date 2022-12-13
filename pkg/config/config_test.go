@@ -158,9 +158,10 @@ func TestConsulConfigLoad(t *testing.T) {
 						APIKey: "kgpqrTipM2yjcXwz5pOxBKViE9oNX76R",
 					},
 					Balancer: BalancerConfig{
-						MetricsRange: "-5m",
-						CPULimit:     99,
-						MemLimit:     99,
+						MetricsRange:        "-5m",
+						CPULimit:            99,
+						MemLimit:            99,
+						AggregationInterval: "10s",
 					},
 					BigBlueButton: BigBlueButton{
 						Secret:                 "0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU",

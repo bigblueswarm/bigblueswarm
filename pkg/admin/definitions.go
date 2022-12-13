@@ -9,8 +9,9 @@ type InstanceList struct {
 
 // TenantSpec represents the tenant spec configuration
 type TenantSpec struct {
-	Host   string `yaml:"host,omitempty" json:"host,omitempty"`
-	Secret string `yaml:"secret,omitempty" json:"secret,omitempty"`
+	Host         string `yaml:"host,omitempty" json:"host,omitempty"`
+	Secret       string `yaml:"secret,omitempty" json:"secret,omitempty"`
+	MeetingsPool *int64 `yaml:"meetings_pool,omitempty" json:"meetings_pool,omitempty"`
 }
 
 // Tenant represents the kind Tenant configuration struct file
@@ -19,8 +20,6 @@ type Tenant struct {
 	Spec      *TenantSpec `yaml:"spec" json:"spec"`
 	Instances []string    `yaml:"instances" json:"instances"`
 }
-
-const tenantSpecHostKey = "host"
 
 // TenantList represents the system tenant list
 type TenantList struct {

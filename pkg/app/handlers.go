@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
 
@@ -74,6 +75,21 @@ func (s *Server) retrieveBBBBInstanceFromKey(key string) (api.BigBlueButtonInsta
 	return instance, nil
 }
 
+func (s *Server) checkTenantMeetingConstraint(tenant *admin.Tenant) int {
+	canCreate, err := s.canTenantCreateMeeting(tenant)
+	if err != nil {
+		log.Errorf("unable to check if tenant can create meeting for tenant %s: %s", tenant.Spec.Host, err)
+		return http.StatusInternalServerError
+	}
+
+	if !canCreate {
+		log.Infof("tenant %s raise the meetings pool limit and can't create a new meeting", tenant.Spec.Host)
+		return http.StatusForbidden
+	}
+
+	return http.StatusOK
+}
+
 // Create handler find a server and create a meeting on balanced server.
 func (s *Server) Create(c *gin.Context) {
 	ctx := getAPIContext(c)
@@ -82,6 +98,13 @@ func (s *Server) Create(c *gin.Context) {
 		log.Error("Manager failed to retrieve tenant: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
+	}
+
+	if tenant.Spec.MeetingsPool != nil {
+		if status := s.checkTenantMeetingConstraint(tenant); status != http.StatusOK {
+			c.AbortWithStatus(status)
+			return
+		}
 	}
 
 	if len(tenant.Instances) == 0 {
