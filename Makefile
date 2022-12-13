@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-VERSION = $(shell grep -Po "version = \"(.*)\"" ./cmd/bigblueswarm/main.go | cut -d= -f2 | xargs)
+VERSION = ""
 SECRET = $(shell docker exec bbb1 sh -c "bbb-conf --secret" | grep -Po "Secret: (.*)" | cut -d: -f2 | xargs)
 
 #help: @ list available tasks on this project
@@ -81,7 +81,7 @@ build.image:
 build:
 	@echo "[BUILD] build bigblueswarm ${VERSION} binary"
 	rm -rf bin
-	go build -o ./bin/bigblueswarm-${VERSION} ./cmd/bigblueswarm/main.go
+	go build -ldflags="-X 'main.version=${VERSION}' -X 'main.buildTime=$(shell date)' -X 'main.commitHash=$(shell git rev-parse HEAD)'" -o ./bin/bigblueswarm-${VERSION} ./cmd/bigblueswarm/main.go
 
 #build.docker @ build bigblueswarm docker image
 build.docker:
