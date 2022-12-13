@@ -25,3 +25,5 @@ jobs:
           project_path: "${{ env.CMD_PATH }}"
           binary_name: "${{ env.BINARY_NAME }}"
           extra_files: LICENSE README.md
+          ldflags: -X 'main.version=v1.0.0' -X 'main.buildTime=$(date)' -X 'main.commitHash=$(git rev-parse HEAD)'
+          version: ${{ github.event.release.tag_name }}
