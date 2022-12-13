@@ -6,6 +6,7 @@ balancer:
   metricsRange: -5m
   cpuLimit: 99
   memLimit: 99
+  aggregationInterval: 10s
 admin:
   apiKey: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R
 port: 8090

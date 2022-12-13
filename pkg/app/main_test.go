@@ -19,7 +19,6 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	//ctx := context.Background()
 	gin.SetMode(gin.TestMode)
 	client, rMock := redismock.NewClientMock()
 	redisClient = client

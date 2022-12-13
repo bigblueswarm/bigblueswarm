@@ -33,6 +33,8 @@ func TestProcess(t *testing.T) {
 		}
 	}))
 
+	defer server.Close()
+
 	tests := []test.Test{
 		{
 			Name: "An error thrown by influxDB should return an error",
@@ -188,4 +190,71 @@ func TestClusterStatus(t *testing.T) {
 func TestApiStatusToString(t *testing.T) {
 	assert.Equal(t, "Up", apiStatusToString(int64(1)))
 	assert.Equal(t, "Down", apiStatusToString(int64(0)))
+}
+
+func TestGetCurrentState(t *testing.T) {
+	var (
+		statusCode int
+		body       string
+	)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if statusCode != http.StatusOK {
+			w.WriteHeader(statusCode)
+		} else {
+			_, err := w.Write([]byte(body))
+			if err != nil {
+				panic(err)
+			}
+		}
+	}))
+
+	defer server.Close()
+
+	tests := []test.Test{
+		{
+			Name: "an error returned by influxdb should be returned",
+			Mock: func() {
+				statusCode = http.StatusInternalServerError
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			Name: "a valid result should be parsed and returned",
+			Mock: func() {
+				statusCode = http.StatusOK
+				body = `#group,false,false,true,true,false,false,true,true
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string
+#default,_result,,,,,,,
+,result,table,_start,_stop,_time,_value,_field,_measurement
+,,0,2022-12-13T18:32:35.99098962Z,2022-12-13T18:38:35.99098962Z,2022-12-13T18:38:35.99098962Z,218,active_meetings,localhost:8090:bigbluebutton_meetings`
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, int64(218), value.(int64))
+				assert.Nil(t, err)
+			},
+		},
+	}
+
+	balancer := &InfluxDBBalancer{
+		Client: utils.InfluxDBClient(&config.Config{
+			IDB: config.IDB{
+				Address: server.URL,
+			},
+		}),
+		Config: &config.BalancerConfig{
+			AggregationInterval: "10s",
+		},
+		IDBConfig: &config.IDB{
+			Bucket: "bucket",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Mock()
+			state, err := balancer.GetCurrentState("localhost:8090:bigbluebutton_meetings", "active_meetings")
+			test.Validator(t, state, err)
+		})
+	}
 }

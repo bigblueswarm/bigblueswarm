@@ -11,10 +11,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Balancer find the right server to use
+// Balancer fcheck the cluster status
 type Balancer interface {
+	// Process compute data to find a bigbluebutton server
 	Process(instances []string) (string, error)
+	// ClusterStatus retrieve the cluster status. It returns a list containing all bbb instance with its status
 	ClusterStatus(instances []string) ([]InstanceStatus, error)
+	// GetCurrentState retrieve the measurement state in cluster
+	GetCurrentState(measurement string, field string) (int64, error)
 }
 
 // InfluxDBBalancer is the InfluxDB implementation of Balancer
@@ -185,4 +189,33 @@ func extractBalancerResult(result *influxdb.QueryTableResult) string {
 	}
 
 	return instance
+}
+
+// GetCurrentState retrieve the measurement state in cluster
+func (b *InfluxDBBalancer) GetCurrentState(measurement string, field string) (int64, error) {
+	q := fmt.Sprintf(`
+	from(bucket: "%s")
+		|> range(start: -60s)
+		|> filter(fn: (r) => r["_measurement"] == "%s")
+		|> filter(fn: (r) => r["_field"] == "%s")
+		|> aggregateWindow(every: %s, fn: sum, createEmpty: false)
+		|> last()
+	`, b.IDBConfig.Bucket, measurement, field, b.Config.AggregationInterval)
+
+	result, err := b.Client.Query(context.Background(), q)
+
+	if err != nil {
+		return -1, fmt.Errorf("failed to retrieve current state for measurement %s and field %s: %s", measurement, field, err)
+	}
+
+	val := int64(0)
+	if result.Next() {
+		val = result.Record().Value().(int64)
+	}
+
+	if result.Err() != nil {
+		return -1, fmt.Errorf("get current state returns an error for measurement %s and field %s: %s", measurement, field, result.Err())
+	}
+
+	return val, nil
 }

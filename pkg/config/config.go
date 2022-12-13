@@ -39,9 +39,10 @@ type AdminConfig struct {
 
 // BalancerConfig represents the balancer configuration
 type BalancerConfig struct {
-	MetricsRange string `yaml:"metricsRange" json:"metricsRange"`
-	CPULimit     int    `yaml:"cpuLimit" json:"cpuLimit"`
-	MemLimit     int    `yaml:"memLimit" json:"memLimit"`
+	MetricsRange        string `yaml:"metricsRange" json:"metricsRange"`
+	CPULimit            int    `yaml:"cpuLimit" json:"cpuLimit"`
+	MemLimit            int    `yaml:"memLimit" json:"memLimit"`
+	AggregationInterval string `yaml:"aggregationInterval" json:"aggregationInterval"`
 }
 
 // SetDefaultValues initialize BalancerConfig default values
@@ -52,6 +53,10 @@ func (bc *BalancerConfig) SetDefaultValues() {
 
 	if bc.MemLimit == 0 {
 		bc.MemLimit = 90
+	}
+
+	if bc.AggregationInterval == "" {
+		bc.AggregationInterval = "10s"
 	}
 }
 
