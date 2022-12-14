@@ -274,23 +274,3 @@ func TestBalancerConfigSetDefaultValues(t *testing.T) {
 		})
 	}
 }
-
-func TestConfigPath(t *testing.T) {
-	tests := []test.Test{
-		{
-			Name: "passing no -config flag should return default config path",
-			Mock: func() {},
-			Validator: func(t *testing.T, value interface{}, err error) {
-				path := value.(string)
-				assert.Equal(t, DefaultConfigPath(), path)
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.Name, func(t *testing.T) {
-			test.Mock()
-			test.Validator(t, Path(), nil)
-		})
-	}
-}
