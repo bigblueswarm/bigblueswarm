@@ -263,64 +263,6 @@ func TestCreate(t *testing.T) {
 			},
 		},
 		{
-			Name: "An error returned while checking if tenant reach user pool should return an internal http error - 500",
-			Mock: func() {
-				checksum := &api.Checksum{
-					Secret: test.DefaultSecret(),
-					Params: creationParams,
-					Action: api.IsMeetingRunning,
-				}
-				c.Set("api_ctx", checksum)
-				request.SetRequestHost(c, "localhost")
-				request.SetRequestParams(c, creationParams)
-				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
-					pool := int64(0)
-					return &admin.Tenant{
-						Spec: &admin.TenantSpec{
-							UserPool: &pool,
-						},
-						Instances: []string{},
-					}, nil
-				}
-				balancer.BalancerGetCurrentStateFunc = func(measurement, field string) (int64, error) {
-					return 0, errors.New("balancer error")
-				}
-			},
-			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				assert.Equal(t, *serverError("BigBlueSwarm failed to check if your tenant reached the user pool limit."), unMarshallError(w.Body.Bytes()))
-			},
-		},
-		{
-			Name: "Creating a meeting for a tenant that reach the user pool should return a forbidden error",
-			Mock: func() {
-				checksum := &api.Checksum{
-					Secret: test.DefaultSecret(),
-					Params: creationParams,
-					Action: api.IsMeetingRunning,
-				}
-				c.Set("api_ctx", checksum)
-				request.SetRequestHost(c, "localhost")
-				request.SetRequestParams(c, creationParams)
-				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
-					pool := int64(0)
-					return &admin.Tenant{
-						Spec: &admin.TenantSpec{
-							UserPool: &pool,
-						},
-						Instances: []string{},
-					}, nil
-				}
-				balancer.BalancerGetCurrentStateFunc = func(measurement, field string) (int64, error) {
-					return 10, nil
-				}
-			},
-			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.Equal(t, http.StatusForbidden, w.Code)
-				assert.Equal(t, *userPoolReachedError(), unMarshallError(w.Body.Bytes()))
-			},
-		},
-		{
 			Name: "No instances found by InstanceManager shold return an internal server error",
 			Mock: func() {
 				checksum := &api.Checksum{
@@ -559,14 +501,60 @@ func TestCreate(t *testing.T) {
 func TestJoin(t *testing.T) {
 	tests := []test.Test{
 		{
+			Name: "An error returned by TenantManager should return an internal server error 500 and a xml server error",
+			Mock: func() {
+				request.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return nil, errors.New("tenant manager error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				response := unMarshallError(w.Body.Bytes())
+				expected := serverError("BigBlueSwarm failed to retrieve your tenant. Please retry later.")
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, *expected, response)
+			},
+		},
+		{
+			Name: "If a tenant reached the user pool, it should return a forbidden error and a reacher user pool error",
+			Mock: func() {
+				request.SetRequestHost(c, "localhost")
+				pool := int64(10)
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return &admin.Tenant{
+						Spec: &admin.TenantSpec{
+							Host:     "localhost",
+							UserPool: &pool,
+						},
+					}, nil
+				}
+				balancer.BalancerGetCurrentStateFunc = func(measurement, field string) (int64, error) {
+					return 10, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				response := unMarshallError(w.Body.Bytes())
+				assert.Equal(t, http.StatusForbidden, w.Code)
+				assert.Equal(t, *userPoolReachedError(), response)
+			},
+		},
+		{
 			Name: "No provided meeting id should returns an empty meeting id reponse",
 			Mock: func() {
+				request.SetRequestHost(c, "localhost")
 				checksum := &api.Checksum{
 					Secret: test.DefaultSecret(),
 					Params: "",
 					Action: api.IsMeetingRunning,
 				}
 				c.Set("api_ctx", checksum)
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return &admin.Tenant{
+						Spec: &admin.TenantSpec{
+							Host: "localhost",
+						},
+					}, nil
+				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				response := unMarshallError(w.Body.Bytes())

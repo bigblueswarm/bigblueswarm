@@ -75,21 +75,8 @@ func (s *Server) retrieveBBBBInstanceFromKey(key string) (api.BigBlueButtonInsta
 	return instance, nil
 }
 
-func (s *Server) checkTenantCreationConstraint(tenant *admin.Tenant) (int, *api.Error) {
-	if tenant.Spec.MeetingsPool != nil {
-		canCreate, err := s.isTenantLowerThanMeetingPool(tenant)
-		if err != nil {
-			log.Errorf("unable to check if tenant can create meeting for tenant %s: %s", tenant.Spec.Host, err)
-			return http.StatusInternalServerError, serverError("BigBlueSwarm failed to check if your tenant reached the meeting pool limit.")
-		}
-
-		if !canCreate {
-			log.Infof("tenant %s raise the meetings pool limit and can't create a new meeting", tenant.Spec.Host)
-			return http.StatusForbidden, meetingPoolReachedError()
-		}
-	}
-
-	if tenant.Spec.UserPool != nil {
+func (s *Server) canTenantJoinMeeting(tenant *admin.Tenant) (int, *api.Error) {
+	if tenant.HasUserPool() {
 		canCreate, err := s.isTenantLowerThanUserPool(tenant)
 		if err != nil {
 			log.Errorf("unable to check if tenant can create meeting for tenant %s: %s", tenant.Spec.Host, err)
@@ -99,6 +86,23 @@ func (s *Server) checkTenantCreationConstraint(tenant *admin.Tenant) (int, *api.
 		if !canCreate {
 			log.Infof("tenant %s raise the user pool limit and can't create a new meeting", tenant.Spec.Host)
 			return http.StatusForbidden, userPoolReachedError()
+		}
+	}
+
+	return http.StatusOK, nil
+}
+
+func (s *Server) canTenantCreateMeeting(tenant *admin.Tenant) (int, *api.Error) {
+	if tenant.HasMeetingPool() {
+		canCreate, err := s.isTenantLowerThanMeetingPool(tenant)
+		if err != nil {
+			log.Errorf("unable to check if tenant can create meeting for tenant %s: %s", tenant.Spec.Host, err)
+			return http.StatusInternalServerError, serverError("BigBlueSwarm failed to check if your tenant reached the meeting pool limit.")
+		}
+
+		if !canCreate {
+			log.Infof("tenant %s raise the meetings pool limit and can't create a new meeting", tenant.Spec.Host)
+			return http.StatusForbidden, meetingPoolReachedError()
 		}
 	}
 
@@ -115,7 +119,7 @@ func (s *Server) Create(c *gin.Context) {
 		return
 	}
 
-	if status, err := s.checkTenantCreationConstraint(tenant); status != http.StatusOK {
+	if status, err := s.canTenantCreateMeeting(tenant); status != http.StatusOK {
 		c.XML(status, err)
 		return
 	}
@@ -167,6 +171,18 @@ func (s *Server) Create(c *gin.Context) {
 
 // Join handler join provided session. See https://docs.bigbluebutton.org/dev/api.html#join
 func (s *Server) Join(c *gin.Context) {
+	tenant, err := s.TenantManager.GetTenant(utils.GetHost(c))
+	if err != nil {
+		log.Errorf("failed to retrieve tenant from host %s: %s", utils.GetHost(c), err)
+		c.XML(http.StatusInternalServerError, serverError("BigBlueSwarm failed to retrieve your tenant. Please retry later."))
+		return
+	}
+
+	if status, err := s.canTenantJoinMeeting(tenant); status != http.StatusOK {
+		c.XML(status, err)
+		return
+	}
+
 	ctx := getAPIContext(c)
 	meetingID, exists := c.GetQuery("meetingID")
 	if !exists {
