@@ -200,6 +200,7 @@ func TestCreate(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, *getTenantError(), unMarshallError(w.Body.Bytes()))
 			},
 		},
 		{
@@ -228,6 +229,8 @@ func TestCreate(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, *serverError("BigBlueSwarm failed to check if your tenant reached the meeting pool limit."), unMarshallError(w.Body.Bytes()))
+
 			},
 		},
 		{
@@ -256,6 +259,7 @@ func TestCreate(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusForbidden, w.Code)
+				assert.Equal(t, *meetingPoolReachedError(), unMarshallError(w.Body.Bytes()))
 			},
 		},
 		{
@@ -284,6 +288,7 @@ func TestCreate(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, *serverError("BigBlueSwarm failed to check if your tenant reached the user pool limit."), unMarshallError(w.Body.Bytes()))
 			},
 		},
 		{
@@ -312,6 +317,7 @@ func TestCreate(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusForbidden, w.Code)
+				assert.Equal(t, *userPoolReachedError(), unMarshallError(w.Body.Bytes()))
 			},
 		},
 		{
@@ -363,6 +369,7 @@ func TestCreate(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, *noInstanceFoundError(), unMarshallError(w.Body.Bytes()))
 			},
 		},
 		{

@@ -75,17 +75,17 @@ func (s *Server) retrieveBBBBInstanceFromKey(key string) (api.BigBlueButtonInsta
 	return instance, nil
 }
 
-func (s *Server) checkTenantCreationConstraint(tenant *admin.Tenant) int {
+func (s *Server) checkTenantCreationConstraint(tenant *admin.Tenant) (int, *api.Error) {
 	if tenant.Spec.MeetingsPool != nil {
 		canCreate, err := s.isTenantLowerThanMeetingPool(tenant)
 		if err != nil {
 			log.Errorf("unable to check if tenant can create meeting for tenant %s: %s", tenant.Spec.Host, err)
-			return http.StatusInternalServerError
+			return http.StatusInternalServerError, serverError("BigBlueSwarm failed to check if your tenant reached the meeting pool limit.")
 		}
 
 		if !canCreate {
 			log.Infof("tenant %s raise the meetings pool limit and can't create a new meeting", tenant.Spec.Host)
-			return http.StatusForbidden
+			return http.StatusForbidden, meetingPoolReachedError()
 		}
 	}
 
@@ -93,16 +93,16 @@ func (s *Server) checkTenantCreationConstraint(tenant *admin.Tenant) int {
 		canCreate, err := s.isTenantLowerThanUserPool(tenant)
 		if err != nil {
 			log.Errorf("unable to check if tenant can create meeting for tenant %s: %s", tenant.Spec.Host, err)
-			return http.StatusInternalServerError
+			return http.StatusInternalServerError, serverError("BigBlueSwarm failed to check if your tenant reached the user pool limit.")
 		}
 
 		if !canCreate {
 			log.Infof("tenant %s raise the user pool limit and can't create a new meeting", tenant.Spec.Host)
-			return http.StatusForbidden
+			return http.StatusForbidden, userPoolReachedError()
 		}
 	}
 
-	return http.StatusOK
+	return http.StatusOK, nil
 }
 
 // Create handler find a server and create a meeting on balanced server.
@@ -111,12 +111,12 @@ func (s *Server) Create(c *gin.Context) {
 	tenant, err := s.TenantManager.GetTenant(utils.GetHost(c))
 	if err != nil {
 		log.Error("Manager failed to retrieve tenant: ", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.XML(http.StatusInternalServerError, getTenantError())
 		return
 	}
 
-	if status := s.checkTenantCreationConstraint(tenant); status != http.StatusOK {
-		c.AbortWithStatus(status)
+	if status, err := s.checkTenantCreationConstraint(tenant); status != http.StatusOK {
+		c.XML(status, err)
 		return
 	}
 
@@ -136,7 +136,7 @@ func (s *Server) Create(c *gin.Context) {
 	target, err := s.Balancer.Process(tenant.Instances)
 	if err != nil || target == "" {
 		log.Error("Balancer failed to process current request", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.XML(http.StatusInternalServerError, noInstanceFoundError())
 		return
 	}
 
