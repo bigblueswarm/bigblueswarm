@@ -2,22 +2,32 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/app"
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
+	"github.com/gin-gonic/gin"
 
 	log "github.com/sirupsen/logrus"
 )
 
-var version = ""
-var buildTime = ""
-var commitHash = ""
+var (
+	version    = ""
+	buildTime  = ""
+	commitHash = ""
+)
+
+var (
+	configPath = ""
+	logLevel   = ""
+)
 
 func main() {
 	displayStartup()
+	parseFlags()
 	initLog()
-	configPath, err := config.FormalizeConfigPath(config.Path())
+	configPath, err := config.FormalizeConfigPath(configPath)
 	if err != nil {
 		panic(fmt.Errorf("unable to parse configuration: %s", err.Error()))
 	}
@@ -46,11 +56,30 @@ func initLog() {
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true,
 	})
+
+	if lvl, err := log.ParseLevel(logLevel); err == nil {
+		fmt.Sprintln("Setting up BigBlueSearm log level as: " + lvl.String())
+		log.SetLevel(lvl)
+	}
+
 	log.SetReportCaller(true)
 }
 
+func parseFlags() {
+	flag.StringVar(&configPath, "config", config.DefaultConfigPath(), "Config file path")
+	flag.StringVar(&logLevel, "log.level", log.DebugLevel.String(), "Log level. Default is debug for development")
+	flag.Parse()
+}
+
+func isDebugMode() bool {
+	return log.GetLevel() == log.DebugLevel
+}
+
 func run(conf *config.Config) error {
-	log.Info("Starting BigBlueSwarm server")
+	if !isDebugMode() {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	err := app.NewServer(conf).Run()
 
 	if err != nil {
@@ -59,5 +88,3 @@ func run(conf *config.Config) error {
 
 	return nil
 }
-
-// go build -ldflags="-X 'main.version=v1.0.0' -X 'main.buildTime=$(date)' -X 'main.commitHash=$(git rev-parse HEAD)'" -o main ./cmd/bigblueswarm/main.go
