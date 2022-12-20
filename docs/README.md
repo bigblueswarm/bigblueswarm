@@ -1,2 +1,2 @@
 # BigBlueSwarm
-- [Errors](errors)
+- [Errors](errors.md)
