@@ -58,7 +58,7 @@ func initLog() {
 	})
 
 	if lvl, err := log.ParseLevel(logLevel); err == nil {
-		fmt.Sprintln("Setting up BigBlueSearm log level as: " + lvl.String())
+		log.Infoln("Setting up BigBlueSearm log level as", lvl.String())
 		log.SetLevel(lvl)
 	}
 

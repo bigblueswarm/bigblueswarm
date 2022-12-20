@@ -2,7 +2,6 @@
 package app
 
 import (
-	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -22,28 +21,30 @@ func toDuration(value string) time.Duration {
 }
 
 func (s *Server) pollRecordings() {
-	log.Info("Polling recordings")
+	logger := log.WithField("context", "poll_recorder")
+	logger.Info("polling recordings")
 	if err := s.clearRecordings(); err != nil {
-		log.Errorln("Failed to clear recordings.", err)
+		logger.Errorln("failed to clear recordings.", err)
 		return
 	}
 
 	instances, err := s.InstanceManager.ListInstances()
 	if err != nil {
-		log.Errorln("Failed to retrieve instances.", err)
+		logger.Errorln("failed to retrieve instances.", err)
 		return
 	}
 
 	for _, instance := range instances {
+		iLogger := logger.Dup().WithField("instance", instance.URL)
 		recordings, err := instance.GetRecordings("")
 		if err != nil {
-			log.Errorln(fmt.Sprintf("Failed to retrieve recordings for instance %s.", instance.URL), err)
+			iLogger.Errorln("failed to retrieve recordings.", err)
 			continue
 		}
 
 		for _, recording := range recordings.Recordings {
 			if err := s.Mapper.Add(RecordingMapKey(recording.RecordID), instance.URL); err != nil {
-				log.Errorln(fmt.Sprintf("Failed to store recording %s.", recording.RecordID), err)
+				iLogger.Dup().WithField("record_id", recording).Errorln("failed to store record.", err)
 				continue
 			}
 		}

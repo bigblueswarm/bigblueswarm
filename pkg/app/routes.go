@@ -34,6 +34,9 @@ func (s *Server) Routes() *[]api.EndpointGroup {
 							Handler: s.HealthCheck,
 						},
 						api.Endpoint{
+							Handler: setLogger,
+						},
+						api.Endpoint{
 							Handler: s.ChecksumValidation,
 						},
 						api.Endpoint{

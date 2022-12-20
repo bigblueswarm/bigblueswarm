@@ -182,6 +182,7 @@ func TestHealthCheckRoute(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	creationParams := fmt.Sprintf("%s&name=test_name&attendeePW=pwd&moderatorPW=pwd2", params)
+
 	tests := []test.Test{
 		{
 			Name: "An error thrown by the TenantManager while getting active tenant should return an internal server error",
@@ -490,6 +491,7 @@ func TestCreate(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
 			test.Mock()
 			server := doGenericInitialization()
 			server.Create(c)
@@ -687,6 +689,11 @@ func TestJoin(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
+			c.Set("api_ctx", &api.Checksum{
+				Action: "join",
+				Params: "params",
+			})
 			test.Mock()
 			server := doGenericInitialization()
 			server.Join(c)
@@ -783,6 +790,7 @@ func TestEnd(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
 			test.Mock()
 			server := doGenericInitialization()
 			server.End(c)
@@ -914,6 +922,7 @@ func TestIsMeetingRunning(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
 			test.Mock()
 			server := doGenericInitialization()
 			server.IsMeetingRunning(c)
@@ -975,6 +984,7 @@ func TestGetMeetingInfo(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
 			server := doGenericInitialization()
 			test.Mock()
 			server.GetMeetingInfo(c)
@@ -1077,6 +1087,7 @@ func TestGetMeetings(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
 			server := doGenericInitialization()
 			test.Mock()
 			server.GetMeetings(c)
@@ -1110,10 +1121,10 @@ func TestGetRecodings(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				response := unMarshallGetRecordingsResponse(w.Body.Bytes())
-				assert.Equal(t, http.StatusOK, w.Code)
-				assert.Equal(t, api.ReturnCodes().Success, response.ReturnCode)
-				assert.Equal(t, api.MessageKeys().NoRecordings, response.MessageKey)
-				assert.Equal(t, api.Messages().NoRecordings, response.Message)
+				assert.Equal(t, http.StatusInternalServerError, w.Code)
+				assert.Equal(t, api.ReturnCodes().Failed, response.ReturnCode)
+				assert.Equal(t, "internalError", response.MessageKey)
+				assert.Equal(t, "BigBlueSwarm failed to process GetRecordings method", response.Message)
 				assert.Equal(t, 0, len(response.Recordings))
 			},
 		},
@@ -1127,7 +1138,7 @@ func TestGetRecodings(t *testing.T) {
 				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.Equal(t, "Instance http://localhost/bigbluebutton failed to retrieve recordings. remote error", logHook.LastEntry().Message)
+				assert.Equal(t, "instance failed to retrieve recordings. remote error", logHook.LastEntry().Message)
 			},
 		},
 		{
@@ -1208,6 +1219,7 @@ func TestGetRecodings(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
 			server := doGenericInitialization()
 			test.Mock()
 			server.GetRecordings(c)
@@ -1352,6 +1364,7 @@ func TestUpdateRecordings(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
 			server := doGenericInitialization()
 			test.Mock()
 			server.UpdateRecordings(c)
@@ -1485,6 +1498,7 @@ func TestDeleteRecordings(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
 			server := doGenericInitialization()
 			test.Mock()
 			server.DeleteRecordings(c)
@@ -1541,6 +1555,7 @@ func TestPublishRecordings(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
 			server := doGenericInitialization()
 			test.Mock()
 			server.PublishRecordings(c)
@@ -1612,6 +1627,7 @@ func TestGetRecordingsTextTracks(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
 			server := doGenericInitialization()
 			test.Mock()
 			server.GetRecordingsTextTracks(c)
@@ -1690,6 +1706,7 @@ func TestPutRecordingTextTrack(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
 			server := doGenericInitialization()
 			test.Mock()
 			server.PutRecordingTextTrack(c)

@@ -44,7 +44,7 @@ func TestPollRecordings(t *testing.T) {
 				mock.SetErr(errors.New("redis error"))
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.Equal(t, "Failed to clear recordings. redis error", logHook.LastEntry().Message)
+				assert.Equal(t, "failed to clear recordings. redis error", logHook.LastEntry().Message)
 			},
 		},
 		{
@@ -56,7 +56,7 @@ func TestPollRecordings(t *testing.T) {
 				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.Equal(t, "Failed to retrieve instances. admin error", logHook.LastEntry().Message)
+				assert.Equal(t, "failed to retrieve instances. admin error", logHook.LastEntry().Message)
 			},
 		},
 		{
@@ -76,7 +76,7 @@ func TestPollRecordings(t *testing.T) {
 				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.Equal(t, "Failed to retrieve recordings for instance http://localhost:8080/bigbluebutton. rest client error", logHook.LastEntry().Message)
+				assert.Equal(t, "failed to retrieve recordings. rest client error", logHook.LastEntry().Message)
 			},
 		},
 		{
@@ -115,7 +115,7 @@ func TestPollRecordings(t *testing.T) {
 				mock.SetErr(errors.New("redis error"))
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
-				assert.Equal(t, "Failed to store recording recording-id. redis error", logHook.LastEntry().Message)
+				assert.Equal(t, "failed to store record. redis error", logHook.LastEntry().Message)
 			},
 		},
 	}

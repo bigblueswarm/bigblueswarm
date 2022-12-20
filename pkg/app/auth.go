@@ -2,7 +2,6 @@
 package app
 
 import (
-	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -25,21 +24,27 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 
 	checksumParam, exists := c.GetQuery("checksum")
 	if !exists {
+		log.Warn("checksum not found in request")
 		c.XML(http.StatusOK, error)
 		c.Abort()
 		return
 	}
 
+	logger := log.WithFields(log.Fields{
+		"checksum": checksumParam,
+		"tenant":   utils.GetHost(c),
+	})
+
 	secret := s.Config.BigBlueButton.Secret
 	tenant, err := s.TenantManager.GetTenant(utils.GetHost(c))
 	if err != nil {
-		log.Error("Tenant manager can't retrieve tenant: ", err)
+		logger.Error("tenant manager can't retrieve tenant: ", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
 	if tenant == nil {
-		log.Infoln(fmt.Sprintf("Tenant %s not found", utils.GetHost(c)))
+		logger.Info("tenant not found")
 		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
@@ -57,11 +62,18 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 	sha, err := checksum.Process()
 
 	if err != nil {
+		logger.Error("failed to process checksum validation", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
 	if checksumParam != string(sha) {
+		logger.WithFields(log.Fields{
+			"tenant":         utils.GetHost(c),
+			"checksum":       checksumParam,
+			"expected_value": string(sha),
+			"params":         checksum.Params,
+		}).Warn("checksum does not pass the checksum validation")
 		c.XML(http.StatusOK, error)
 		c.Abort()
 		return

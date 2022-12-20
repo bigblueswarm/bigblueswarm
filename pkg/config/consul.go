@@ -118,8 +118,16 @@ func getConfigType(key string) interface{} {
 	}
 }
 
+func getLogger(key string) *log.Entry {
+	return log.WithFields(log.Fields{
+		"context":  "config",
+		"provider": "consul",
+		"key":      key,
+	})
+}
+
 // WatchChanges watch consul changes and execute handler on changes
-func WatchChanges(key string, handler func(value []byte)) error {
+func WatchChanges(logger *log.Entry, key string, handler func(value []byte)) error {
 	params := map[string]interface{}{
 		"type": "key",
 		"key":  ConsulKey(key),
@@ -137,12 +145,12 @@ func WatchChanges(key string, handler func(value []byte)) error {
 		} else {
 			var ok bool
 			if pair, ok = raw.(*api.KVPair); !ok {
-				log.Error("unable to cast handled object as KVPair")
+				logger.Error("unable to cast handled object as KVPair")
 				return // ignore
 			}
 		}
 
-		log.Info(fmt.Sprintf("Changes detected, reloading %s configuration", key))
+		logger.Info("Changes detected, reloading configuration")
 		handler(pair.Value)
 	}
 
@@ -150,17 +158,20 @@ func WatchChanges(key string, handler func(value []byte)) error {
 
 	go func() {
 		if err := plan.Run(consulConfig.Address); err != nil {
-			log.Error(fmt.Errorf("err watching consul key: %v", err))
+			logger.Error("err watching consul key", err)
 		}
 	}()
 
+	logger.Info("watching changes")
 	return nil
 }
 
 func (c *Config) loadBBBConf(kv *api.KV) error {
 	key := "bigbluebutton"
+	logger := getLogger(key)
 	conf, err := loadKey(kv, key)
 	if err != nil {
+		logger.Errorln("failed to load configuration", err)
 		return err
 	}
 
@@ -168,10 +179,10 @@ func (c *Config) loadBBBConf(kv *api.KV) error {
 		c.BigBlueButton = *value
 	}
 
-	return WatchChanges(key, func(value []byte) {
+	return WatchChanges(logger, key, func(value []byte) {
 		var conf BigBlueButton
 		if err := yaml.Unmarshal(value, &conf); err != nil {
-			log.Error(fmt.Errorf("unable to parse new config value: %s", err))
+			logger.Error(fmt.Errorf("unable to parse new config value: %s", err))
 			return
 		}
 
@@ -181,8 +192,10 @@ func (c *Config) loadBBBConf(kv *api.KV) error {
 
 func (c *Config) loadAdminConf(kv *api.KV) error {
 	key := "admin"
+	logger := getLogger(key)
 	conf, err := loadKey(kv, key)
 	if err != nil {
+		logger.Errorln("failed to load configuration", err)
 		return err
 	}
 
@@ -190,10 +203,10 @@ func (c *Config) loadAdminConf(kv *api.KV) error {
 		c.Admin = *value
 	}
 
-	return WatchChanges(key, func(value []byte) {
+	return WatchChanges(logger, key, func(value []byte) {
 		var conf AdminConfig
 		if err := yaml.Unmarshal(value, &conf); err != nil {
-			log.Error(fmt.Errorf("unable to parse new config value: %s", err))
+			logger.Error(fmt.Errorf("unable to parse new config value: %s", err))
 			return
 		}
 
@@ -203,8 +216,10 @@ func (c *Config) loadAdminConf(kv *api.KV) error {
 
 func (c *Config) loadBalancerConf(kv *api.KV) error {
 	key := "balancer"
+	logger := getLogger(key)
 	conf, err := loadKey(kv, key)
 	if err != nil {
+		logger.Errorln("failed to load configuration", err)
 		return err
 	}
 
@@ -212,10 +227,10 @@ func (c *Config) loadBalancerConf(kv *api.KV) error {
 		c.Balancer = *value
 	}
 
-	return WatchChanges(key, func(value []byte) {
+	return WatchChanges(logger, key, func(value []byte) {
 		var conf BalancerConfig
 		if err := yaml.Unmarshal(value, &conf); err != nil {
-			log.Error(fmt.Errorf("unable to parse new config value: %s", err))
+			logger.Error(fmt.Errorf("unable to parse new config value: %s", err))
 			return
 		}
 
