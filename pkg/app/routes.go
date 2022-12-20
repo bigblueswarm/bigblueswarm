@@ -37,6 +37,9 @@ func (s *Server) Routes() *[]api.EndpointGroup {
 							Handler: setLogger,
 						},
 						api.Endpoint{
+							Handler: s.checkTenant,
+						},
+						api.Endpoint{
 							Handler: s.ChecksumValidation,
 						},
 						api.Endpoint{

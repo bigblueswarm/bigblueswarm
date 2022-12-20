@@ -7,6 +7,10 @@ func noInstanceFoundError() *api.Error {
 	return api.CreateError("noInstanceFound", "BigBlueSwarm do not found a valid BigBlueButton instance for your request")
 }
 
+func tenantNotFoundError() *api.Error {
+	return api.CreateError("tenantNotFound", "BigBlueSwarm does not found tenant")
+}
+
 func serverError(message string) *api.Error {
 	return api.CreateError("internalError", message)
 }

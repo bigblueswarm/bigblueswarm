@@ -162,6 +162,48 @@ func unMarshallJSONError(body []byte) api.JSONResponse {
 	return response
 }
 
+func TestCheckTenant(t *testing.T) {
+	tests := []test.Test{
+		{
+			Name: "an error returned by tenant manager should return an internal server error",
+			Mock: func() {
+				request.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return nil, errors.New("tenant manager error")
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				expected := serverError("BigBlueSwarm failed to retrieve tenant")
+				assert.Equal(t, *expected, unMarshallError(w.Body.Bytes()))
+			},
+		},
+		{
+			Name: "a tenant not found should return a no found tenant error",
+			Mock: func() {
+				request.SetRequestHost(c, "localhost")
+				admin.GetTenantTenantManagerMockFunc = func(hostname string) (*admin.Tenant, error) {
+					return nil, nil
+				}
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.Equal(t, *tenantNotFoundError(), unMarshallError(w.Body.Bytes()))
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			c, _ = gin.CreateTestContext(w)
+			c.Set("logger", newRequestLogger())
+			test.Mock()
+			server := doGenericInitialization()
+			server.checkTenant(c)
+			test.Validator(t, nil, nil)
+		})
+	}
+}
+
 func TestHealthCheckRoute(t *testing.T) {
 	// Healthcheck has a single test. The method always returns success and the same response.
 	t.Run("Healtcheck should returns a valid response", func(t *testing.T) {
