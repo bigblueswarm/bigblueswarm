@@ -21,6 +21,29 @@ func (s *Server) HealthCheck(c *gin.Context) {
 	c.XML(http.StatusOK, api.CreateHealthCheck())
 }
 
+// checkTenant check if tenant exists. Otherwise, it returns an error
+func (s *Server) checkTenant(c *gin.Context) {
+	hostname := utils.GetHost(c)
+	logger := getLogger(c)
+	tenant, err := s.TenantManager.GetTenant(hostname)
+	if err != nil {
+		logger.Errorln("failed to retrieve tenant", err)
+		c.XML(http.StatusInternalServerError, serverError("BigBlueSwarm failed to retrieve tenant"))
+		c.Abort()
+		return
+	}
+
+	logger.addField("tenant", utils.GetHost(c))
+	if tenant == nil {
+		logger.Warn("tenant manager does not found current hostname")
+		c.XML(http.StatusForbidden, tenantNotFoundError())
+		c.Abort()
+		return
+	}
+
+	c.Next()
+}
+
 // GetMeetings handler returns the getMeetings API. See https://docs.bigbluebutton.org/dev/api.html#getmeetings.
 func (s *Server) GetMeetings(c *gin.Context) {
 	logger := getLogger(c)
