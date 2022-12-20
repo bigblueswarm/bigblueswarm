@@ -4,11 +4,11 @@ package app
 import "github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
 
 func noInstanceFoundError() *api.Error {
-	return api.CreateError("noInstanceFound", "BigBlueSwarm do not found a valid BigBlueButton instance for your request")
+	return api.CreateError("noInstanceFound", "BigBlueSwarm do not find a valid BigBlueButton instance for your request")
 }
 
 func tenantNotFoundError() *api.Error {
-	return api.CreateError("tenantNotFound", "BigBlueSwarm does not found tenant")
+	return api.CreateError("tenantNotFound", "BigBlueSwarm does not find the requesting tenant")
 }
 
 func serverError(message string) *api.Error {
@@ -16,7 +16,7 @@ func serverError(message string) *api.Error {
 }
 
 func getTenantError() *api.Error {
-	return serverError("BigBlueSwarm failed to retrieve the request tenant")
+	return serverError("BigBlueSwarm failed to retrieve the requesting tenant")
 }
 
 func meetingPoolReachedError() *api.Error {
