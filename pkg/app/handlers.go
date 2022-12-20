@@ -28,7 +28,7 @@ func (s *Server) checkTenant(c *gin.Context) {
 	tenant, err := s.TenantManager.GetTenant(hostname)
 	if err != nil {
 		logger.Errorln("failed to retrieve tenant", err)
-		c.XML(http.StatusInternalServerError, serverError("BigBlueSwarm failed to retrieve tenant"))
+		c.XML(http.StatusInternalServerError, getTenantError())
 		c.Abort()
 		return
 	}
@@ -221,7 +221,7 @@ func (s *Server) Join(c *gin.Context) {
 
 	if err != nil {
 		logger.Errorln("failed to retrieve tenant from host", err)
-		c.XML(http.StatusInternalServerError, serverError("BigBlueSwarm failed to retrieve your tenant. Please retry later."))
+		c.XML(http.StatusInternalServerError, getTenantError())
 		return
 	}
 

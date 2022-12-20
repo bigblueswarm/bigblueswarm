@@ -173,7 +173,7 @@ func TestCheckTenant(t *testing.T) {
 				}
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
-				expected := serverError("BigBlueSwarm failed to retrieve tenant")
+				expected := getTenantError()
 				assert.Equal(t, *expected, unMarshallError(w.Body.Bytes()))
 			},
 		},
@@ -554,7 +554,7 @@ func TestJoin(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				response := unMarshallError(w.Body.Bytes())
-				expected := serverError("BigBlueSwarm failed to retrieve your tenant. Please retry later.")
+				expected := getTenantError()
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
 				assert.Equal(t, *expected, response)
 			},

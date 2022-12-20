@@ -10,7 +10,7 @@ func TestNoInstanceFoundErr(t *testing.T) {
 	err := noInstanceFoundError()
 	assert.Equal(t, "FAILED", err.ReturnCode)
 	assert.Equal(t, "noInstanceFound", err.MessageKey)
-	assert.Equal(t, "BigBlueSwarm do not found a valid BigBlueButton instance for your request", err.Message)
+	assert.Equal(t, "BigBlueSwarm do not find a valid BigBlueButton instance for your request", err.Message)
 }
 
 func TestServerError(t *testing.T) {
@@ -22,7 +22,7 @@ func TestServerError(t *testing.T) {
 }
 
 func TestGetTenantError(t *testing.T) {
-	assert.Equal(t, "BigBlueSwarm failed to retrieve the request tenant", getTenantError().Message)
+	assert.Equal(t, "BigBlueSwarm failed to retrieve the requesting tenant", getTenantError().Message)
 }
 
 func TestMeetingPoolReacherError(t *testing.T) {
