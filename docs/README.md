@@ -1,2 +1,2 @@
 # BigBlueSwarm
-- [Errors](errors.md)
+- [Custom errors](CUSTOM_ERRORS.md)
