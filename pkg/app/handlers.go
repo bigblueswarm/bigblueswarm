@@ -23,8 +23,10 @@ func (s *Server) HealthCheck(c *gin.Context) {
 
 // GetMeetings handler returns the getMeetings API. See https://docs.bigbluebutton.org/dev/api.html#getmeetings.
 func (s *Server) GetMeetings(c *gin.Context) {
+	logger := getLogger(c)
 	instances, err := s.InstanceManager.ListInstances()
 	if err != nil {
+		logger.Errorln("failed to retrieving instances", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -37,7 +39,7 @@ func (s *Server) GetMeetings(c *gin.Context) {
 	for _, instance := range instances {
 		meetings, err := instance.GetMeetings()
 		if err != nil {
-			log.Error("An error occurred while retrieving meetings from instance", err)
+			logger.dup().addField("instance", instance.URL).Errorln("An error occurred while retrieving meetings from instance", err)
 			continue
 		}
 
@@ -48,23 +50,21 @@ func (s *Server) GetMeetings(c *gin.Context) {
 }
 
 func missingMeetingIDParameter(c *gin.Context) {
-	log.Error("Missing meetingID parameter")
 	c.XML(http.StatusOK, api.CreateError(api.MessageKeys().ValidationError, api.Messages().EmptyMeetingID))
 }
 
 func missingRecordIDParameter(c *gin.Context) {
-	log.Error("Missing recordID parameter")
 	c.XML(http.StatusOK, api.CreateError(api.MessageKeys().MissingRecordIDParameter, api.Messages().MissingRecordIDParameter))
 }
 
 func (s *Server) retrieveBBBBInstanceFromKey(key string) (api.BigBlueButtonInstance, error) {
 	host, err := s.Mapper.Get(key)
 	if err != nil {
-		return api.BigBlueButtonInstance{}, fmt.Errorf("Mapper failed to retrieve session: %s", err.Error())
+		return api.BigBlueButtonInstance{}, fmt.Errorf("mapper failed to retrieve session: %s", err.Error())
 	}
 
 	if host == "" {
-		return api.BigBlueButtonInstance{}, errors.New("Mapper failed to retrieve session host")
+		return api.BigBlueButtonInstance{}, errors.New("mapper failed to retrieve session host")
 	}
 
 	instance, err := s.InstanceManager.Get(host)
@@ -75,16 +75,22 @@ func (s *Server) retrieveBBBBInstanceFromKey(key string) (api.BigBlueButtonInsta
 	return instance, nil
 }
 
-func (s *Server) canTenantJoinMeeting(tenant *admin.Tenant) (int, *api.Error) {
+func (s *Server) canTenantJoinMeeting(logger *RequestLogger, tenant *admin.Tenant) (int, *api.Error) {
 	if tenant.HasUserPool() {
+		logger := logger.setFields(log.Fields{
+			"tenant":        tenant.Spec.Host,
+			"meetings_pool": tenant.Spec.MeetingsPool,
+			"users_pool":    tenant.Spec.UserPool,
+		})
+
 		canCreate, err := s.isTenantLowerThanUserPool(tenant)
 		if err != nil {
-			log.Errorf("unable to check if tenant can create meeting for tenant %s: %s", tenant.Spec.Host, err)
+			logger.Errorln("unable to check if tenant can join meeting", err)
 			return http.StatusInternalServerError, serverError("BigBlueSwarm failed to check if your tenant reached the user pool limit.")
 		}
 
 		if !canCreate {
-			log.Infof("tenant %s raise the user pool limit and can't create a new meeting", tenant.Spec.Host)
+			log.Info("tenant raise the user pool limit and can't join meeting")
 			return http.StatusForbidden, userPoolReachedError()
 		}
 	}
@@ -92,16 +98,22 @@ func (s *Server) canTenantJoinMeeting(tenant *admin.Tenant) (int, *api.Error) {
 	return http.StatusOK, nil
 }
 
-func (s *Server) canTenantCreateMeeting(tenant *admin.Tenant) (int, *api.Error) {
+func (s *Server) canTenantCreateMeeting(logger *RequestLogger, tenant *admin.Tenant) (int, *api.Error) {
 	if tenant.HasMeetingPool() {
+		logger := logger.setFields(log.Fields{
+			"tenant":        tenant.Spec.Host,
+			"meetings_pool": tenant.Spec.MeetingsPool,
+			"users_pool":    tenant.Spec.UserPool,
+		})
+
 		canCreate, err := s.isTenantLowerThanMeetingPool(tenant)
 		if err != nil {
-			log.Errorf("unable to check if tenant can create meeting for tenant %s: %s", tenant.Spec.Host, err)
+			logger.Errorln("unable to check if tenant can create meeting", err)
 			return http.StatusInternalServerError, serverError("BigBlueSwarm failed to check if your tenant reached the meeting pool limit.")
 		}
 
 		if !canCreate {
-			log.Infof("tenant %s raise the meetings pool limit and can't create a new meeting", tenant.Spec.Host)
+			logger.Info("tenant raise the meetings pool limit and can't create a new meeting")
 			return http.StatusForbidden, meetingPoolReachedError()
 		}
 	}
@@ -113,21 +125,30 @@ func (s *Server) canTenantCreateMeeting(tenant *admin.Tenant) (int, *api.Error) 
 func (s *Server) Create(c *gin.Context) {
 	ctx := getAPIContext(c)
 	tenant, err := s.TenantManager.GetTenant(utils.GetHost(c))
+	logger := getLogger(c)
+
 	if err != nil {
-		log.Error("Manager failed to retrieve tenant: ", err)
+		logger.Errorln("manager failed to retrieve tenant", err)
 		c.XML(http.StatusInternalServerError, getTenantError())
 		return
 	}
 
-	if status, err := s.canTenantCreateMeeting(tenant); status != http.StatusOK {
+	logger.setFields(log.Fields{
+		"tenant": tenant.Spec.Host,
+		"action": ctx.Action,
+		"params": ctx.Params,
+	})
+
+	if status, err := s.canTenantCreateMeeting(logger.dup(), tenant); status != http.StatusOK {
 		c.XML(status, err)
 		return
 	}
 
 	if len(tenant.Instances) == 0 {
+		logger.Info("tenant does not have a configured instance list. Getting all instances")
 		instances, err := s.InstanceManager.List()
 		if err != nil {
-			log.Error("InstanceManager failed to retrieve instances", err)
+			logger.Errorln("instance manager failed to retrieve instances", err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -139,14 +160,14 @@ func (s *Server) Create(c *gin.Context) {
 
 	target, err := s.Balancer.Process(tenant.Instances)
 	if err != nil || target == "" {
-		log.Error("Balancer failed to process current request", err)
+		logger.Errorln("balancer failed to process current request", err)
 		c.XML(http.StatusInternalServerError, noInstanceFoundError())
 		return
 	}
 
 	instance, err := s.InstanceManager.Get(target)
 	if err != nil {
-		log.Error("Manager failed to retrieve target instance for current request", err)
+		logger.Errorln("manager failed to retrieve target instance for current request", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -154,14 +175,14 @@ func (s *Server) Create(c *gin.Context) {
 	apiResponse, err := instance.Create(ctx.Params)
 
 	if err != nil {
-		log.Error("An error occurred while creating remote session, instance returns a nil response", err)
+		logger.Errorln("an error occurred while creating remote session, instance returns a nil response", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
 	addErr := s.Mapper.Add(MeetingMapKey(apiResponse.MeetingID), instance.URL)
 	if addErr != nil {
-		log.Error("Mapper failed to add new session", addErr)
+		logger.Errorln("mapper failed to add new session", addErr)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -171,21 +192,30 @@ func (s *Server) Create(c *gin.Context) {
 
 // Join handler join provided session. See https://docs.bigbluebutton.org/dev/api.html#join
 func (s *Server) Join(c *gin.Context) {
+	ctx := getAPIContext(c)
+	logger := getLogger(c)
 	tenant, err := s.TenantManager.GetTenant(utils.GetHost(c))
+
 	if err != nil {
-		log.Errorf("failed to retrieve tenant from host %s: %s", utils.GetHost(c), err)
+		logger.Errorln("failed to retrieve tenant from host", err)
 		c.XML(http.StatusInternalServerError, serverError("BigBlueSwarm failed to retrieve your tenant. Please retry later."))
 		return
 	}
 
-	if status, err := s.canTenantJoinMeeting(tenant); status != http.StatusOK {
+	logger.setFields(log.Fields{
+		"tenant": tenant.Spec.Host,
+		"action": ctx.Action,
+		"params": ctx.Params,
+	})
+
+	if status, err := s.canTenantJoinMeeting(logger.dup(), tenant); status != http.StatusOK {
 		c.XML(status, err)
 		return
 	}
 
-	ctx := getAPIContext(c)
 	meetingID, exists := c.GetQuery("meetingID")
 	if !exists {
+		logger.Warn("meeting id parameter missing")
 		missingMeetingIDParameter(c)
 		return
 	}
@@ -194,7 +224,7 @@ func (s *Server) Join(c *gin.Context) {
 
 	instance, err := s.retrieveBBBBInstanceFromKey(MeetingMapKey(meetingID))
 	if err != nil {
-		log.Error(err)
+		logger.Error(err)
 		c.XML(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
 		return
 	}
@@ -202,7 +232,7 @@ func (s *Server) Join(c *gin.Context) {
 	if redirectExists && redirect == "false" {
 		response, err := instance.Join(ctx.Params)
 		if err != nil {
-			log.Error("An error occurred while calling join instance api", err)
+			logger.Errorln("An error occurred while calling join instance api", err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -211,7 +241,7 @@ func (s *Server) Join(c *gin.Context) {
 	} else {
 		redirectURL, err := instance.GetJoinRedirectURL(ctx.Params)
 		if err != nil {
-			log.Error("An error occurred while retrieving redirect URL on session join", err)
+			logger.Errorln("An error occurred while retrieving redirect URL on session join", err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -226,7 +256,7 @@ func (s *Server) End(c *gin.Context) {
 		meetingID, _ := c.GetQuery("meetingID")
 		removeErr := s.Mapper.Remove(MeetingMapKey(meetingID))
 		if removeErr != nil {
-			return fmt.Errorf("Mapper failed to remove session %s: %s", meetingID, removeErr)
+			return fmt.Errorf("mapper failed to remove session %s: %s", meetingID, removeErr)
 		}
 
 		return nil
@@ -255,30 +285,36 @@ func ginMethod(action string, c *gin.Context) func(code int, obj interface{}) {
 
 func (s *Server) proxyRecordings(c *gin.Context, action string, endProcess func(response interface{}) error) {
 	ctx := getAPIContext(c)
+	logger := getLogger(c)
 	recordID, exists := c.GetQuery("recordID")
 	if !exists {
+		logger.Warn("record id parameter missing")
 		missingRecordIDParameter(c)
 		return
 	}
 
+	logger.addField("record", recordID)
+
 	instance, err := s.retrieveBBBBInstanceFromKey(RecordingMapKey(recordID))
 	if err != nil {
-		log.Errorln(fmt.Sprintf("Failed to retrieve instance for instance url %s", recordID), err)
+		logger.Errorln("failed to retrieve instance", err)
 		ginMethod(action, c)(http.StatusOK, errorMessage(action))
 		return
 	}
 
+	logger.addField("instance", instance.URL)
 	response, mErr := callInstanceMethod(ctx, instance, action)
 	if mErr != nil {
-		log.Error(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
+		logger.Error(err)
+		c.XML(http.StatusInternalServerError, serverError("BigBlueSwarm failed to call remote instance method"))
 		return
 	}
 
 	if endProcess != nil {
 		err := endProcess(response)
 		if err != nil {
-			c.AbortWithStatus(http.StatusInternalServerError)
+			logger.Error(err)
+			c.XML(http.StatusInternalServerError, serverError("BigBlueSwarm failed to process recording method"))
 			return
 		}
 	}
@@ -304,30 +340,35 @@ func callInstanceMethod(ctx *api.Checksum, instance api.BigBlueButtonInstance, a
 
 func (s *Server) proxy(c *gin.Context, action string, endProcess func() error) {
 	ctx := getAPIContext(c)
+	logger := getLogger(c)
 	meetingID, exists := c.GetQuery("meetingID")
 	if !exists {
+		logger.Error("missing meeting id parameter")
 		missingMeetingIDParameter(c)
 		return
 	}
 
+	logger.addField("meeting_id", meetingID)
+
 	instance, err := s.retrieveBBBBInstanceFromKey(MeetingMapKey(meetingID))
 	if err != nil {
-		log.Error(err)
+		logger.Error(err)
 		ginMethod(action, c)(http.StatusOK, api.CreateError(api.MessageKeys().NotFound, api.Messages().NotFound))
 		return
 	}
 
 	response, mErr := callInstanceMethod(ctx, instance, action)
 	if mErr != nil {
-		log.Error(err)
-		c.AbortWithStatus(http.StatusInternalServerError)
+		logger.Error(err)
+		c.XML(http.StatusInternalServerError, serverError("BigBlueSwarm failed to process api call"))
 		return
 	}
 
 	if endProcess != nil {
 		err := endProcess()
 		if err != nil {
-			c.AbortWithStatus(http.StatusInternalServerError)
+			logger.Error(err)
+			c.XML(http.StatusInternalServerError, serverError("BigBlueSwarm failed to end api process"))
 			return
 		}
 	}
@@ -348,6 +389,7 @@ func (s *Server) GetMeetingInfo(c *gin.Context) {
 // GetRecordings handler get recordings for provided session. See https://docs.bigbluebutton.org/dev/api.html#getrecordings
 func (s *Server) GetRecordings(c *gin.Context) {
 	ctx := getAPIContext(c)
+	logger := getLogger(c).addField("action", ctx.Action)
 	emptyRecordingsResponse := &api.GetRecordingsResponse{
 		Response: api.Response{
 			ReturnCode: api.ReturnCodes().Success,
@@ -358,8 +400,8 @@ func (s *Server) GetRecordings(c *gin.Context) {
 
 	instances, err := s.InstanceManager.ListInstances()
 	if err != nil {
-		log.Error("Manager failed to retrieve instances for getRecordings request", err)
-		c.XML(http.StatusOK, emptyRecordingsResponse)
+		logger.Errorln("manager failed to retrieve instances for getRecordings request", err)
+		c.XML(http.StatusInternalServerError, serverError("BigBlueSwarm failed to process GetRecordings method"))
 		return
 	}
 
@@ -373,7 +415,7 @@ func (s *Server) GetRecordings(c *gin.Context) {
 	for _, instance := range instances {
 		recordings, err := instance.GetRecordings(ctx.Params)
 		if err != nil {
-			log.Errorln(fmt.Sprintf("Instance %s failed to retrieve recordings.", instance.URL), err)
+			logger.dup().addField("instance", instance.URL).Errorln("instance failed to retrieve recordings.", err)
 			continue
 		}
 
@@ -420,15 +462,18 @@ func (s *Server) GetRecordingsTextTracks(c *gin.Context) {
 // PutRecordingTextTrack handler redirect to the right bigbluebutton instance
 func (s *Server) PutRecordingTextTrack(c *gin.Context) {
 	ctx := getAPIContext(c)
+	logger := getLogger(c)
 	recordID, exists := c.GetQuery("recordID")
 	if !exists {
+		logger.Warn("missing record id parameter")
 		c.AbortWithStatusJSON(http.StatusOK, api.CreateJSONError(api.MessageKeys().ParamError, api.Messages().MissingRecordIDParameter))
 		return
 	}
 
+	logger.addField("record_id", recordID)
 	instance, err := s.retrieveBBBBInstanceFromKey(RecordingMapKey(recordID))
 	if err != nil {
-		log.Error(err)
+		logger.Error(err)
 		c.AbortWithStatusJSON(http.StatusOK, api.CreateJSONError(api.MessageKeys().NoRecordings, api.Messages().RecordingTextTrackNotFound))
 		return
 	}

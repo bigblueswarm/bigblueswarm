@@ -8,7 +8,6 @@ import (
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
 	influxdb "github.com/influxdata/influxdb-client-go/v2/api"
-	log "github.com/sirupsen/logrus"
 )
 
 // Balancer fcheck the cluster status
@@ -76,7 +75,6 @@ func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
 	)
 	result, err := b.Client.Query(context.Background(), req)
 	if err != nil || result.Err() != nil {
-		log.Error("Failed to find a valid server", err)
 		return "", err
 	}
 
@@ -125,7 +123,6 @@ func (b *InfluxDBBalancer) ClusterStatus(instances []string) ([]InstanceStatus, 
 
 	result, err := b.Client.Query(context.Background(), req)
 	if err != nil || result.Err() != nil {
-		log.Error("Failed to retrieve cluster status", err)
 		return nil, err
 	}
 

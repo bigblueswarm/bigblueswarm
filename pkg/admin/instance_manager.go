@@ -54,7 +54,7 @@ func (m *RedisInstanceManager) Get(URL string) (api.BigBlueButtonInstance, error
 	secret, err := m.RDB.HGet(ctx, BBSInstances, URL).Result()
 
 	if secret == "" {
-		return api.BigBlueButtonInstance{}, errors.New("Instance not found")
+		return api.BigBlueButtonInstance{}, errors.New("instance not found")
 	}
 
 	return api.BigBlueButtonInstance{

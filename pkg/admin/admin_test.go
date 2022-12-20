@@ -174,7 +174,7 @@ func TestSetInstances(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusBadRequest, w.Code)
-				assert.Equal(t, "Body does not bind InstanceList object: EOF", w.Body.String())
+				assert.Equal(t, "body does not bind InstanceList object: EOF", w.Body.String())
 			},
 		},
 		{
@@ -192,7 +192,7 @@ func TestSetInstances(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				assert.Equal(t, "instance manager error", w.Body.String())
+				assert.Equal(t, "failed to set instances in instance manager: instance manager error", w.Body.String())
 			},
 		},
 		{
@@ -238,7 +238,7 @@ func TestCreateTenant(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusBadRequest, w.Code)
-				assert.Equal(t, "Body does not bind Tenant object: EOF", w.Body.String())
+				assert.Equal(t, "body does not bind Tenant object: EOF", w.Body.String())
 			},
 		},
 		{
@@ -257,7 +257,7 @@ func TestCreateTenant(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				assert.Equal(t, "manager error", w.Body.String())
+				assert.Equal(t, "failed to add tenant in tenant manager: manager error", w.Body.String())
 			},
 		},
 		{
@@ -289,7 +289,7 @@ func TestCreateTenant(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusBadRequest, w.Code)
-				assert.Equal(t, "tenant spec host should not be null", w.Body.String())
+				assert.Equal(t, "failed to create tenant. Tenant spec host should not be null", w.Body.String())
 			},
 		},
 	}
@@ -320,7 +320,7 @@ func TestListTenantsHandler(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				assert.Equal(t, "Unable to list all tenants: manager error", w.Body.String())
+				assert.Equal(t, "unable to list all tenants: manager error", w.Body.String())
 			},
 		},
 		{
@@ -381,7 +381,7 @@ func TestDeleteHandler(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				assert.Equal(t, "Failed to retrieve tenant localhost: redis error", w.Body.String())
+				assert.Equal(t, "failed to retrieve tenant: redis error", w.Body.String())
 			},
 		},
 		{
@@ -400,7 +400,7 @@ func TestDeleteHandler(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusNotFound, w.Code)
-				assert.Equal(t, "Tenant localhost not found for deletion", w.Body.String())
+				assert.Equal(t, "tenant not found for deletion", w.Body.String())
 			},
 		},
 		{
@@ -421,7 +421,7 @@ func TestDeleteHandler(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				assert.Equal(t, "unable to delete tenant: manager error", w.Body.String())
+				assert.Equal(t, "unable to delete tenant", w.Body.String())
 			},
 		},
 		{
@@ -516,7 +516,7 @@ func TestGetTenantHandler(t *testing.T) {
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, http.StatusInternalServerError, w.Code)
-				assert.Equal(t, "unable to retrieve tenant localhost: manager error", w.Body.String())
+				assert.Equal(t, "unable to retrieve tenant", w.Body.String())
 			},
 		},
 		{

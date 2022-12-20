@@ -35,8 +35,9 @@ func CreateAdmin(manager InstanceManager, tenantManager TenantManager, balancer 
 func (a *Admin) ListInstances(c *gin.Context) {
 	instances, err := a.InstanceManager.ListInstances()
 	if err != nil {
-		log.Error("Failed to list instances", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
+		e := fmt.Errorf("failed to list instances: %s", err)
+		log.Error(e)
+		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
 
@@ -47,13 +48,17 @@ func (a *Admin) ListInstances(c *gin.Context) {
 func (a *Admin) ClusterStatus(c *gin.Context) {
 	instances, err := a.InstanceManager.List()
 	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
+		e := fmt.Errorf("failed to retrieve instances: %s", err.Error())
+		log.Error(e)
+		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
 
 	status, err := a.Balancer.ClusterStatus(instances)
 	if err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
+		e := fmt.Errorf("failed to retrieve balancer cluster status: %s", err)
+		log.Error(e)
+		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
 
@@ -66,14 +71,16 @@ func (a *Admin) SetInstances(c *gin.Context) {
 
 	instanceList := &InstanceList{}
 	if err := c.ShouldBindJSON(instanceList); err != nil {
-		e := fmt.Errorf("Body does not bind InstanceList object: %s", err)
+		e := fmt.Errorf("body does not bind InstanceList object: %s", err)
 		log.Error(e)
 		c.String(http.StatusBadRequest, e.Error())
 		return
 	}
 
 	if err := a.InstanceManager.SetInstances(instanceList.Instances); err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		e := fmt.Errorf("failed to set instances in instance manager: %s", err)
+		log.Error(e)
+		c.String(http.StatusInternalServerError, e.Error())
 	} else {
 		c.AbortWithStatus(http.StatusCreated)
 	}
@@ -85,22 +92,28 @@ func (a *Admin) CreateTenant(c *gin.Context) {
 
 	tenant := &Tenant{}
 	if err := c.ShouldBindJSON(tenant); err != nil {
-		e := fmt.Errorf("Body does not bind Tenant object: %s", err)
+		e := fmt.Errorf("body does not bind Tenant object: %s", err)
 		log.Error(e)
 		c.String(http.StatusBadRequest, e.Error())
 		return
 	}
 
+	logger := log.WithField("tenant", tenant.Spec.Host)
 	if tenant.Spec.Host == "" {
-		c.String(http.StatusBadRequest, "tenant spec host should not be null")
+		m := "failed to create tenant. Tenant spec host should not be null"
+		logger.Warn(m)
+		c.String(http.StatusBadRequest, m)
 		return
 	}
 
 	if err := a.TenantManager.AddTenant(tenant); err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		e := fmt.Errorf("failed to add tenant in tenant manager: %s", err)
+		logger.Error(e)
+		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
 
+	logger.Info("tenant successfully created")
 	c.AbortWithStatus(http.StatusCreated)
 }
 
@@ -108,7 +121,7 @@ func (a *Admin) CreateTenant(c *gin.Context) {
 func (a *Admin) ListTenants(c *gin.Context) {
 	tenants, err := a.TenantManager.ListTenants()
 	if err != nil {
-		e := fmt.Errorf("Unable to list all tenants: %s", err)
+		e := fmt.Errorf("unable to list all tenants: %s", err)
 		log.Error(e)
 		c.String(http.StatusInternalServerError, e.Error())
 		return
@@ -126,24 +139,34 @@ func (a *Admin) ListTenants(c *gin.Context) {
 func (a *Admin) DeleteTenant(c *gin.Context) {
 	hostname, exists := c.Params.Get("hostname")
 	if !exists || strings.TrimSpace(hostname) == "" {
-		c.String(http.StatusBadRequest, "hostname not found or empty")
+		m := "hostname not found or empty"
+		log.Warn(m)
+		c.String(http.StatusBadRequest, m)
 		return
 	}
 
+	logger := log.WithField("tenant", hostname)
 	tenant, err := a.TenantManager.GetTenant(hostname)
 	if err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to retrieve tenant %s: %s", hostname, err.Error()))
+		e := fmt.Errorf("failed to retrieve tenant: %s", err.Error())
+		logger.Error(e)
+		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
 
 	if tenant == nil {
-		c.String(http.StatusNotFound, fmt.Sprintf("Tenant %s not found for deletion", hostname))
+		m := "tenant not found for deletion"
+		logger.Info(m)
+		c.String(http.StatusNotFound, m)
 		return
 	}
 
 	if err := a.TenantManager.DeleteTenant(hostname); err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("unable to delete tenant: %s", err.Error()))
+		m := "unable to delete tenant"
+		logger.Error(m, err)
+		c.String(http.StatusInternalServerError, m)
 	} else {
+		logger.Info("tenant successfully deleted")
 		c.AbortWithStatus(http.StatusNoContent)
 	}
 }
@@ -155,14 +178,25 @@ func (a *Admin) GetConfiguration(c *gin.Context) {
 
 // GetTenant retrieve a tenant based on its hostname
 func (a *Admin) GetTenant(c *gin.Context) {
-	hostname, _ := c.Params.Get("hostname")
+	hostname, exists := c.Params.Get("hostname")
+	if !exists || strings.TrimSpace(hostname) == "" {
+		m := "hostname not found or empty"
+		log.Warn(m)
+		c.String(http.StatusBadRequest, m)
+		return
+	}
+
+	logger := log.WithField("tenant", hostname)
 	tenant, err := a.TenantManager.GetTenant(hostname)
 	if err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("unable to retrieve tenant %s: %s", hostname, err.Error()))
+		m := "unable to retrieve tenant"
+		logger.Error(m, err)
+		c.String(http.StatusInternalServerError, m)
 		return
 	}
 
 	if tenant == nil {
+		logger.Info("tenant not found")
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
