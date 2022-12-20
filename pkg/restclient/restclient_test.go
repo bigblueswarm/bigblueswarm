@@ -10,14 +10,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type HttpTest struct {
+type HTTPTest struct {
 	test.Test
 	Validator      func(t *testing.T, req *http.Request)
 	PerformRequest func(s *httptest.Server)
 }
 
 func TestGet(t *testing.T) {
-	tests := []HttpTest{
+	tests := []HTTPTest{
 		{
 			Test: test.Test{
 				Name: "Performing GET request should use the correct method",
@@ -55,7 +55,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestGetWithHeaders(t *testing.T) {
-	tests := []HttpTest{
+	tests := []HTTPTest{
 		{
 			Test: test.Test{
 				Name: "Performing GetWithHeaders request should use the correct method",
@@ -117,7 +117,7 @@ func TestGetWithHeaders(t *testing.T) {
 }
 
 func TestPost(t *testing.T) {
-	tests := []HttpTest{
+	tests := []HTTPTest{
 		{
 			Test: test.Test{
 				Name: "Performing POST request should use the correct method",
@@ -155,7 +155,7 @@ func TestPost(t *testing.T) {
 }
 
 func TestPostWithHeaders(t *testing.T) {
-	tests := []HttpTest{
+	tests := []HTTPTest{
 		{
 			Test: test.Test{
 				Name: "Performing PostWithHeaders request should use the correct method",
@@ -217,7 +217,7 @@ func TestPostWithHeaders(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	tests := []HttpTest{
+	tests := []HTTPTest{
 		{
 			Test: test.Test{
 				Name: "Performing DELETE request should use the correct method",
@@ -255,7 +255,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDeleteWithHeaders(t *testing.T) {
-	tests := []HttpTest{
+	tests := []HTTPTest{
 		{
 			Test: test.Test{
 				Name: "Performing DeleteWithHeaders request should use the correct method",
