@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-VERSION = ""
+VERSION = $(shell git describe --tags --abbrev=0)
 SECRET = $(shell docker exec bbb1 sh -c "bbb-conf --secret" | grep -Po "Secret: (.*)" | cut -d: -f2 | xargs)
 
 #help: @ list available tasks on this project
