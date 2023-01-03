@@ -12,10 +12,15 @@ jobs:
     strategy:
       matrix:
         # build and publish in parallel: linux/386, linux/amd64, linux/arm64, windows/386, windows/amd64, darwin/amd64, darwin/arm64
-        goos: [linux]
+        goos: [linux, windows]
         goarch: ["386", amd64, arm64]
     steps:
       - uses: actions/checkout@v2
+      - run: |
+          release_date=$(date)
+          release_commit=$(git rev-parse HEAD)
+          echo "RELEASE_DATE=$release_date" >> $GITHUB_ENV
+          echo "RELEASE_COMMIT=$release_commit" >> $GITHUB_ENV
       - uses: wangyoucao577/go-release-action@v1.22
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -25,5 +30,12 @@ jobs:
           project_path: "${{ env.CMD_PATH }}"
           binary_name: "${{ env.BINARY_NAME }}"
           extra_files: LICENSE README.md
-          ldflags: -X 'main.version=v1.0.0' -X 'main.buildTime=$(date)' -X 'main.commitHash=$(git rev-parse HEAD)'
+          ldflags: -X 'main.version=${{ github.event.release.tag_name }}' -X 'main.buildTime=${{ env.RELEASE_DATE }}' -X 'main.commitHash=${{ env.RELEASE_COMMIT }}'
           version: ${{ github.event.release.tag_name }}
+  update-pkg-dev:
+    name: Update pkg.dev version
+    runs-on: ubuntu-latest
+    needs: releases-matrix
+    steps:
+      - name: trigger pkg.dev update
+        run: curl "https://sum.golang.org/lookup/github.com/bigblueswarm/bigblueswarm/v2@${{ github.event.release.tag_name }}"
