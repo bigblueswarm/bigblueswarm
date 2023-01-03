@@ -21,6 +21,11 @@ func IsConsulEnabled(path string) bool {
 	return strings.HasPrefix(path, ConsulPrefix)
 }
 
+// SetConsulConfig set the consul configuration
+func SetConsulConfig(config *api.Config) {
+	consulConfig = config
+}
+
 // GetConsulConfig returns the consul address from the path
 func GetConsulConfig(path string) *api.Config {
 	config := api.DefaultConfig()
@@ -32,7 +37,7 @@ func GetConsulConfig(path string) *api.Config {
 
 // LoadConfigFromConsul load BigBlueSwarm configuration from consul provider
 func LoadConfigFromConsul(path string) (*Config, error) {
-	consulConfig = GetConsulConfig(path)
+	SetConsulConfig(GetConsulConfig(path))
 
 	// Get a new consul client
 	client, err := api.NewClient(consulConfig)
