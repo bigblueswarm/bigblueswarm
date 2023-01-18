@@ -149,7 +149,7 @@ func TestClusterStatus(t *testing.T) {
 #group,false,false,true,true,true,false,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,long,long,long
 #default,bbb,,,,,,,
-,result,table,_start,_stop,bigblueswarm_host,online,active_meetings,participant_count
+,result,table,_start,_stop,bigblueswarm_host,online,meetings,participants
 ,,0,2022-03-10T13:41:21.808246343Z,2022-03-10T13:46:21.808246343Z,http://localhost/bigbluebutton,1,0,0`
 			},
 			Validator: func(t *testing.T, result interface{}, err error) {
@@ -159,8 +159,8 @@ func TestClusterStatus(t *testing.T) {
 				assert.Equal(t, float64(8.84), status.CPU)
 				assert.Equal(t, float64(68.83), status.Mem)
 				assert.Equal(t, "Up", status.APIStatus)
-				assert.Equal(t, int64(0), status.ActiveMeeting)
-				assert.Equal(t, int64(0), status.ActiveParticipants)
+				assert.Equal(t, int64(0), status.Meetings)
+				assert.Equal(t, int64(0), status.Participants)
 			},
 		},
 	}
@@ -228,7 +228,7 @@ func TestGetCurrentState(t *testing.T) {
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string
 #default,_result,,,,,,,
 ,result,table,_start,_stop,_time,_value,_field,_measurement
-,,0,2022-12-13T18:32:35.99098962Z,2022-12-13T18:38:35.99098962Z,2022-12-13T18:38:35.99098962Z,218,active_meetings,localhost:8090:bigbluebutton_meetings`
+,,0,2022-12-13T18:32:35.99098962Z,2022-12-13T18:38:35.99098962Z,2022-12-13T18:38:35.99098962Z,218,meetings,bigbluebutton:localhost:8090`
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.Equal(t, int64(218), value.(int64))
@@ -253,7 +253,7 @@ func TestGetCurrentState(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Mock()
-			state, err := balancer.GetCurrentState("localhost:8090:bigbluebutton_meetings", "active_meetings")
+			state, err := balancer.GetCurrentState("bigbluebutton:localhost:8090", "meetings")
 			test.Validator(t, state, err)
 		})
 	}

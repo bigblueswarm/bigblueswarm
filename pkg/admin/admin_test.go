@@ -87,17 +87,17 @@ func TestClusterStatus(t *testing.T) {
 	cpu := 20.01
 	mem := 35.45
 	apiStatus := "Up"
-	activeMeetings := int64(3)
-	activeParticipants := int64(22)
+	meetings := int64(3)
+	participants := int64(22)
 
 	expectedStatus := []balancer.InstanceStatus{
 		{
-			Host:               host,
-			CPU:                cpu,
-			Mem:                mem,
-			APIStatus:          apiStatus,
-			ActiveMeeting:      int64(activeMeetings),
-			ActiveParticipants: int64(activeParticipants),
+			Host:         host,
+			CPU:          cpu,
+			Mem:          mem,
+			APIStatus:    apiStatus,
+			Meetings:     int64(meetings),
+			Participants: int64(participants),
 		},
 	}
 
@@ -144,8 +144,8 @@ func TestClusterStatus(t *testing.T) {
 				assert.Equal(t, cpu, status[0].CPU)
 				assert.Equal(t, mem, status[0].Mem)
 				assert.Equal(t, apiStatus, status[0].APIStatus)
-				assert.Equal(t, activeMeetings, int64(status[0].ActiveMeeting))
-				assert.Equal(t, activeParticipants, int64(status[0].ActiveParticipants))
+				assert.Equal(t, meetings, int64(status[0].Meetings))
+				assert.Equal(t, participants, int64(status[0].Participants))
 			},
 		},
 	}

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "76c63027-f8e8-4555-94f7-edfc737274a1",
+		"_postman_id": "7c03408c-96c5-441a-870b-a411daffe12d",
 		"name": "BigBlueSwarm",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -445,8 +445,8 @@
 									"    const response = pm.response.json()",
 									"    pm.expect(response.length).to.eql(1)",
 									"    pm.expect(response[0].host).to.eql(pm.environment.get(\"instance_url\"))",
-									"    pm.expect(response[0].active_meetings).to.eql(0)",
-									"    pm.expect(response[0].active_participants).to.eql(0)",
+									"    pm.expect(response[0].meetings).to.eql(0)",
+									"    pm.expect(response[0].participants).to.eql(0)",
 									"    pm.expect(\"mem\" in response[0]).to.be.true",
 									"    pm.expect(\"cpu\" in response[0]).to.be.true",
 									"})"

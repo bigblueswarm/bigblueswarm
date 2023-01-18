@@ -86,8 +86,8 @@ func (b *InfluxDBBalancer) ClusterStatus(instances []string) ([]InstanceStatus, 
 	req := fmt.Sprintf(`
 	from(bucket: "%s")
 		|> range(start: %s)
-		|> filter(fn: (r) => r["_measurement"] == "bigbluebutton_api" or r["_measurement"] == "bigbluebutton_meetings")
-		|> filter(fn: (r) => r["_field"] == "online" or r["_field"] == "active_meetings" or r["_field"] == "participant_count")
+		|> filter(fn: (r) => r["_measurement"] == "bigbluebutton")
+		|> filter(fn: (r) => r["_field"] == "online" or r["_field"] == "meetings" or r["_field"] == "participants")
 		|> filter(fn: (r) => %s)
 		|> group(columns:["bigblueswarm_host", "_start"])
 		|> pivot(rowKey: ["_start"], columnKey: ["_field"], valueColumn: "_value")
@@ -136,12 +136,12 @@ func parseClusterStatusResult(result *influxdb.QueryTableResult) []InstanceStatu
 		var status *InstanceStatus
 		if _, ok := instanceMap[instance]; !ok {
 			status = &InstanceStatus{
-				Host:               instance,
-				CPU:                0,
-				Mem:                0,
-				ActiveMeeting:      0,
-				ActiveParticipants: 0,
-				APIStatus:          "Down",
+				Host:         instance,
+				CPU:          0,
+				Mem:          0,
+				Meetings:     0,
+				Participants: 0,
+				APIStatus:    "Down",
 			}
 			instanceMap[instance] = status
 		} else {
@@ -151,8 +151,8 @@ func parseClusterStatusResult(result *influxdb.QueryTableResult) []InstanceStatu
 		res := result.Record().Result()
 		switch res {
 		case "bbb":
-			instanceMap[instance].ActiveMeeting = result.Record().ValueByKey("active_meetings").(int64)
-			instanceMap[instance].ActiveParticipants = result.Record().ValueByKey("participant_count").(int64)
+			instanceMap[instance].Meetings = result.Record().ValueByKey("meetings").(int64)
+			instanceMap[instance].Participants = result.Record().ValueByKey("participants").(int64)
 			instanceMap[instance].APIStatus = apiStatusToString(result.Record().ValueByKey("online").(int64))
 		case "mem":
 			instanceMap[instance].Mem = utils.Round2Digits(result.Record().Value().(float64))
