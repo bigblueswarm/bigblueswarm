@@ -17,9 +17,10 @@ type TenantSpec struct {
 
 // Tenant represents the kind Tenant configuration struct file
 type Tenant struct {
-	Kind      string      `yaml:"kind" json:"kind"`
-	Spec      *TenantSpec `yaml:"spec" json:"spec"`
-	Instances []string    `yaml:"instances" json:"instances"`
+	Kind      string            `yaml:"kind" json:"kind"`
+	Spec      *TenantSpec       `yaml:"spec" json:"spec"`
+	Metadata  map[string]string `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+	Instances []string          `yaml:"instances" json:"instances"`
 }
 
 // TenantList represents the system tenant list
