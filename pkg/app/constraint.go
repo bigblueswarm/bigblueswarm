@@ -18,8 +18,8 @@ func isPoolReached(b balancer.Balancer, m string, f string, p int64) (bool, erro
 }
 
 func (s *Server) isTenantLowerThanMeetingPool(t *admin.Tenant) (bool, error) {
-	measurement := fmt.Sprintf("%s:bigbluebutton_meetings", t.Spec.Host)
-	field := "active_meetings"
+	measurement := fmt.Sprintf("bigbluebutton:%s", t.Spec.Host)
+	field := "meetings"
 	reached, err := isPoolReached(s.Balancer, measurement, field, *t.Spec.MeetingsPool)
 	if err != nil {
 		return false, fmt.Errorf("failed to check tenant state for tenant %s: %s", t.Spec.Host, err)
@@ -29,8 +29,8 @@ func (s *Server) isTenantLowerThanMeetingPool(t *admin.Tenant) (bool, error) {
 }
 
 func (s *Server) isTenantLowerThanUserPool(t *admin.Tenant) (bool, error) {
-	measurement := fmt.Sprintf("%s:bigbluebutton_meetings", t.Spec.Host)
-	field := "participant_count"
+	measurement := fmt.Sprintf("bigbluebutton:%s", t.Spec.Host)
+	field := "participants"
 	reached, err := isPoolReached(s.Balancer, measurement, field, *t.Spec.UserPool)
 	if err != nil {
 		return false, fmt.Errorf("failed to check tenant state for tenant %s: %s", t.Spec.Host, err)
