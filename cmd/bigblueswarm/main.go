@@ -4,6 +4,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/app"
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
@@ -21,12 +22,20 @@ var (
 var (
 	configPath = ""
 	logLevel   = ""
+	logPath    = ""
 )
 
 func main() {
-	displayStartup()
 	parseFlags()
-	initLog()
+	f, err := initLog()
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+
+	displayStartup()
+
 	configPath, err := config.FormalizeConfigPath(configPath)
 	if err != nil {
 		panic(fmt.Errorf("unable to parse configuration: %s", err.Error()))
@@ -52,10 +61,23 @@ func displayStartup() {
 	fmt.Println("----------------------------------------------------------")
 }
 
-func initLog() {
-	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp: true,
-	})
+func initLog() (*os.File, error) {
+	var file *os.File
+	var err error
+	disableColors := false
+
+	if logPath != "" {
+		disableColors = true
+		file, err = os.OpenFile(logPath, os.O_WRONLY|os.O_CREATE, 0755)
+		if err != nil {
+			return nil, fmt.Errorf("unable to create or open %s log file: %s", logPath, err)
+		}
+
+		log.SetOutput(file)
+		gin.DefaultWriter = file
+		os.Stdout = file
+		log.WithField("path", logPath).Infoln("writing logs in configured path")
+	}
 
 	if lvl, err := log.ParseLevel(logLevel); err == nil {
 		log.Infoln("Setting up BigBlueSearm log level as", lvl.String())
@@ -63,11 +85,19 @@ func initLog() {
 	}
 
 	log.SetReportCaller(true)
+
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: disableColors,
+		FullTimestamp: true,
+	})
+
+	return file, err
 }
 
 func parseFlags() {
 	flag.StringVar(&configPath, "config", config.DefaultConfigPath(), "Config file path")
-	flag.StringVar(&logLevel, "log.level", log.DebugLevel.String(), "Log level. Default is debug for development")
+	flag.StringVar(&logLevel, "log.level", log.InfoLevel.String(), "Log level. Default is debug for development")
+	flag.StringVar(&logPath, "log.path", "", "Log path. Specify a path to write into a file. By default BigBlueSwarm prints log in stdout")
 	flag.Parse()
 }
 
