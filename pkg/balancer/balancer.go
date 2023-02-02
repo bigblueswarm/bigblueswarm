@@ -3,6 +3,7 @@ package balancer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
@@ -36,8 +37,46 @@ func New(idb influxdb.QueryAPI, config *config.BalancerConfig, idbConfig *config
 	}
 }
 
+func (b *InfluxDBBalancer) filterOnlineInstances(instances []string) ([]string, error) {
+	req := fmt.Sprintf(`
+	from(bucket: "%s")
+		|> range(start: %s)
+		|> filter(fn: (r) => r["_measurement"] == "bigbluebutton" and r["_field"] == "online")
+		|> filter(fn: (r) => %s)
+		|> filter(fn: (r) => r["_value"] == 1)
+		|> last()
+		|> yield(name: "online")
+	`,
+		b.IDBConfig.Bucket,
+		b.Config.MetricsRange,
+		utils.FormatInstancesFilter(instances))
+
+	result, err := b.Client.Query(context.Background(), req)
+	if err != nil {
+		return nil, err
+	}
+
+	values := []string{}
+	for result.Next() {
+		if result.Record().Result() == "online" {
+			values = append(values, result.Record().ValueByKey("bigblueswarm_host").(string))
+		}
+	}
+
+	return values, nil
+}
+
 // Process compute data to find a bigbluebutton server
 func (b *InfluxDBBalancer) Process(instances []string) (string, error) {
+	instances, err := b.filterOnlineInstances(instances)
+	if err != nil {
+		return "", err
+	}
+
+	if len(instances) == 0 {
+		return "", errors.New("no instance online to process a balancer request")
+	}
+
 	req := fmt.Sprintf(`
 	cpuFilter = from(bucket: "%s")
 		|> range(start: %s)

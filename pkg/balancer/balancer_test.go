@@ -1,8 +1,10 @@
 package balancer
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
@@ -21,12 +23,24 @@ func TestProcess(t *testing.T) {
 	var (
 		statusCode int
 		body       string
+		filterBody string
 	)
+
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if statusCode != http.StatusOK {
 			w.WriteHeader(statusCode)
 		} else {
-			_, err := w.Write([]byte(body))
+			var err error
+			content, err := io.ReadAll(r.Body)
+			if err != nil {
+				panic(err)
+			}
+
+			if strings.Contains(string(content), `r[\"_value\"] == 1`) {
+				_, err = w.Write([]byte(filterBody))
+			} else {
+				_, err = w.Write([]byte(body))
+			}
 			if err != nil {
 				panic(err)
 			}
@@ -36,6 +50,25 @@ func TestProcess(t *testing.T) {
 	defer server.Close()
 
 	tests := []test.Test{
+		{
+			Name: "An error thrown by influxdb during instance filtering should return an error",
+			Mock: func() {
+				statusCode = http.StatusInternalServerError
+			},
+			Validator: func(t *testing.T, result interface{}, err error) {
+				assert.NotNil(t, err)
+			},
+		},
+		{
+			Name: "An empty instances list returned after filter should return an error",
+			Mock: func() {
+				statusCode = http.StatusOK
+				filterBody = ""
+			},
+			Validator: func(t *testing.T, result interface{}, err error) {
+				assert.NotNil(t, err)
+			},
+		},
 		{
 			Name: "An error thrown by influxDB should return an error",
 			Mock: func() {
@@ -49,6 +82,12 @@ func TestProcess(t *testing.T) {
 			Name: "No result returned by influxDB should return an empty string",
 			Mock: func() {
 				statusCode = http.StatusOK
+				filterBody = `#group,false,false,true,true,false,false,true,true,true,true
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
+#default,online,,,,,,,,,
+,result,table,_start,_stop,_time,_value,_field,_measurement,bigblueswarm_host,host
+,,0,1970-01-01T00:00:00Z,2023-02-02T20:15:26.16727593Z,2023-02-02T20:15:12.545750134Z,1,online,bigbluebutton,http://localhost/bigbluebutton,7045fc442d4f
+,,1,1970-01-01T00:00:00Z,2023-02-02T20:15:26.16727593Z,2023-02-02T20:15:12.465955558Z,1,online,bigbluebutton,http://localhost:8080/bigbluebutton,bf5516c24d1c`
 			},
 			Validator: func(t *testing.T, result interface{}, err error) {
 				assert.Nil(t, err)
