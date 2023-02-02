@@ -56,6 +56,7 @@ test.integration.cluster.start:
 	@make cluster.start
 	@sleep 5m
 	@make cluster.init
+	@sleep 5m
 
 test.integration.bigblueswarm.run:
 	@echo "[RUN] start bigblueswarm"
