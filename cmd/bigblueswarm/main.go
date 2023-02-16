@@ -8,8 +8,10 @@ import (
 
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/app"
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
+	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 
+	sentrylogrus "github.com/getsentry/sentry-go/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,9 +22,11 @@ var (
 )
 
 var (
-	configPath = ""
-	logLevel   = ""
-	logPath    = ""
+	configPath             = ""
+	logLevel               = ""
+	logPath                = ""
+	sentryDsn              = ""
+	sentryTraceSampleRates = float64(1.0)
 )
 
 func main() {
@@ -30,6 +34,12 @@ func main() {
 	f, err := initLog()
 	if err != nil {
 		panic(err)
+	}
+
+	if sentryDsn != "" {
+		if err := initSentry(); err != nil {
+			panic(err)
+		}
 	}
 
 	defer f.Close()
@@ -98,11 +108,33 @@ func parseFlags() {
 	flag.StringVar(&configPath, "config", config.DefaultConfigPath(), "Config file path")
 	flag.StringVar(&logLevel, "log.level", log.InfoLevel.String(), "Log level. Default is debug for development")
 	flag.StringVar(&logPath, "log.path", "", "Log path. Specify a path to write into a file. By default BigBlueSwarm prints log in stdout")
+	flag.StringVar(&sentryDsn, "sentry.dsn", "", "Sentry DSN. fill it with a valid DSN to enable sentry error management")
+	flag.Float64Var(&sentryTraceSampleRates, "sentry.rates", float64(1.0), "Sentry trace sample rates. The sample rate for sampling traces in the range [0.0, 1.0].")
 	flag.Parse()
 }
 
 func isDebugMode() bool {
 	return log.GetLevel() == log.DebugLevel
+}
+
+func initSentry() error {
+	var opts = sentry.ClientOptions{
+		Dsn:              sentryDsn,
+		Release:          version,
+		EnableTracing:    true,
+		AttachStacktrace: true,
+		TracesSampleRate: sentryTraceSampleRates,
+	}
+
+	if err := sentry.Init(opts); err != nil {
+		return err
+	}
+
+	sentrylogrus.NewFromClient(log.AllLevels, sentry.CurrentHub().Client())
+
+	app.SentryEnabled = true
+
+	return nil
 }
 
 func run(conf *config.Config) error {

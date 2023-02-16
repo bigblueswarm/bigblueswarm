@@ -6,13 +6,18 @@ import (
 
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/restclient"
 	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
 
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 )
+
+// SentryEnabled tells if sentry is enabled or not. If it is, we add a gin hook for performance monitoring
+var SentryEnabled = false
 
 // Server struct represents an object containings the server router and its configuration
 type Server struct {
@@ -31,8 +36,16 @@ func NewServer(config *config.Config) *Server {
 
 	restclient.Init()
 
+	router := gin.Default()
+	if SentryEnabled {
+		log.Info("Sentry enabled: adding gin middleware")
+		router.Use(sentrygin.New(sentrygin.Options{
+			Repanic: true,
+		}))
+	}
+
 	return &Server{
-		Router:          gin.Default(),
+		Router:          router,
 		Config:          config,
 		InstanceManager: admin.NewInstanceManager(*redisClient),
 		TenantManager:   admin.NewTenantManager(*redisClient),
