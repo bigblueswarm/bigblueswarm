@@ -1,6 +1,9 @@
 # Custom errors
 
-BigBlueSwarm provides some custom errors in addition to the BigBlueButton errors:
+The multi-client management and the different restrictions possible on these clients have created custom errors in addition to the classic BigBlueButton errors.
+
+The following list describes these custom errors:
+
 - `noInstanceFound`: if the balancer process returns an error or can't find an instance to create a meeting, it returns a `noInstanceFound`
 ```xml
 <response>
