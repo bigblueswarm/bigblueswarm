@@ -15,11 +15,13 @@ By default, BigBlueSwarm uses a [YAML](https://yaml.org/) configuration file. Th
 #### BigBlueSwarm
 
 * `secret` - __String__ - Secret BigBlueSwarm. As BigBlueSwarm works as a proxy, it reproduces the behavior of a BigBlueButton server and its authentication system. This `secret` configuration represents the key used by BigBlueButton clients to authenticate requests.
+* `recordingsPollInterval` - __String__ - Recording polling interval. In order to redirect users to the right recording, BigBlueSwarm regularly requests the recordings from the BigBlueButton servers to cache them. This configuration sets the time between two polling intervals. By default, the value is set to `15m` (15 minutes).
 
 Exemple:
 ```yml
 bigblueswarm:
   secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU
+  recordingsPollInterval: 15m
 ```
 
 #### Admin
@@ -92,6 +94,7 @@ influxdb:
 ```yml
 bigblueswarm:
   secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU
+  recordingsPollIntervalL: 15m
 admin:
   api_key: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R
 balancer:
@@ -116,14 +119,14 @@ BigBlueSwarm can also use Consul as a configuration provider by using the Consul
 
 Here is the configuration mapping for using Consul:
 
-| Configuration  | Endpoint                     | Type      | Autorefresh*       | Example                                                                                                                 |
-| -------------- | ---------------------------- | --------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `bigblueswarm` | `configuration/bigblueswarm` | code/YAML | :heavy_check_mark: | <pre><code>secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU</code></pre>                                             |
-| `admin`        | `configuration/admin`        | code/YAML | :heavy_check_mark: | <pre><code>api_key: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R</code></pre>                                                       |
-| `balancer`     | `configuration/balancer`     | code/YAML | :heavy_check_mark: | <pre><code>metrics_range: -5m</code><br /><code>cpu_limit: 100</code><br /><code>mem_limit: 100</code></pre>            |
-| `port`         | `configuration/port`         | none      |                    | <pre><code>8090</code></pre>                                                                                            |
-| `redis`        | `configuration/redis`        | code/YAML |                    | <pre><code>address: </code><br /><code>password:</code><br /><code>database: 0</code></pre>                             |
-| `influxdb`     | `configuration/influxdb`     | code/YAML |                    | <pre><code>address: </code><br /><code>token:</code><br /><code>organization: 0</code><br /><code>bucket: </code></pre> |
+| Configuration  | Endpoint                     | Type      | Autorefresh*                                         | Example                                                                                                                   |
+| -------------- | ---------------------------- | --------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `bigblueswarm` | `configuration/bigblueswarm` | code/YAML | :heavy_check_mark: (except for the polling interval) | <pre><code>secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU</code><br /><code>recordingsPollInterval: 15m</code></pre> |
+| `admin`        | `configuration/admin`        | code/YAML | :heavy_check_mark:                                   | <pre><code>api_key: kgpqrTipM2yjcXwz5pOxBKViE9oNX76R</code></pre>                                                         |
+| `balancer`     | `configuration/balancer`     | code/YAML | :heavy_check_mark:                                   | <pre><code>metrics_range: -5m</code><br /><code>cpu_limit: 100</code><br /><code>mem_limit: 100</code></pre>              |
+| `port`         | `configuration/port`         | none      |                                                      | <pre><code>8090</code></pre>                                                                                              |
+| `redis`        | `configuration/redis`        | code/YAML |                                                      | <pre><code>address: </code><br /><code>password:</code><br /><code>database: 0</code></pre>                               |
+| `influxdb`     | `configuration/influxdb`     | code/YAML |                                                      | <pre><code>address: </code><br /><code>token:</code><br /><code>organization: 0</code><br /><code>bucket: </code></pre>   |
 
 > Autorefresh*: when the value on Consul is changed, it is automatically updated in BigBlueSwarm. This feature does not work for the port used by BigBlueSwarm and the database accesses.
 
