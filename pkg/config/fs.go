@@ -36,6 +36,7 @@ func loadConfigFromFile(path string) (*Config, error) {
 	}
 
 	conf.Balancer.SetDefaultValues()
+	conf.BigBlueSwarm.SetDefaultValues()
 
 	return conf, nil
 }

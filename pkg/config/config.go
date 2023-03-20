@@ -59,6 +59,13 @@ func (bc *BalancerConfig) SetDefaultValues() {
 	}
 }
 
+// SetDefaultValues initialize BigBlueSwarm default values
+func (bbs *BigBlueSwarm) SetDefaultValues() {
+	if bbs.RecordingsPollInterval == "" {
+		bbs.RecordingsPollInterval = "15m"
+	}
+}
+
 // Port represents the BigBlueSwarm port configuration
 type Port int
 
