@@ -142,6 +142,7 @@ Add a configuration file on your server:
 ```yaml
 bigblueswarm:
   secret: <your_bigbluebutton_secret>
+  recordingsPollInterval: 15m
 admin:
   api_key: <your_admin_api_key>
 balancer:
