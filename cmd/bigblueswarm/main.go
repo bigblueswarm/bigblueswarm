@@ -90,7 +90,7 @@ func initLog() (*os.File, error) {
 	}
 
 	if lvl, err := log.ParseLevel(logLevel); err == nil {
-		log.Infoln("Setting up BigBlueSearm log level as", lvl.String())
+		log.Infoln("Setting up BigBlueSwarm log level as", lvl.String())
 		log.SetLevel(lvl)
 	}
 
