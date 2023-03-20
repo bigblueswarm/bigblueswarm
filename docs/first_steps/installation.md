@@ -140,7 +140,7 @@ Since version 2, BigBlueSwarm provides two configuration systems:
 
 Add a configuration file on your server:
 ```yaml
-bigbluebutton:
+bigblueswarm:
   secret: <your_bigbluebutton_secret>
 admin:
   api_key: <your_admin_api_key>

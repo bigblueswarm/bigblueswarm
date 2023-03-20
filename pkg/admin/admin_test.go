@@ -458,7 +458,7 @@ func TestGetConfigurtionHandler(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	config := &config.Config{
-		BigBlueButton: config.BigBlueButton{
+		BigBlueSwarm: config.BigBlueSwarm{
 			Secret:                 "secret",
 			RecordingsPollInterval: "5m",
 		},

@@ -56,7 +56,7 @@ func TestFSConfigLoad(t *testing.T) {
 
 func TestConsulConfigLoad(t *testing.T) {
 	var url string
-	var bbbConf string
+	var bbsConf string
 	var adminConf string
 	var balancerConf string
 	var portConf string
@@ -66,8 +66,8 @@ func TestConsulConfigLoad(t *testing.T) {
 		key := strings.ReplaceAll(r.RequestURI, "/v1/kv/configuration/", "")
 
 		switch key {
-		case "bigbluebutton":
-			w.Write([]byte(bbbConf))
+		case "bigblueswarm":
+			w.Write([]byte(bbsConf))
 		case "admin":
 			w.Write([]byte(adminConf))
 		case "balancer":
@@ -98,7 +98,7 @@ func TestConsulConfigLoad(t *testing.T) {
 			Name: "an error while loading admin configuration should return an error",
 			Mock: func() {
 				url = server.URL
-				bbbConf = `[{"LockIndex":0,"Key":"configuration/bigbluebutton","Flags":0,"Value":"c2VjcmV0OiAwb2w1dDQ0VVIyMXJyUDB4TDVvdTdJQkZ1bVdGM0dFTmViZ1cxUnlUZmJVCnJlY29yZGluZ3NQb2xsSW50ZXJ2YWw6IDFt","CreateIndex":35,"ModifyIndex":1211}]`
+				bbsConf = `[{"LockIndex":0,"Key":"configuration/bigblueswarm","Flags":0,"Value":"c2VjcmV0OiAwb2w1dDQ0VVIyMXJyUDB4TDVvdTdJQkZ1bVdGM0dFTmViZ1cxUnlUZmJVCnJlY29yZGluZ3NQb2xsSW50ZXJ2YWw6IDFt","CreateIndex":52,"ModifyIndex":94}]`
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				assert.NotNil(t, err)
@@ -163,7 +163,7 @@ func TestConsulConfigLoad(t *testing.T) {
 						MemLimit:            99,
 						AggregationInterval: "10s",
 					},
-					BigBlueButton: BigBlueButton{
+					BigBlueSwarm: BigBlueSwarm{
 						Secret:                 "0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU",
 						RecordingsPollInterval: "1m",
 					},

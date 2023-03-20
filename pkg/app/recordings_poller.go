@@ -52,7 +52,7 @@ func (s *Server) pollRecordings() {
 }
 
 func (s *Server) launchRecordingPoller() {
-	ticker := time.NewTicker(toDuration(s.Config.BigBlueButton.RecordingsPollInterval))
+	ticker := time.NewTicker(toDuration(s.Config.BigBlueSwarm.RecordingsPollInterval))
 	for range ticker.C {
 		s.pollRecordings()
 	}
