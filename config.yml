@@ -1,5 +1,5 @@
 ---
-bigbluebutton:
+bigblueswarm:
   secret: 0ol5t44UR21rrP0xL5ou7IBFumWF3GENebgW1RyTfbU
   recordingsPollInterval: 1m
 balancer:

@@ -49,7 +49,7 @@ func LoadConfigFromConsul(path string) (*Config, error) {
 	kv := client.KV()
 
 	conf := &Config{}
-	if err := conf.loadBBBConf(kv); err != nil {
+	if err := conf.loadBBSConf(kv); err != nil {
 		return nil, err
 	}
 
@@ -108,8 +108,8 @@ func loadKey(kv *api.KV, key string) (interface{}, error) {
 
 func getConfigType(key string) interface{} {
 	switch key {
-	case "bigbluebutton":
-		return &BigBlueButton{}
+	case "bigblueswarm":
+		return &BigBlueSwarm{}
 	case "admin":
 		return &AdminConfig{}
 	case "balancer":
@@ -171,8 +171,8 @@ func WatchChanges(logger *log.Entry, key string, handler func(value []byte)) err
 	return nil
 }
 
-func (c *Config) loadBBBConf(kv *api.KV) error {
-	key := "bigbluebutton"
+func (c *Config) loadBBSConf(kv *api.KV) error {
+	key := "bigblueswarm"
 	logger := getLogger(key)
 	conf, err := loadKey(kv, key)
 	if err != nil {
@@ -180,18 +180,18 @@ func (c *Config) loadBBBConf(kv *api.KV) error {
 		return err
 	}
 
-	if value, ok := conf.(*BigBlueButton); ok {
-		c.BigBlueButton = *value
+	if value, ok := conf.(*BigBlueSwarm); ok {
+		c.BigBlueSwarm = *value
 	}
 
 	return WatchChanges(logger, key, func(value []byte) {
-		var conf BigBlueButton
+		var conf BigBlueSwarm
 		if err := yaml.Unmarshal(value, &conf); err != nil {
 			logger.Error(fmt.Errorf("unable to parse new config value: %s", err))
 			return
 		}
 
-		c.BigBlueButton = conf
+		c.BigBlueSwarm = conf
 	})
 }
 

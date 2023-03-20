@@ -20,7 +20,7 @@ func TestChecksumValidation(t *testing.T) {
 	var w *httptest.ResponseRecorder
 	var c *gin.Context
 	server := NewServer(&config.Config{
-		BigBlueButton: config.BigBlueButton{
+		BigBlueSwarm: config.BigBlueSwarm{
 			Secret: test.DefaultSecret(),
 		},
 	})

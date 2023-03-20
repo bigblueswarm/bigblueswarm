@@ -10,8 +10,8 @@ import (
 // ConsulPrefix is the configuration path consul prefix
 const ConsulPrefix string = "consul:"
 
-// BigBlueButton configuration mapping
-type BigBlueButton struct {
+// BigBlueSwarm configuration mapping
+type BigBlueSwarm struct {
 	Secret                 string `yaml:"secret" json:"secret"`
 	RecordingsPollInterval string `yaml:"recordingsPollInterval" json:"recordingsPollInterval"`
 }
@@ -64,12 +64,12 @@ type Port int
 
 // Config represents main configuration mapping
 type Config struct {
-	BigBlueButton BigBlueButton  `yaml:"bigbluebutton" json:"bigbluebutton"`
-	Admin         AdminConfig    `yaml:"admin" json:"admin"`
-	Balancer      BalancerConfig `yaml:"balancer" json:"balancer"`
-	Port          Port           `yaml:"port" json:"port"`
-	RDB           RDB            `yaml:"redis" json:"redis"`
-	IDB           IDB            `yaml:"influxdb" json:"influxdb"`
+	BigBlueSwarm BigBlueSwarm   `yaml:"bigblueswarm" json:"bigblueswarm"`
+	Admin        AdminConfig    `yaml:"admin" json:"admin"`
+	Balancer     BalancerConfig `yaml:"balancer" json:"balancer"`
+	Port         Port           `yaml:"port" json:"port"`
+	RDB          RDB            `yaml:"redis" json:"redis"`
+	IDB          IDB            `yaml:"influxdb" json:"influxdb"`
 }
 
 const defaultConfigFileName = "bigblueswarm.yaml"

@@ -35,7 +35,7 @@ func (s *Server) ChecksumValidation(c *gin.Context) {
 		"tenant":   utils.GetHost(c),
 	})
 
-	secret := s.Config.BigBlueButton.Secret
+	secret := s.Config.BigBlueSwarm.Secret
 	tenant, err := s.TenantManager.GetTenant(utils.GetHost(c))
 	if err != nil {
 		logger.Error("tenant manager can't retrieve tenant: ", err)
