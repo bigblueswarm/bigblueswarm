@@ -4,13 +4,13 @@ package app
 import (
 	"fmt"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/admin"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/balancer"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/restclient"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/restclient"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/utils"
 
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"

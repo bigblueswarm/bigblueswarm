@@ -37,13 +37,13 @@ start:
 test.unit:
 	@echo "[TEST.UNIT] run unit tests and coverage"
 	go test -covermode=atomic -coverprofile=coverage.out \
-		github.com/bigblueswarm/bigblueswarm/v2/pkg/admin \
-		github.com/bigblueswarm/bigblueswarm/v2/pkg/api \
-		github.com/bigblueswarm/bigblueswarm/v2/pkg/app \
-		github.com/bigblueswarm/bigblueswarm/v2/pkg/config \
-		github.com/bigblueswarm/bigblueswarm/v2/pkg/utils \
-		github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer \
-		github.com/bigblueswarm/bigblueswarm/v2/pkg/restclient
+		github.com/bigblueswarm/bigblueswarm/v3/pkg/admin \
+		github.com/bigblueswarm/bigblueswarm/v3/pkg/api \
+		github.com/bigblueswarm/bigblueswarm/v3/pkg/app \
+		github.com/bigblueswarm/bigblueswarm/v3/pkg/config \
+		github.com/bigblueswarm/bigblueswarm/v3/pkg/utils \
+		github.com/bigblueswarm/bigblueswarm/v3/pkg/balancer \
+		github.com/bigblueswarm/bigblueswarm/v3/pkg/restclient
 
 #test.integration: @ run integration tests
 test.integration: build test.integration.cluster.start test.integration.bigblueswarm.run test.integration.launch test.integration.bigblueswarm.stop cluster.stop test.integration.cluster.remove

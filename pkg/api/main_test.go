@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/restclient"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/restclient"
 	"github.com/bigblueswarm/test_utils/pkg/test"
 )
 

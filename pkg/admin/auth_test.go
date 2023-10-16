@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/balancer"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/config"
 
 	"github.com/bigblueswarm/test_utils/pkg/request"
 	"github.com/bigblueswarm/test_utils/pkg/test"

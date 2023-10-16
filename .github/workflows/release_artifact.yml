@@ -38,4 +38,4 @@ jobs:
     needs: releases-matrix
     steps:
       - name: trigger pkg.dev update
-        run: curl "https://sum.golang.org/lookup/github.com/bigblueswarm/bigblueswarm/v2@${{ github.event.release.tag_name }}"
+        run: curl "https://sum.golang.org/lookup/github.com/bigblueswarm/bigblueswarm/v3@${{ github.event.release.tag_name }}"

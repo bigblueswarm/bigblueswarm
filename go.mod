@@ -1,4 +1,4 @@
-module github.com/bigblueswarm/bigblueswarm/v2
+module github.com/bigblueswarm/bigblueswarm/v3
 
 go 1.19
 

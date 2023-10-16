@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/restclient"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/restclient"
 	"github.com/bigblueswarm/test_utils/pkg/test"
 	"github.com/gin-gonic/gin"
 

@@ -11,14 +11,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/admin"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/api"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/balancer"
 	"github.com/bigblueswarm/test_utils/pkg/request"
 	"github.com/bigblueswarm/test_utils/pkg/test"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/restclient"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/restclient"
 	log "github.com/sirupsen/logrus"
 	LogTest "github.com/sirupsen/logrus/hooks/test"
 

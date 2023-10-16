@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/utils"
 	"github.com/go-redis/redis/v8"
 	"gopkg.in/yaml.v3"
 )

@@ -4,8 +4,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/admin"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/balancer"
 )
 
 func isPoolReached(b balancer.Balancer, m string, f string, p int64) (bool, error) {

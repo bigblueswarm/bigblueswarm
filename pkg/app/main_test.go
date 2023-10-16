@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/admin"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"

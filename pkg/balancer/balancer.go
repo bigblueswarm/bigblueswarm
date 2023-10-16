@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/utils"
 	influxdb "github.com/influxdata/influxdb-client-go/v2/api"
 )
 

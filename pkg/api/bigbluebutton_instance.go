@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/restclient"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/restclient"
 	"github.com/gin-gonic/gin"
 
 	log "github.com/sirupsen/logrus"
