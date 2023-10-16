@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/admin"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/api"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/config"
 	"github.com/bigblueswarm/test_utils/pkg/request"
 	"github.com/bigblueswarm/test_utils/pkg/test"
 	"github.com/gin-gonic/gin"

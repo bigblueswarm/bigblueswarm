@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/utils"
 	"github.com/bigblueswarm/test_utils/pkg/test"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/config"
 
 	"github.com/stretchr/testify/assert"
 )

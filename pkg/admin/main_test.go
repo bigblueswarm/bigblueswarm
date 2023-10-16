@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/balancer"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/config"
 	"github.com/bigblueswarm/test_utils/pkg/test"
 
 	"github.com/gin-gonic/gin"

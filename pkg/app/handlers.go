@@ -8,9 +8,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/admin"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/api"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"

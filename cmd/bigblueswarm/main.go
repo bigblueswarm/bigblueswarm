@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/app"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/app"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/config"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 

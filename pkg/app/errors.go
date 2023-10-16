@@ -1,7 +1,7 @@
 // Package app is the bigblueswarm core
 package app
 
-import "github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
+import "github.com/bigblueswarm/bigblueswarm/v3/pkg/api"
 
 func noInstanceFoundError() *api.Error {
 	return api.CreateError("noInstanceFound", "BigBlueSwarm do not find a valid BigBlueButton instance for your request")

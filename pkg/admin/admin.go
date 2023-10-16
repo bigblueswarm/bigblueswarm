@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/balancer"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/config"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"

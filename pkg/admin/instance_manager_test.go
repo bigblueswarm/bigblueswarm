@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/api"
 	"github.com/bigblueswarm/test_utils/pkg/test"
 
 	"github.com/go-redis/redis/v8"

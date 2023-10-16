@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/utils"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/api"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/utils"
 
 	"github.com/go-redis/redis/v8"
 )

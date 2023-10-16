@@ -12,9 +12,9 @@ import (
 	"github.com/bigblueswarm/test_utils/pkg/test"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/restclient"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/admin"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/api"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/restclient"
 
 	log "github.com/sirupsen/logrus"
 	LogTest "github.com/sirupsen/logrus/hooks/test"

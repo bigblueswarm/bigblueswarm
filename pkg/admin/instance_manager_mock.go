@@ -1,7 +1,7 @@
 // Package admin manages the bigblueswarm admin part
 package admin
 
-import "github.com/bigblueswarm/bigblueswarm/v2/pkg/api"
+import "github.com/bigblueswarm/bigblueswarm/v3/pkg/api"
 
 // InstanceManagerMock is a mock implementation of the InstanceManager interface.
 type InstanceManagerMock struct{}

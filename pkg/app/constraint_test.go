@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/admin"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/balancer"
-	"github.com/bigblueswarm/bigblueswarm/v2/pkg/config"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/admin"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/balancer"
+	"github.com/bigblueswarm/bigblueswarm/v3/pkg/config"
 	"github.com/bigblueswarm/test_utils/pkg/test"
 	"github.com/stretchr/testify/assert"
 )
