@@ -23,6 +23,15 @@ type RDB struct {
 	DB       int    `yaml:"database" json:"database"`
 }
 
+// PG represents postgresql configuration mapping
+type PG struct {
+	Host     string `yaml:"host" json:"host"`
+	Port     int    `yaml:"port" json:"port"`
+	User     string `yaml:"user" json:"user"`
+	Password string `yaml:"password" json:"password"`
+	Database string `yaml:"database" json:"database"`
+}
+
 // IDB represents influxdb database configuration mapping
 type IDB struct {
 	Address      string `yaml:"address" json:"address"`
@@ -77,6 +86,7 @@ type Config struct {
 	Port         Port           `yaml:"port" json:"port"`
 	RDB          RDB            `yaml:"redis" json:"redis"`
 	IDB          IDB            `yaml:"influxdb" json:"influxdb"`
+	PG           PG             `yaml:"postgres" json:"postgres"`
 }
 
 const defaultConfigFileName = "bigblueswarm.yaml"

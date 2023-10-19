@@ -73,6 +73,10 @@ func LoadConfigFromConsul(path string) (*Config, error) {
 		return nil, err
 	}
 
+	if err := conf.LoadPGConf(kv); err != nil {
+		return nil, err
+	}
+
 	conf.Balancer.SetDefaultValues()
 	conf.BigBlueSwarm.SetDefaultValues()
 
@@ -119,6 +123,8 @@ func getConfigType(key string) interface{} {
 		return &RDB{}
 	case "influxdb":
 		return &IDB{}
+	case "postgres":
+		return &PG{}
 	default:
 		return nil
 	}
@@ -278,6 +284,20 @@ func (c *Config) LoadInfluxDBConf(kv *api.KV) error {
 
 	if value, ok := conf.(*IDB); ok {
 		c.IDB = *value
+	}
+
+	return nil
+}
+
+// LoadPGConf load the postgresql configuration in the Config struc
+func (c *Config) LoadPGConf(kv *api.KV) error {
+	conf, err := loadKey(kv, "postgres")
+	if err != nil {
+		return err
+	}
+
+	if value, ok := conf.(*PG); ok {
+		c.PG = *value
 	}
 
 	return nil
