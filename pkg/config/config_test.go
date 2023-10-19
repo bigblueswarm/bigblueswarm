@@ -62,6 +62,7 @@ func TestConsulConfigLoad(t *testing.T) {
 	var portConf string
 	var rdbConf string
 	var idbConf string
+	var pgConf string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		key := strings.ReplaceAll(r.RequestURI, "/v1/kv/configuration/", "")
 
@@ -78,6 +79,8 @@ func TestConsulConfigLoad(t *testing.T) {
 			w.Write([]byte(rdbConf))
 		case "influxdb":
 			w.Write([]byte(idbConf))
+		case "postgres":
+			w.Write([]byte(pgConf))
 		}
 	}))
 
@@ -145,10 +148,19 @@ func TestConsulConfigLoad(t *testing.T) {
 			},
 		},
 		{
+			Name: "an error while loading postgresql configuration should return an error",
+			Mock: func() {
+				idbConf = `[{"LockIndex":0,"Key":"configuration/influxdb","Flags":0,"Value":"YWRkcmVzczogaHR0cDovL2xvY2FsaG9zdDo4MDg2CnRva2VuOiBacTl3THNtaG5XNVV0T2lQSkFwVXYxY1RWSmZ3WHNUZ2xfcENraVRpa1EzZzJZR1B0UzVIcXNYZWYtV2Y1cFVVM3dqWTNuVldUWVJJLVdjOExqYkRmZz09Cm9yZ2FuaXphdGlvbjogYmlnYmx1ZXN3YXJtCmJ1Y2tldDogYnVja2V0","CreateIndex":55,"ModifyIndex":55}]`
+			},
+			Validator: func(t *testing.T, value interface{}, err error) {
+				assert.NotNil(t, err)
+			},
+		},
+		{
 			Name: "no error should return a valid configuration",
 			Mock: func() {
 				url = server.URL
-				idbConf = `[{"LockIndex":0,"Key":"configuration/influxdb","Flags":0,"Value":"YWRkcmVzczogaHR0cDovL2xvY2FsaG9zdDo4MDg2CnRva2VuOiBacTl3THNtaG5XNVV0T2lQSkFwVXYxY1RWSmZ3WHNUZ2xfcENraVRpa1EzZzJZR1B0UzVIcXNYZWYtV2Y1cFVVM3dqWTNuVldUWVJJLVdjOExqYkRmZz09Cm9yZ2FuaXphdGlvbjogYmlnYmx1ZXN3YXJtCmJ1Y2tldDogYnVja2V0","CreateIndex":55,"ModifyIndex":55}]`
+				pgConf = `[{"LockIndex":0,"Key":"configuration/postgres","Flags":0,"Value":"aG9zdDogMTI3LjAuMC4xCnBvcnQ6IDU0MzIKdXNlcjogYmlnYmx1ZXN3YXJtCnBhc3N3b3JkOiBwYXNzd29yZApkYXRhYmFzZTogYmlnYmx1ZXN3YXJt","CreateIndex":21,"ModifyIndex":21}]`
 			},
 			Validator: func(t *testing.T, value interface{}, err error) {
 				conf := value.(*Config)
@@ -178,6 +190,13 @@ func TestConsulConfigLoad(t *testing.T) {
 						Address:  "localhost:6379",
 						Password: "",
 						DB:       0,
+					},
+					PG: PG{
+						Host:     "127.0.0.1",
+						Port:     5432,
+						User:     "bigblueswarm",
+						Password: "password",
+						Database: "bigblueswarm",
 					},
 				}
 
